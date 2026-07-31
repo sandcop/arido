@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg preserveAspectRatio="none" id="Capa_2" data-name="Capa 2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 500 314.26">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: url(#Degradado_sin_nombre_4);
+      }
+    </style>
+    <linearGradient id="Degradado_sin_nombre_4" data-name="Degradado sin nombre 4" x1="250" y1="314.26" x2="250" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset=".41" stop-color="#b63a59"/>
+      <stop offset=".69" stop-color="#e78846"/>
+      <stop offset="1" stop-color="#f3775a"/>
+    </linearGradient>
+  </defs>
+  <g id="OBJECTS">
+    <polygon class="cls-1" points="500 159.37 313.56 151.53 291.44 160.86 234.35 138.97 197.66 138.4 183.27 121.95 128.74 121.95 114.62 108.67 105.51 68.15 92.58 68.15 82.41 81.62 82.41 108.67 75.33 108.67 67.42 92.21 65.72 48.2 59.51 5.24 36.15 0 30.49 5.24 30.49 32.48 25.97 35.63 24.47 79.64 0 78.59 0 314.26 500 314.26 500 159.37"/>
+  </g>
+</svg>
