@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Árido — Café de especialidad del norte de Chile</title>
+<meta name="description" content="Árido: café de especialidad tostado para las familias de Arica, Iquique, Antofagasta y Atacama. Lo mejor de los campos de Colombia y Etiopía.">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,400&family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,600&display=swap" rel="stylesheet">
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<nav id="nav">
+  <div class="nav-pill">
+    <a href="#top" class="nav-brand">
+      <img src="assets/navbar-icon.svg" alt="Árido" class="nav-brand-icon">
+      <img src="assets/arido-navbar.svg" alt="Árido" class="nav-brand-word" id="navBrandWord">
+    </a>
+    <div class="nav-links">
+      <a href="#nosotros">Nosotros</a>
+      <a href="#cafe">Café</a>
+      <a href="#contacto">Contacto</a>
+    </div>
+    <a href="#contacto" class="btn btn-accent">Escríbenos</a>
+    <button class="burger" id="burgerBtn" aria-label="Abrir menú">☰</button>
+  </div>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+  <button class="close-btn" id="closeMenuBtn" aria-label="Cerrar menú">✕</button>
+  <a href="#nosotros">Nosotros</a>
+  <a href="#cafe">Café</a>
+  <a href="#contacto">Contacto</a>
+  <a href="https://wa.me/56972497925" target="_blank" rel="noopener">WhatsApp</a>
+</div>
+
+<header class="hero" id="top">
+  <div class="hero-frame">
+    <div class="hero-logo reveal-scale">
+      <img src="assets/arido.svg" alt="Árido — un café de culto" id="heroLogo">
+    </div>
+  </div>
+</header>
+
+<section class="section-alt" id="nosotros">
+  <!-- Desert sunset scene. Layers are background-images on divs, never inline SVG:
+       the 11 source files reuse the same internal class names (.cls-1) and gradient
+       ids, so inlining them would collide and break the gradients. -->
+  <!-- data-parallax is lag, not depth: a positive value holds the layer back against the
+       scroll so it reads as further away, and a negative one runs it ahead of the scroll
+       so it reads as nearer. The stars therefore take the largest value and the near
+       dunes sit at 0 — they are the ground line, and holding them still keeps the horizon
+       welded to the table. The sky is exempt because a bare gradient shows no motion. -->
+  <!-- data-in / data-span place each layer's entrance along the section's scroll (0-1),
+       so the scene builds back to front and the three foreground cacti sprout at clearly
+       separated moments rather than together.
+       data-parallax is lag, not depth: positive holds a layer back against the scroll so
+       it reads as further away, negative runs it ahead so it reads as nearer. The near
+       dunes stay at 0 — they are the ground line, and holding them still keeps the
+       horizon welded to the table. The sky is exempt; a bare gradient shows no motion. -->
+  <div class="desert" id="desert" aria-hidden="true">
+    <div class="desert-layer d-sky"   data-parallax="0"     data-in="0"    data-span="0.10"></div>
+    <div class="desert-layer d-stars" data-parallax="0.42"  data-in="0.04" data-span="0.14"></div>
+    <!-- Big lag plus a low resting point: the moon climbs into view, then sets behind
+         the mesas, which paint after it. -->
+    <div class="desert-layer d-sun"   data-parallax="0.70"  data-in="0.06" data-span="0.12"></div>
+    <div class="desert-layer d-far"   data-parallax="0.11"  data-in="0.12" data-span="0.12"></div>
+    <div class="desert-layer d-mid"   data-parallax="0.07"  data-in="0.17" data-span="0.12"></div>
+    <!-- The mid-distance pair stays put: their feet hide just behind the near crest, and
+         any rise would lift a cut-off base into view. -->
+    <div class="desert-layer d-c5 desert-cactus" data-parallax="0"     data-in="0.21" data-span="0.09"></div>
+    <div class="desert-layer d-c4 desert-cactus" data-parallax="0"     data-in="0.24" data-span="0.09"></div>
+    <div class="desert-layer d-near"  data-parallax="0"     data-in="0.27" data-span="0.11"></div>
+    <div class="desert-layer d-c2 desert-cactus" data-parallax="-0.13" data-in="0.34" data-span="0.11"></div>
+    <div class="desert-layer d-c1 desert-cactus" data-parallax="-0.10" data-in="0.47" data-span="0.11"></div>
+    <div class="desert-layer d-c3 desert-cactus" data-parallax="-0.08" data-in="0.58" data-span="0.11"></div>
+  </div>
+  <div class="container">
+    <div class="section-head reveal">
+      <div class="eyebrow">Nuestro origen</div>
+      <h2>Nacimos en el desierto más árido del mundo</h2>
+      <p>Árido es un proyecto nuevo, nortino de principio a fin. Creemos que el café de especialidad no debería quedarse solo en el sur — por eso tostamos y hacemos llegar los granos de los campos de Colombia y Etiopía directamente a las familias del norte grande.</p>
+    </div>
+    <div class="about-grid">
+      <div class="about-copy reveal">
+        <p>Cada bolsa de <strong>Árido</strong> nace de la selección cuidadosa de dos orígenes que representan lo mejor del café de especialidad: los valles cafeteros de <strong>Colombia</strong> y las tierras altas de <strong>Etiopía</strong>, cuna histórica del café.</p>
+        <p>Un café de culto no se improvisa: se elige, se tuesta y se comparte con quienes saben esperar por una buena taza — en pleno desierto de Atacama.</p>
+        <div class="stats-row">
+          <div class="stat"><div class="num" data-count="2">0</div><div class="label">Orígenes de café<br>Colombia · Etiopía</div></div>
+          <div class="stat"><div class="num" data-count="4">0</div><div class="label">Regiones del norte<br>que alcanzamos</div></div>
+        </div>
+      </div>
+      <div class="map-badge reveal-scale">
+        <div class="eyebrow" style="margin-bottom:4px;">Llegamos a</div>
+        <div class="region-list">
+          <div class="region-item"><span class="pip"></span>Arica</div>
+          <div class="region-item"><span class="pip"></span>Iquique</div>
+          <div class="region-item"><span class="pip"></span>Antofagasta</div>
+          <div class="region-item"><span class="pip"></span>Atacama</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="cafe">
+  <!-- Both sit on the section, not inside .container: the container's height is set by
+       the copy, so anchoring the bean floor to it would leave the beans hovering above
+       the table as soon as the section gains bottom room. -->
+  <div class="table-surface"></div>
+  <div class="bean-table" id="beanTable">
+    <canvas id="beanCanvas"></canvas>
+  </div>
+  <div class="container">
+    <div class="section-head reveal">
+      <div class="eyebrow">Nuestra selección</div>
+      <h2>Dos orígenes, un mismo culto</h2>
+      <p>Granos seleccionados en origen, tostados para resaltar su carácter. Esto es lo que estamos preparando para ti.</p>
+    </div>
+    <div class="cafe-grid">
+      <div class="cafe-card reveal">
+        <span class="origin-tag">Origen · Colombia</span>
+        <h3>Colombia</h3>
+        <p class="desc">Notas dulces y equilibradas de los valles cafeteros colombianos, con cuerpo suave y un final limpio.</p>
+        <div class="price-row">
+          <span class="placeholder-chip">Precio y formato — próximamente</span>
+          <a href="https://wa.me/56972497925" target="_blank" rel="noopener" class="btn btn-ghost" style="padding:10px 18px;font-size:0.8rem;">Consultar</a>
+        </div>
+      </div>
+      <div class="cafe-card reveal">
+        <span class="origin-tag">Origen · Etiopía</span>
+        <h3>Etiopía</h3>
+        <p class="desc">Perfiles florales y cítricos de las tierras altas etíopes, cuna histórica del café de especialidad.</p>
+        <div class="price-row">
+          <span class="placeholder-chip">Precio y formato — próximamente</span>
+          <a href="https://wa.me/56972497925" target="_blank" rel="noopener" class="btn btn-ghost" style="padding:10px 18px;font-size:0.8rem;">Consultar</a>
+        </div>
+      </div>
+    </div>
+    <p class="cafe-note reveal">* Precios, gramajes y formas de despacho se están definiendo — escríbenos por WhatsApp para conocer disponibilidad actual.</p>
+  </div>
+</section>
+
+<section class="section-alt" id="contacto">
+  <canvas class="sand-layer" id="sandContacto" aria-hidden="true"></canvas>
+  <canvas class="sand-layer sand-trail" id="sandContactoTrail" aria-hidden="true"></canvas>
+  <!-- Shoreline band across the foot of the section: the sea lies past the bottom edge
+       and washes up over the sand that is already there. -->
+  <canvas class="shore-layer" id="shoreCanvas" aria-hidden="true"></canvas>
+  <div class="container">
+    <div class="section-head reveal">
+      <div class="eyebrow">Hablemos</div>
+      <h2>Un café de culto empieza con un mensaje</h2>
+      <p>Escríbenos para pedidos, disponibilidad o simplemente para conversar de café.</p>
+    </div>
+    <div class="contact-grid">
+      <div class="contact-list reveal">
+        <a class="contact-item" href="https://wa.me/56972497925" target="_blank" rel="noopener">
+          <span class="contact-icon">📞</span>
+          <div><div class="label">Teléfono / WhatsApp</div><div class="value">+56 9 7249 7925</div></div>
+        </a>
+        <a class="contact-item" href="mailto:david@aridocafe.cl">
+          <span class="contact-icon">✉️</span>
+          <div><div class="label">Email</div><div class="value">david@aridocafe.cl</div></div>
+        </a>
+        <a class="contact-item" href="https://www.instagram.com/cafearido/" target="_blank" rel="noopener">
+          <span class="contact-icon">📷</span>
+          <div><div class="label">Instagram</div><div class="value">@cafearido</div></div>
+        </a>
+        <div class="contact-item pending">
+          <span class="contact-icon">📍</span>
+          <div><div class="label">Zona de despacho</div><div class="value">[DIRECCIÓN / ZONA DE DESPACHO PENDIENTE]</div></div>
+        </div>
+        <div class="contact-item pending">
+          <span class="contact-icon">🕐</span>
+          <div><div class="label">Horario</div><div class="value">[HORARIO DE ATENCIÓN PENDIENTE]</div></div>
+        </div>
+      </div>
+
+      <form class="contact-form reveal" id="contactForm">
+        <div class="form-row">
+          <label for="name">Nombre</label>
+          <input type="text" id="name" name="name" required>
+        </div>
+        <div class="form-row">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" required>
+        </div>
+        <div class="form-row">
+          <label for="message">Mensaje</label>
+          <textarea id="message" name="message" rows="4" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-accent">Enviar mensaje</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container footer-inner">
+    <div class="footer-brand">
+      <span class="brand-mark"><img src="assets/logo-emblem.png" alt="Árido"></span>
+      <span class="footer-copy">© <span id="year"></span> Árido Coffee Roasters. Un café de culto.</span>
+    </div>
+    <div class="footer-social">
+      <a href="https://www.instagram.com/cafearido/" target="_blank" rel="noopener" aria-label="Instagram">📷</a>
+      <a href="mailto:david@aridocafe.cl" aria-label="Email">✉️</a>
+      <a href="https://wa.me/56972497925" target="_blank" rel="noopener" aria-label="WhatsApp">📞</a>
+    </div>
+  </div>
+</footer>
+
+<script src="main.js"></script>
+<script src="assets/bean-data.js"></script>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+(function initBeanTable(){
+  var container = document.getElementById('beanTable');
+  var canvas = document.getElementById('beanCanvas');
+  if(!container || !canvas) return;
+
+  var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var BEAN_COUNT = 17;
+  // World units are pinned to pixels at the scale the scene was tuned at (a 1080px-tall
+  // box spanning 9 units). Deriving the frustum from the box height instead of fixing it
+  // keeps bean size, the floor line and the fall distance constant in pixels however tall
+  // the container gets — otherwise a taller container silently magnifies everything.
+  var PX_PER_UNIT = 120;
+  var FOOT_OFFSET = 0.42;
+  var HALF_WIDTH = 2.6;
+
+  var width = container.clientWidth;
+  var height = container.clientHeight;
+  var aspect = width / height;
+  var FRUSTUM_HALF_HEIGHT = height / (2 * PX_PER_UNIT);
+  var GROUND_Y = -(FRUSTUM_HALF_HEIGHT - 0.6);
+
+  var scene = new THREE.Scene();
+  var camera = new THREE.OrthographicCamera(
+    -FRUSTUM_HALF_HEIGHT * aspect, FRUSTUM_HALF_HEIGHT * aspect,
+    FRUSTUM_HALF_HEIGHT, -FRUSTUM_HALF_HEIGHT,
+    0.1, 100
+  );
+  camera.position.set(0, 0, 8);
+  camera.lookAt(0, 0, 0);
+
+  function updateSpread(){
+    HALF_WIDTH = Math.max(1.4, FRUSTUM_HALF_HEIGHT * aspect * 0.82);
+  }
+  updateSpread();
+
+  var renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setSize(width, height);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 0.9;
+  if('outputColorSpace' in renderer) renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+  scene.add(new THREE.HemisphereLight(0xfff3e0, 0x2c1c10, 0.5));
+  scene.add(new THREE.AmbientLight(0xfff3e0, 0.5));
+  var keyLight = new THREE.DirectionalLight(0xffffff, 1.6);
+  keyLight.position.set(3, 6, 4);
+  scene.add(keyLight);
+  var fillLight = new THREE.DirectionalLight(0xffddaa, 0.4);
+  fillLight.position.set(-4, 2, 3);
+  scene.add(fillLight);
+
+  var beans = [];
+  var modelReady = false;
+  var started = false;
+
+  function randRange(min, max){ return min + Math.random() * (max - min); }
+
+  function base64ToArrayBuffer(base64){
+    var binaryString = atob(base64);
+    var len = binaryString.length;
+    var bytes = new Uint8Array(len);
+    for(var i = 0; i < len; i++){ bytes[i] = binaryString.charCodeAt(i); }
+    return bytes.buffer;
+  }
+
+  new GLTFLoader().parse(base64ToArrayBuffer(window.COFFEE_BEAN_B64), '', function(gltf){
+    var baseModel = gltf.scene;
+    var box = new THREE.Box3().setFromObject(baseModel);
+    var sizeVec = new THREE.Vector3();
+    box.getSize(sizeVec);
+    var maxDim = Math.max(sizeVec.x, sizeVec.y, sizeVec.z) || 1;
+    var isSmallScreen = window.innerWidth <= 760;
+    var beanTargetSize = isSmallScreen ? 0.55 : 0.85;
+    var scale = beanTargetSize / maxDim;
+
+    var beanTexture = new THREE.TextureLoader().load('data:image/png;base64,' + window.COFFEE_BEAN_TEX_B64);
+    beanTexture.flipY = false;
+    if('colorSpace' in beanTexture) beanTexture.colorSpace = THREE.SRGBColorSpace;
+
+    var tintA = new THREE.Color(0xffffff);
+    var tintB = new THREE.Color(0xd9b98c);
+
+    for(var i = 0; i < BEAN_COUNT; i++){
+      var mesh = baseModel.clone(true);
+      mesh.scale.setScalar(scale);
+      var beanColor = tintA.clone().lerp(tintB, Math.random() * 0.5);
+      mesh.traverse(function(node){
+        if(node.isMesh){
+          node.material = new THREE.MeshStandardMaterial({
+            map: beanTexture,
+            color: beanColor,
+            roughness: 0.65,
+            metalness: 0.03
+          });
+        }
+      });
+      var usableWidth = (HALF_WIDTH - 0.5) * 2;
+      var slot = usableWidth / BEAN_COUNT;
+      var slotCenter = -HALF_WIDTH + 0.5 + slot * (i + 0.5);
+      var restX = slotCenter + randRange(-slot * 0.35, slot * 0.35);
+      var restZ = randRange(-0.7, 0.7);
+      var startX = prefersReduced ? restX : randRange(-HALF_WIDTH, HALF_WIDTH);
+      var startY = prefersReduced ? GROUND_Y + FOOT_OFFSET : randRange(6, 10);
+      mesh.position.set(startX, startY, restZ);
+      mesh.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+      scene.add(mesh);
+
+      beans.push({
+        mesh: mesh,
+        vy: 0,
+        restX: restX,
+        settled: prefersReduced,
+        delay: i * 140,
+        bounces: 0,
+        rotSpeed: new THREE.Vector3(randRange(-4, 4), randRange(-4, 4), randRange(-4, 4))
+      });
+    }
+    modelReady = true;
+  });
+
+  var clock = new THREE.Clock();
+  var elapsed = 0;
+
+  function animate(){
+    requestAnimationFrame(animate);
+    var dt = Math.min(clock.getDelta(), 0.05);
+    elapsed += dt * 1000;
+
+    if(started && modelReady){
+      beans.forEach(function(bean){
+        if(bean.settled || elapsed < bean.delay) return;
+
+        bean.vy -= 9.8 * dt;
+        bean.mesh.position.y += bean.vy * dt;
+        bean.mesh.position.x += (bean.restX - bean.mesh.position.x) * dt * 0.8;
+
+        bean.mesh.rotation.x += bean.rotSpeed.x * dt;
+        bean.mesh.rotation.y += bean.rotSpeed.y * dt;
+        bean.mesh.rotation.z += bean.rotSpeed.z * dt;
+
+        if(bean.mesh.position.y <= GROUND_Y + FOOT_OFFSET){
+          bean.mesh.position.y = GROUND_Y + FOOT_OFFSET;
+          bean.bounces++;
+          if(Math.abs(bean.vy) > 0.7 && bean.bounces < 4){
+            bean.vy *= -0.32;
+            bean.rotSpeed.multiplyScalar(0.5);
+          } else {
+            bean.vy = 0;
+            bean.settled = true;
+            bean.rotSpeed.set(0, 0, 0);
+          }
+        }
+      });
+    }
+
+    renderer.render(scene, camera);
+  }
+  animate();
+
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting && !started){
+        started = true;
+        io.disconnect();
+      }
+    });
+  }, { threshold: 0.25 });
+  io.observe(container);
+
+  window.addEventListener('resize', function(){
+    width = container.clientWidth;
+    height = container.clientHeight;
+    if(width === 0 || height === 0) return;
+    aspect = width / height;
+    FRUSTUM_HALF_HEIGHT = height / (2 * PX_PER_UNIT);
+    GROUND_Y = -(FRUSTUM_HALF_HEIGHT - 0.6);
+    camera.left = -FRUSTUM_HALF_HEIGHT * aspect;
+    camera.right = FRUSTUM_HALF_HEIGHT * aspect;
+    camera.top = FRUSTUM_HALF_HEIGHT;
+    camera.bottom = -FRUSTUM_HALF_HEIGHT;
+    camera.updateProjectionMatrix();
+    renderer.setSize(width, height);
+    updateSpread();
+  });
+})();
+</script>
+
+<script src="sand-effect.js"></script>
+<script src="desert-scene.js"></script>
+<script src="shore.js"></script>
+
+</body>
+</html>
