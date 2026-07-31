@@ -1,0 +1,693 @@
+  :root{
+    --bg: #FFFFFF;
+    --bg-alt: #EDEDEC;
+    --ink: #141414;
+    --ink-dim: #5c5c5c;
+    --card: #FFFFFF;
+    --card-line: rgba(0,0,0,0.12);
+    --accent: #E4611E;
+    --accent-deep: #A8460F;
+    --accent-light: #F2A671;
+    --accent-soft: #EE8142;
+    --blue: #6FB8D6;
+    --blue-deep: #2E6E88;
+    --blue-light: #B9E1F0;
+    --line: rgba(0,0,0,0.14);
+    --serif: 'Merriweather', serif;
+    --sans: 'Montserrat', sans-serif;
+  }
+
+  *{ margin:0; padding:0; box-sizing:border-box; }
+
+  html{ scroll-behavior:smooth; }
+
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior:auto; }
+    *{ animation-duration:0.01ms !important; transition-duration:0.01ms !important; }
+  }
+
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--sans);
+    line-height:1.6;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  ::selection{ background:var(--accent-soft); color:#fff; }
+
+  ::-webkit-scrollbar{ width:10px; }
+  ::-webkit-scrollbar-track{ background:var(--bg-alt); }
+  ::-webkit-scrollbar-thumb{ background:var(--accent); border-radius:10px; }
+  ::-webkit-scrollbar-thumb:hover{ background:var(--accent-deep); }
+
+  a{ color:inherit; text-decoration:none; }
+  img{ max-width:100%; display:block; }
+
+  .container{
+    max-width:1200px;
+    margin:0 auto;
+    padding:0 clamp(20px, 5vw, 48px);
+  }
+
+  .eyebrow{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    font-family:var(--sans);
+    font-size:0.78rem;
+    letter-spacing:0.22em;
+    text-transform:uppercase;
+    color:var(--accent-deep);
+    font-weight:700;
+    margin-bottom:18px;
+  }
+  .eyebrow::before{
+    content:'';
+    width:26px; height:1px;
+    background:var(--accent);
+    display:inline-block;
+  }
+
+  h1,h2,h3{ font-family:var(--serif); font-weight:600; line-height:1.05; color:var(--ink); }
+
+  /* dot / grain texture */
+  .grain{
+    position:absolute; inset:0;
+    background-image: radial-gradient(var(--accent) 1px, transparent 1.4px);
+    background-size: 22px 22px;
+    opacity:0.09;
+    pointer-events:none;
+  }
+
+  /* ---------- NAV ---------- */
+  nav{
+    position:fixed; top:0; left:0; right:0;
+    z-index:100;
+    display:flex; justify-content:flex-end;
+    padding:calc(clamp(16px, 2.4vw, 34px) + 41px) calc(clamp(16px, 2.4vw, 34px) + 37px) 0;
+    transition:padding-top 0.4s ease, transform 0.4s ease;
+    pointer-events:none;
+  }
+  nav.nav-hidden{
+    transform:translateY(-140%);
+  }
+  nav.nav-scrolled{
+    padding-top:clamp(12px, 1.6vw, 20px);
+  }
+  .nav-pill{
+    display:flex; align-items:center; gap:34px;
+    max-width:calc(100% - 8px);
+    pointer-events:auto;
+    background:rgba(255,255,255,0.85);
+    backdrop-filter:blur(16px);
+    -webkit-backdrop-filter:blur(16px);
+    border:1px solid var(--card-line);
+    border-radius:100px;
+    padding:8px 10px 8px 18px;
+    box-shadow:0 14px 34px rgba(0,0,0,0.12);
+  }
+  .nav-brand{
+    display:flex; align-items:center;
+  }
+  .nav-brand-icon{
+    width:26px; height:auto; flex-shrink:0;
+    filter:brightness(0) saturate(100%);
+    opacity:0.88;
+  }
+  .nav-brand-word{
+    height:14px; width:0; margin-left:0;
+    flex-shrink:0;
+    overflow:hidden;
+    filter:brightness(0) saturate(100%);
+    opacity:0;
+    transform:translateX(-14px);
+    transition:opacity 0.5s ease, transform 0.5s ease, width 0.5s ease, margin-left 0.5s ease;
+  }
+  .nav-brand-word.is-visible{
+    opacity:0.88; transform:translateX(0);
+    width:46px; margin-left:10px;
+  }
+
+  .brand-mark{
+    width:38px; height:38px; border-radius:50%;
+    overflow:hidden;
+    background:var(--bg-alt);
+    flex-shrink:0;
+    box-shadow:0 0 0 1px var(--line);
+  }
+  .brand-mark img{ width:100%; height:100%; object-fit:cover; transform:scale(1.32); }
+
+  .nav-links{
+    display:flex; align-items:center; gap:30px;
+    font-size:0.9rem; font-weight:600;
+  }
+  .nav-links a{
+    position:relative; padding:4px 0; color:var(--ink-dim);
+    transition:color 0.25s ease;
+  }
+  .nav-links a::after{
+    content:''; position:absolute; left:0; bottom:-2px;
+    width:0; height:1px; background:var(--accent);
+    transition:width 0.3s ease;
+  }
+  .nav-links a:hover{ color:var(--ink); }
+  .nav-links a:hover::after{ width:100%; }
+
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    padding:13px 28px;
+    border-radius:100px;
+    font-weight:700; font-size:0.88rem;
+    letter-spacing:0.03em;
+    border:1px solid transparent;
+    cursor:pointer;
+    transition:transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease, color 0.3s ease;
+    white-space:nowrap;
+  }
+  .btn-accent{
+    background:linear-gradient(135deg, var(--accent-light), var(--accent));
+    color:#141414;
+  }
+  .btn-accent:hover{ transform:translateY(-2px); box-shadow:0 12px 26px rgba(228,97,30,0.35); }
+  .btn-ghost{
+    border-color:var(--line); color:var(--ink);
+    background:transparent;
+  }
+  .btn-ghost:hover{ border-color:var(--accent); color:var(--accent-deep); }
+
+  .burger{
+    display:none;
+    width:38px; height:38px;
+    border:1px solid var(--line);
+    border-radius:50%;
+    background:transparent;
+    color:var(--ink);
+    align-items:center; justify-content:center;
+    cursor:pointer;
+    flex-shrink:0;
+  }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    position:relative;
+    z-index:5;
+    min-height:100vh;
+    padding:clamp(16px, 2.4vw, 34px);
+    background:var(--bg);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .hero-frame{
+    position:relative;
+    width:min(100%, calc((100vh - 68px) * 1822 / 873));
+    aspect-ratio:1822/873;
+    background-color:var(--bg);
+    background-image:url('assets/hero-arido.png');
+    background-position:center;
+    background-size:contain;
+    background-repeat:no-repeat;
+  }
+  .hero-logo{
+    position:absolute; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    z-index:2;
+    pointer-events:none;
+  }
+  .hero-logo img{
+    width:clamp(240px, 42vw, 520px);
+    height:auto;
+    filter:drop-shadow(0 10px 30px rgba(0,0,0,0.35));
+    will-change:transform, opacity;
+  }
+
+  /* ---------- SECTION GENERIC ---------- */
+  section{ position:relative; padding:120px 0; background:var(--bg); }
+  .section-alt{ background:var(--bg-alt); }
+  .section-head{ max-width:640px; margin-bottom:64px; }
+  .section-head h2{ font-size:clamp(2.1rem, 4.2vw, 3.2rem); color:var(--ink); }
+  .section-head p{ color:var(--ink-dim); margin-top:18px; font-size:1.05rem; max-width:560px; }
+
+  /* ---------- ABOUT ---------- */
+  .about-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:60px;
+    align-items:center;
+  }
+  .about-copy p{ color:var(--ink-dim); font-size:1.05rem; margin-bottom:18px; }
+  .about-copy strong{ color:var(--accent-deep); font-weight:700; }
+
+  .stats-row{
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    gap:24px;
+    margin-top:16px;
+  }
+  .stat{
+    padding:30px 24px;
+    background:var(--card);
+    border:1px solid var(--card-line);
+    border-radius:18px;
+    text-align:left;
+    box-shadow:0 14px 34px rgba(0,0,0,0.06);
+  }
+  .stat .num{
+    font-family:var(--serif); font-size:clamp(2.4rem,5vw,3.4rem);
+    color:var(--accent-deep); font-weight:600; line-height:1;
+  }
+  .stats-row .stat:nth-child(2) .num{ color:var(--blue-deep); }
+  .stat .label{ margin-top:10px; color:var(--ink-dim); font-size:0.92rem; }
+
+  .map-badge{
+    position:relative;
+    border-radius:24px;
+    padding:44px;
+    background:var(--card);
+    border:1px solid var(--card-line);
+    overflow:hidden;
+    min-height:340px;
+    display:flex; flex-direction:column; justify-content:center; gap:22px;
+    box-shadow:0 14px 34px rgba(0,0,0,0.06);
+  }
+  .region-list{ display:flex; flex-direction:column; gap:14px; position:relative; z-index:1; }
+  .region-item{
+    display:flex; align-items:center; gap:14px;
+    font-family:var(--serif); font-size:1.3rem; color:var(--ink);
+  }
+  .region-item .pip{
+    width:9px; height:9px; border-radius:50%;
+    background:var(--blue); flex-shrink:0;
+    box-shadow:0 0 0 4px rgba(111,184,214,0.22);
+  }
+
+  #nosotros .container{ position:relative; }
+  #nosotros .section-head,
+  #nosotros .about-grid{ position:relative; z-index:1; }
+  #contacto .container{ position:relative; z-index:1; }
+  /* The shore occupies exactly the reserved band, so the padding and the canvas height
+     are driven by one value and cannot drift apart. */
+  #contacto{
+    --shore-height:clamp(300px, 30vw, 420px);
+    /* Headroom above the beach band so the occasional surge can climb in among the
+       cards. The cards sit at z-index 1, so the water passes behind them. */
+    --shore-surge:280px;
+    padding-bottom:var(--shore-height);
+  }
+  .shore-layer{
+    position:absolute;
+    left:0; bottom:0;
+    width:100%;
+    height:calc(var(--shore-height) + var(--shore-surge));
+    display:block;
+    pointer-events:none;
+    z-index:0;
+  }
+
+  /* ---------- DESERT SUNSET SCENE (#nosotros) ---------- */
+  /* --desert-floor: distance from the section bottom up to the scene's ground line. */
+  #nosotros{
+    /* The table moved to "Nuestra selección", so nothing sits below the horizon here any
+       more and the dunes run all the way to the section edge. */
+    --desert-floor:0px;
+    /* Only shows if the scene fails to paint; matched to the near dunes so a failure
+       degrades to flat ground rather than a foreign colour. */
+    background:#670d46;
+    /* Reserved band below the copy so the mesas, dunes and cacti have room of their
+       own — without it the glass panels sit right on top of the terrain. Sized to keep
+       roughly 120px of open sky between the copy and the tallest mesas. */
+    padding-bottom:clamp(300px, 35vw, 480px);
+  }
+
+  .desert{
+    position:absolute;
+    left:0; right:0; top:0;
+    bottom:var(--desert-floor);
+    z-index:0;
+    pointer-events:none;
+    /* Clips the parallax travel. Kept on the scene rather than the section, because
+       .bean-table and .table-surface deliberately overhang the section bounds. */
+    overflow:hidden;
+  }
+  .desert-layer{
+    position:absolute;
+    background-repeat:no-repeat;
+    will-change:transform, opacity;
+  }
+  /* Only hidden once the script has taken control (see desert-scene.js). */
+  .desert[data-anim] .desert-layer{ opacity:0; }
+  .desert-cactus{ transform-origin:50% 100%; }
+  /* Terrain bands stretch horizontally (background-size 100% 100%): these are abstract
+     landscape polygons, so widening them reads as distance, not distortion. */
+  .d-sky, .d-far, .d-mid, .d-near{ left:0; right:0; background-size:100% 100%; }
+  /* The near dunes tile instead of stretching. Their character lives in the small
+     shrubs along the crest, and stretching one 500-wide copy across the viewport
+     flattens that edge into a straight line; tiling keeps the shrubs in proportion. */
+  .d-near{ background-size:660px 100%; background-repeat:repeat-x; }
+
+  /* The sky reproduces the four colours of "fondo atardecer.svg" but repositions the
+     stops: that file is framed for a square canvas, where the bright band covers the
+     lower 38% and would swallow the whole middle of a wide section. Here the glow is
+     compressed into a strip that sits just above the mesa line. */
+  .d-sky{
+    top:0; bottom:0;
+    /* Two layers: the horizon glow riding on top of the deep sky. The glow is a fixed
+       560px band pinned to the ground line rather than a percentage of the element, so it
+       stays put against the mesas no matter how tall the section grows. Its top stop is a
+       transparent orange, not `transparent` — that keyword is transparent *black* and
+       would drag a grey cast through the fade. */
+    background-image:
+      linear-gradient(to bottom, rgba(255,190,119,0) 0%, #ffbe77 26%, #fff997 40%, #fff997 100%),
+      linear-gradient(to bottom, #460c6e 0%, #460c6e 10%, #b03c9a 66%, #c9527f 100%);
+    background-size:100% 560px, 100% 100%;
+    background-position:center bottom, center top;
+    background-repeat:no-repeat, no-repeat;
+  }
+  /* Sized for its travel, not for its resting position. The band carries the second
+     largest lag (~+/-353px), so it has to stay far taller than the sky it covers and tile
+     on both axes — otherwise a scroll extreme slides the solid part of the mask out of
+     view and the stars simply vanish. The top is always clipped by the scene and the
+     bottom always dissolves, so no edge is ever visible. */
+  .d-stars{
+    left:0; right:0; top:-500px;
+    height:1500px;
+    background-image:url('assets/desierto/SVG/estrellas.svg');
+    background-size:640px auto;
+    background-repeat:repeat;
+    -webkit-mask-image:linear-gradient(to bottom, #000 70%, transparent 100%);
+    mask-image:linear-gradient(to bottom, #000 70%, transparent 100%);
+    opacity:0.9;
+  }
+  /* Resting point is low because the moon has the largest lag of any layer: it swings
+     roughly +/-590px, climbing well above the scene at one end and dropping behind the
+     mesas at the other. It is painted before the terrain, so the mesas occlude it. */
+  .d-sun{
+    right:14%; bottom:640px;
+    width:190px; height:190px;
+    background-image:url('assets/desierto/SVG/luna.svg');
+    background-size:contain;
+  }
+  /* The "-w" copies carry preserveAspectRatio="none" so they stretch to the section
+     width; the stock files letterbox their artwork centered instead. See make-scene-assets.py.
+     Heights are staged so each ridge clears the one in front of it: the far mesas read
+     above the middle ridge, and the middle ridge above the near dunes.
+
+     The two moving bands carry a second background — a flat block matching the colour
+     their gradient settles into — sitting directly beneath the artwork and running past
+     the ground line. Without it, riding up under parallax would tear a strip of sky open
+     along the horizon. The near dunes need none: they hold still as the ground line. */
+  .d-far{
+    bottom:-260px; height:590px;
+    background-image:url('assets/desierto/SVG/desierto3-w.svg'), linear-gradient(#d36e4b, #d36e4b);
+    background-size:100% 330px, 100% 260px;
+    background-position:left top, left 330px;
+    background-repeat:no-repeat, repeat-x;
+  }
+  .d-mid{
+    bottom:-260px; height:535px;
+    background-image:url('assets/desierto/SVG/desierto2-w.svg'), linear-gradient(#b63a59, #b63a59);
+    background-size:100% 275px, 100% 260px;
+    background-position:left top, left 275px;
+    background-repeat:no-repeat, repeat-x;
+  }
+  .d-near{ bottom:0; height:130px; background-image:url('assets/desierto/SVG/desierto_1-w.svg'); }
+
+  .desert-cactus{ background-size:contain; background-position:bottom center; }
+  /* Mid-distance cacti (#97294e, #aa3946) stand on the middle ridge, tucked behind the
+     near dunes. Foreground cacti (#670d46) share the dunes' exact colour, so the part
+     below the crest melts into it and only the silhouette above shows. */
+  .d-c5{ left:14%;  bottom:118px; width:30px; height:82px;  background-image:url('assets/desierto/SVG/cactus5.svg'); }
+  .d-c4{ left:73%;  bottom:120px; width:34px; height:112px; background-image:url('assets/desierto/SVG/cactus4.svg'); }
+  /* Foreground trio, sized well past the mid-distance pair to sell the depth gap. Widths
+     follow each file's own aspect so nothing is squashed. They share the dunes' colour,
+     so whatever falls below the crest merges into it and only the silhouette reads.
+     Bases are set below the ground line and the heights padded to match, so that at peak
+     parallax rise (lag x TRAVEL: 109px, 84px and 67px) each foot still lands under the
+     ~100px crest and no cut-off base is ever exposed. */
+  .d-c2{ left:2%;   bottom:-40px; width:103px; height:400px; background-image:url('assets/desierto/SVG/cactus2.svg'); }
+  .d-c1{ left:66%;  bottom:-20px; width:87px;  height:250px; background-image:url('assets/desierto/SVG/cactus1.svg'); }
+  .d-c3{ left:87%;  bottom:-10px; width:82px;  height:255px; background-image:url('assets/desierto/SVG/cactus3.svg'); }
+
+  /* ---------- #nosotros copy over the scene: light type + glass panels ---------- */
+  #nosotros .section-head h2{ color:#FDFBF4; }
+  #nosotros .section-head p{ color:rgba(255,248,240,0.88); }
+  #nosotros .eyebrow{ color:var(--accent-light); }
+  #nosotros .eyebrow::before{ background:var(--accent-light); }
+
+  /* The lower block crosses the stretch where the sky brightens toward the horizon,
+     so it rides on translucent panels rather than trying to win on text colour alone. */
+  #nosotros .about-copy,
+  #nosotros .map-badge{
+    background:rgba(44,10,58,0.44);
+    -webkit-backdrop-filter:blur(14px) saturate(120%);
+    backdrop-filter:blur(14px) saturate(120%);
+    border:1px solid rgba(255,255,255,0.16);
+    border-radius:22px;
+    box-shadow:0 20px 50px rgba(20,4,30,0.30);
+  }
+  #nosotros .about-copy{ padding:36px 34px 34px; }
+  #nosotros .about-copy p{ color:rgba(255,248,240,0.88); }
+  #nosotros .about-copy strong{ color:var(--accent-light); }
+  #nosotros .stat{
+    background:rgba(255,255,255,0.09);
+    border:1px solid rgba(255,255,255,0.15);
+    box-shadow:none;
+  }
+  #nosotros .stat .num{ color:var(--accent-light); }
+  #nosotros .stats-row .stat:nth-child(2) .num{ color:var(--blue-light); }
+  #nosotros .stat .label{ color:rgba(255,248,240,0.76); }
+  #nosotros .region-item{ color:#FDFBF4; }
+  #nosotros .region-item .pip{
+    background:var(--blue-light);
+    box-shadow:0 0 0 4px rgba(185,225,240,0.22);
+  }
+
+  .table-surface{
+    position:absolute;
+    left:0; right:0; bottom:0;
+    /* Height tracks the width, and the art is scaled by width rather than by `cover`.
+       Together these keep the slice of table on screen constant: cover sized the image
+       against whichever axis happened to dominate, so as the box aspect drifted with the
+       viewport the crop drifted too — anywhere from the whole table on a phone down to
+       the front 22% on a 1920 desktop, which is what forced a patch per breakpoint.
+       20vw against the art's 3.46 aspect holds it at a steady ~69% from 550px to 1900px. */
+    height:clamp(110px, 20vw, 380px);
+    /* Cropped to just the opaque wood (see make-scene-assets.py). The original mesa2.png is
+       transparent over its top 46.9% and bottom 9.8%. */
+    background-image:url('assets/mesa2-wood.png');
+    background-size:100% auto;
+    background-position:center bottom;
+    background-repeat:no-repeat;
+    z-index:0;
+  }
+
+  /* Confined to its own section. It used to overhang the top so the beans could emerge
+     from behind the hero, but now that it lives in "Nuestra selección" any overhang spills
+     the falling beans over the desert above. Beans start above the camera frustum, so they
+     still drop in from off-screen rather than popping into existence. */
+  .bean-table{
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    z-index:0;
+  }
+  .bean-table canvas{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    display:block;
+  }
+  /* (The former 1px edge line under .bean-table was dropped: over the desert scene it
+     read as a stray rule rather than a table edge, and the table art supplies the edge.) */
+
+  /* ---------- CAFE / PRODUCTS ---------- */
+  #cafe{
+    /* Room under the cards for the table and the beans landing on it. */
+    padding-bottom:clamp(300px, 27vw, 420px);
+  }
+  /* Required, not cosmetic: .table-surface and .bean-table are positioned with z-index 0,
+     and a non-positioned .container would paint in an earlier layer than them regardless
+     of document order — the cards would end up behind the beans. */
+  #cafe .container{ position:relative; z-index:1; }
+
+  .cafe-grid{
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    gap:32px;
+  }
+  .cafe-card{
+    background:var(--card);
+    border:1px solid var(--card-line);
+    border-radius:22px;
+    padding:44px 38px;
+    position:relative;
+    overflow:hidden;
+    box-shadow:0 14px 34px rgba(0,0,0,0.06);
+    transition:transform 0.45s cubic-bezier(.2,.8,.2,1), box-shadow 0.45s ease, border-color 0.45s ease;
+  }
+  .cafe-card:hover{
+    transform:translateY(-10px);
+    box-shadow:0 30px 60px rgba(0,0,0,0.14);
+    border-color:rgba(228,97,30,0.5);
+  }
+  .cafe-card .origin-tag{
+    display:inline-block; font-size:0.72rem; letter-spacing:0.18em; text-transform:uppercase;
+    color:var(--accent-deep); font-weight:700; margin-bottom:18px;
+  }
+  .cafe-card h3{ font-size:2rem; color:var(--ink); margin-bottom:14px; }
+  .cafe-card p.desc{ color:var(--ink-dim); margin-bottom:26px; }
+  .cafe-card .price-row{
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+    padding-top:22px; border-top:1px dashed var(--line);
+  }
+  .placeholder-chip{
+    font-size:0.82rem; color:var(--accent-deep);
+    border:1px dashed var(--accent);
+    padding:8px 14px; border-radius:100px;
+    background:rgba(228,97,30,0.07);
+  }
+  .cafe-note{
+    margin-top:30px; font-size:0.9rem; color:var(--ink-dim); font-style:italic;
+  }
+
+  /* ---------- CONTACT ---------- */
+  .contact-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:60px;
+  }
+  .contact-list{ display:flex; flex-direction:column; gap:22px; margin-top:8px; }
+  .contact-item{
+    display:flex; align-items:center; gap:18px;
+    padding:20px 22px;
+    background:var(--card);
+    border:1px solid var(--card-line);
+    border-radius:16px;
+    box-shadow:0 10px 26px rgba(0,0,0,0.05);
+    transition:border-color 0.3s ease, transform 0.3s ease;
+  }
+  .contact-item:hover{ border-color:var(--accent); transform:translateX(6px); }
+  .contact-icon{
+    width:44px; height:44px; border-radius:50%;
+    background:linear-gradient(135deg, var(--accent-light), var(--accent));
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0; color:#141414;
+  }
+  .contact-item .label{ font-size:0.78rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--ink-dim); }
+  .contact-item .value{ font-family:var(--serif); font-size:1.15rem; color:var(--ink); margin-top:2px; }
+  .contact-item.pending .value{ color:var(--accent-deep); font-family:var(--sans); font-size:0.95rem; }
+
+  form.contact-form{
+    background:var(--card); border:1px solid var(--card-line);
+    border-radius:22px; padding:40px;
+    box-shadow:0 14px 34px rgba(0,0,0,0.06);
+  }
+  .form-row{ margin-bottom:20px; }
+  .form-row label{ display:block; font-size:0.82rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--ink-dim); margin-bottom:8px; }
+  .form-row input, .form-row textarea{
+    width:100%; padding:14px 16px;
+    background:var(--bg);
+    border:1px solid var(--line);
+    border-radius:12px;
+    color:var(--ink);
+    font-family:var(--sans); font-size:0.95rem;
+    resize:vertical;
+  }
+  .form-row input:focus, .form-row textarea:focus{ outline:none; border-color:var(--accent); }
+  form.contact-form .btn{ width:100%; }
+
+  footer{
+    padding:50px 0 30px;
+    border-top:1px solid var(--line);
+    background:var(--bg);
+  }
+  .footer-inner{
+    display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:20px;
+  }
+  .footer-brand{ display:flex; align-items:center; gap:12px; }
+  .footer-brand .brand-mark{ width:34px; height:34px; }
+  .footer-copy{ font-size:0.85rem; color:var(--ink-dim); }
+  .footer-social{ display:flex; gap:16px; }
+  .footer-social a{
+    width:38px; height:38px; border-radius:50%; border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center;
+    color:var(--ink-dim); transition:all 0.3s ease;
+  }
+  .footer-social a:hover{ color:var(--accent-deep); border-color:var(--accent); transform:translateY(-3px); }
+
+  /* ---------- REVEAL ANIMATIONS ---------- */
+  .reveal{
+    opacity:0; transform:translateY(36px);
+    transition:opacity 0.8s cubic-bezier(.2,.8,.2,1), transform 0.8s cubic-bezier(.2,.8,.2,1);
+  }
+  .reveal.is-visible{ opacity:1; transform:none; }
+  .reveal-scale{ opacity:0; transform:scale(0.92); transition:opacity 0.8s ease, transform 0.8s cubic-bezier(.2,.8,.2,1); }
+  .reveal-scale.is-visible{ opacity:1; transform:none; }
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width: 900px){
+    .about-grid, .contact-grid{ grid-template-columns:1fr; }
+    .cafe-grid{ grid-template-columns:1fr; }
+    .stats-row{ grid-template-columns:1fr 1fr; }
+  }
+
+  @media (max-width: 760px){
+    .nav-links, .nav-pill .btn-accent{ display:none; }
+    .burger{ display:flex; }
+    section{ padding:80px 0; }
+
+    /* Narrow screens: shorter terrain, a tighter scene band, and the two smallest
+       cacti dropped so the foreground doesn't crowd. */
+    #nosotros{ --desert-floor:0px; padding-bottom:390px; }
+    #cafe{ padding-bottom:300px; }
+    #contacto{ --shore-surge:200px; }
+    .d-far{ height:470px; background-size:100% 210px, 100% 260px; background-position:left top, left 210px; }
+    .d-mid{ height:440px; background-size:100% 180px, 100% 260px; background-position:left top, left 180px; }
+    .d-near{ height:85px; }
+    /* Glow band shortened to sit against the lower mesas here. */
+    .d-sky{ background-size:100% 400px, 100% 100%; }
+    .d-stars{ top:-400px; height:1200px; background-size:420px auto; }
+    .d-sun{ right:12%; bottom:480px; width:92px; height:92px; }
+    /* Bases pushed well below the ground line (and clipped there): the near dunes are only
+       58px on narrow screens, so there is far less crest to hide a rising foot behind. */
+    .d-c2{ left:2%;  bottom:-80px; width:67px; height:330px; }
+    .d-c1{ left:64%; bottom:-50px; width:57px; height:210px; }
+    .d-c4{ left:80%; bottom:78px;  width:23px; height:75px; }
+    .d-c3, .d-c5{ display:none; }
+    #nosotros .about-copy{ padding:28px 24px 26px; }
+  }
+
+  .mobile-menu{
+    position:fixed; inset:0; z-index:99;
+    background:rgba(255,255,255,0.98);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:34px;
+    transform:translateY(-100%);
+    transition:transform 0.45s cubic-bezier(.2,.8,.2,1);
+  }
+  .mobile-menu.open{ transform:translateY(0); }
+  .mobile-menu a{ font-family:var(--serif); font-size:1.8rem; color:var(--ink); }
+  .mobile-menu .close-btn{
+    position:absolute; top:22px; right:24px;
+    width:40px; height:40px; border:1px solid var(--line); border-radius:10px;
+    display:flex; align-items:center; justify-content:center; color:var(--ink); background:transparent;
+  }
+
+  /* ---------- SAND GRAIN OVERLAY (scoped to flat-color sections only) ---------- */
+  /* Painted as real sand (own color, normal blending) — an overlay/multiply blend
+     over a near-white backdrop can only ever wash out, never read as sand. */
+  .sand-layer{
+    position:absolute;
+    left:0; top:0;
+    width:100%;
+    display:block;
+    pointer-events:none;
+    opacity:1;
+    z-index:0;
+  }
+  #sandContacto, #sandContactoTrail{ height:100%; }
+  /* Body copy sitting directly on the sand needs a darker ink — the default dim gray
+     only reaches ~3.8:1 against a lit sand backdrop, under the readable minimum. */
+  #contacto .section-head p{ color:#3A352E; }
+  @media (prefers-reduced-motion: reduce){
+    .sand-layer{ opacity:0.75; }
+  }
