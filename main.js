@@ -70,36 +70,6 @@
   }, { threshold:0.5 });
   counters.forEach(function(el){ cio.observe(el); });
 
-  // Hero logo moves up and fades as the hero is scrolled past;
-  // the navbar brand lockup crossfades in right as it finishes disappearing
-  var heroLogo = document.getElementById('heroLogo');
-  var heroSection = document.getElementById('top');
-  var navBrandWord = document.getElementById('navBrandWord');
-  var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if(heroLogo && heroSection && !prefersReduced){
-    var heroTicking = false;
-    function updateHeroLogo(){
-      var progress = Math.min(Math.max(window.scrollY / (heroSection.offsetHeight * 0.35), 0), 1);
-      var scale = 1 + progress * 0.6;
-      heroLogo.style.transform = 'translateY(' + (progress * -260) + 'px) scale(' + scale + ')';
-      heroLogo.style.opacity = String(1 - progress * 1.3);
-      if(navBrandWord){
-        var brandProgress = Math.min(Math.max((progress - 0.8) / 0.2, 0), 1);
-        navBrandWord.classList.toggle('is-visible', brandProgress > 0.5);
-      }
-      heroTicking = false;
-    }
-    window.addEventListener('scroll', function(){
-      if(!heroTicking){
-        requestAnimationFrame(updateHeroLogo);
-        heroTicking = true;
-      }
-    }, { passive:true });
-    updateHeroLogo();
-  } else if(navBrandWord){
-    navBrandWord.classList.add('is-visible');
-  }
-
   // Contact form -> mailto fallback
   var form = document.getElementById('contactForm');
   form.addEventListener('submit', function(e){

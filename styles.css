@@ -82,52 +82,60 @@
   }
 
   /* ---------- NAV ---------- */
+  /* Two states. At the top the bar floats bare over the dusk sky with cream type; once
+     scrolled it condenses into the white pill, which is what keeps it legible over the
+     pale sections further down. It hides on the way down and returns on the way up. */
   nav{
     position:fixed; top:0; left:0; right:0;
     z-index:100;
-    display:flex; justify-content:flex-end;
-    padding:calc(clamp(16px, 2.4vw, 34px) + 41px) calc(clamp(16px, 2.4vw, 34px) + 37px) 0;
+    display:flex; justify-content:center;
+    padding:clamp(18px, 2.2vw, 30px) clamp(16px, 2.4vw, 34px) 0;
     transition:padding-top 0.4s ease, transform 0.4s ease;
     pointer-events:none;
   }
-  nav.nav-hidden{
-    transform:translateY(-140%);
-  }
-  nav.nav-scrolled{
-    padding-top:clamp(12px, 1.6vw, 20px);
-  }
+  /* -140% and not -100%: the shadow has to clear the edge too. */
+  nav.nav-hidden{ transform:translateY(-140%); }
+  nav.nav-scrolled{ padding-top:clamp(10px, 1.4vw, 16px); }
+
+  /* Three tracks, not flexbox: the outer two share the leftover space equally, so the
+     links stay optically centred however wide the brand or the button turn out to be. */
   .nav-pill{
-    display:flex; align-items:center; gap:34px;
-    max-width:calc(100% - 8px);
+    display:grid;
+    grid-template-columns:1fr auto 1fr;
+    align-items:center; gap:24px;
+    width:100%; max-width:1200px;
     pointer-events:auto;
-    background:rgba(255,255,255,0.85);
+    padding:10px 12px 10px 20px;
+    border-radius:100px;
+    border:1px solid transparent;
+    background:transparent;
+    transition:background 0.35s ease, border-color 0.35s ease,
+               box-shadow 0.35s ease, max-width 0.35s ease;
+  }
+  nav.nav-scrolled .nav-pill{
+    max-width:1080px;
+    background:rgba(255,255,255,0.88);
+    border-color:var(--card-line);
     backdrop-filter:blur(16px);
     -webkit-backdrop-filter:blur(16px);
-    border:1px solid var(--card-line);
-    border-radius:100px;
-    padding:8px 10px 8px 18px;
-    box-shadow:0 14px 34px rgba(0,0,0,0.12);
+    box-shadow:0 14px 34px rgba(0,0,0,0.14);
   }
-  .nav-brand{
-    display:flex; align-items:center;
-  }
+
+  /* The two logo files are drawn in cream (#fefcf6), which is what the dusk sky wants.
+     The scrolled state inverts them to black against the white pill. */
+  .nav-brand{ display:flex; align-items:center; justify-self:start; }
   .nav-brand-icon{
     width:26px; height:auto; flex-shrink:0;
-    filter:brightness(0) saturate(100%);
-    opacity:0.88;
+    transition:filter 0.35s ease, opacity 0.35s ease;
   }
   .nav-brand-word{
-    height:14px; width:0; margin-left:0;
-    flex-shrink:0;
-    overflow:hidden;
-    filter:brightness(0) saturate(100%);
-    opacity:0;
-    transform:translateX(-14px);
-    transition:opacity 0.5s ease, transform 0.5s ease, width 0.5s ease, margin-left 0.5s ease;
+    height:15px; width:auto; margin-left:11px; flex-shrink:0;
+    transition:filter 0.35s ease, opacity 0.35s ease;
   }
-  .nav-brand-word.is-visible{
-    opacity:0.88; transform:translateX(0);
-    width:46px; margin-left:10px;
+  nav.nav-scrolled .nav-brand-icon,
+  nav.nav-scrolled .nav-brand-word{
+    filter:brightness(0) saturate(100%);
+    opacity:0.88;
   }
 
   .brand-mark{
@@ -140,20 +148,28 @@
   .brand-mark img{ width:100%; height:100%; object-fit:cover; transform:scale(1.32); }
 
   .nav-links{
-    display:flex; align-items:center; gap:30px;
-    font-size:0.9rem; font-weight:600;
+    display:flex; align-items:center; gap:clamp(20px, 2.4vw, 34px);
+    justify-self:center;
+    font-size:0.88rem; font-weight:600;
   }
   .nav-links a{
-    position:relative; padding:4px 0; color:var(--ink-dim);
-    transition:color 0.25s ease;
+    position:relative; padding:4px 0;
+    color:rgba(255,246,235,0.82);
+    white-space:nowrap;
+    transition:color 0.3s ease;
   }
   .nav-links a::after{
     content:''; position:absolute; left:0; bottom:-2px;
-    width:0; height:1px; background:var(--accent);
+    width:0; height:1px; background:var(--accent-light);
     transition:width 0.3s ease;
   }
-  .nav-links a:hover{ color:var(--ink); }
+  .nav-links a:hover{ color:#FFF8EE; }
   .nav-links a:hover::after{ width:100%; }
+  nav.nav-scrolled .nav-links a{ color:var(--ink-dim); }
+  nav.nav-scrolled .nav-links a::after{ background:var(--accent); }
+  nav.nav-scrolled .nav-links a:hover{ color:var(--ink); }
+
+  .nav-cta{ justify-self:end; padding:11px 24px; font-size:0.82rem; }
 
   .btn{
     display:inline-flex; align-items:center; justify-content:center; gap:8px;
@@ -179,47 +195,130 @@
 
   .burger{
     display:none;
+    justify-self:end;
     width:38px; height:38px;
-    border:1px solid var(--line);
+    border:1px solid rgba(255,255,255,0.34);
     border-radius:50%;
     background:transparent;
-    color:var(--ink);
+    color:#FFF8EE;
+    transition:border-color 0.35s ease, color 0.35s ease;
     align-items:center; justify-content:center;
     cursor:pointer;
     flex-shrink:0;
+  }
+  nav.nav-scrolled .burger{ border-color:var(--line); color:var(--ink); }
+
+  /* ---------- SKY STAGE ---------- */
+  /* Wraps the hero and "Nuestro origen" so one continuous sky runs behind both. The
+     desert scene is positioned against THIS box, not against the section: that is what
+     lets the moon sit up in the hero while the mesas still land on the bottom edge of
+     #nosotros, exactly where the horizon was before. */
+  .sky-stage{
+    position:relative;
+    /* Distance from the stage bottom up to the scene's ground line. Lives here now that
+       the scene is a child of the stage rather than of the section. */
+    --desert-floor:0px;
+    /* Only shows if the scene fails to paint; matched to the top of the sky gradient so a
+       failure degrades to deep dusk instead of flashing white behind cream type. */
+    background:#460c6e;
   }
 
   /* ---------- HERO ---------- */
   .hero{
     position:relative;
-    z-index:5;
+    /* Over .desert, which sits at z-index 0. Without this the whole hero would paint
+       underneath the sky — non-positioned content loses to a positioned sibling. */
+    z-index:1;
     min-height:100vh;
-    padding:clamp(16px, 2.4vw, 34px);
-    background:var(--bg);
+    min-height:100svh;
     display:flex; align-items:center; justify-content:center;
+    text-align:center;
+    padding:clamp(130px, 18vh, 190px) clamp(20px, 5vw, 48px) clamp(70px, 11vh, 120px);
   }
-  .hero-frame{
-    position:relative;
-    width:min(100%, calc((100vh - 68px) * 1822 / 873));
-    aspect-ratio:1822/873;
-    background-color:var(--bg);
-    background-image:url('assets/hero-arido.png');
-    background-position:center;
-    background-size:contain;
-    background-repeat:no-repeat;
-  }
-  .hero-logo{
-    position:absolute; inset:0;
-    display:flex; align-items:center; justify-content:center;
-    z-index:2;
+  /* A soft pool of shade under the copy. The star field runs right through this part of
+     the sky, and cream type set over loose white dots reads as speckled rather than
+     clean — this settles the background without showing an edge anywhere. */
+  .hero::before{
+    content:'';
+    position:absolute;
+    left:50%; top:50%;
+    /* Never wider than the hero itself: at 128% the centred pool hung 78px off each
+       side and pushed the document's scroll width past the viewport. */
+    width:min(1180px, 100%); height:min(760px, 96%);
+    transform:translate(-50%, -50%);
+    background:radial-gradient(ellipse at center,
+                 rgba(38,6,58,0.66) 0%,
+                 rgba(38,6,58,0.44) 45%,
+                 rgba(38,6,58,0) 74%);
     pointer-events:none;
+    z-index:-1;
   }
-  .hero-logo img{
-    width:clamp(240px, 42vw, 520px);
-    height:auto;
-    filter:drop-shadow(0 10px 30px rgba(0,0,0,0.35));
-    will-change:transform, opacity;
+  .hero-inner{ position:relative; max-width:780px; }
+  .hero-kicker{
+    display:inline-block;
+    font-family:var(--sans);
+    font-size:0.7rem; font-weight:700;
+    letter-spacing:0.24em; text-transform:uppercase;
+    color:rgba(255,246,235,0.92);
+    padding:9px 20px;
+    border-radius:100px;
+    background:rgba(255,255,255,0.10);
+    border:1px solid rgba(255,255,255,0.22);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+    margin-bottom:clamp(22px, 3.4vh, 34px);
   }
+  .hero h1{
+    font-size:clamp(2.5rem, 6.6vw, 4.8rem);
+    line-height:1.06;
+    color:#FFF8EE;
+    text-shadow:0 2px 26px rgba(28,4,40,0.4);
+  }
+  .hero h1 em{ font-style:italic; color:var(--accent-light); }
+  .hero-sub{
+    margin:clamp(20px, 3vh, 30px) auto 0;
+    max-width:580px;
+    font-size:clamp(0.98rem, 1.35vw, 1.1rem);
+    line-height:1.75;
+    color:rgba(255,246,235,0.85);
+  }
+  .hero-cta{
+    display:inline-flex; align-items:center; gap:12px;
+    margin-top:clamp(28px, 4.2vh, 44px);
+    padding:16px 34px;
+    border-radius:100px;
+    background:linear-gradient(135deg, var(--accent-light), var(--accent));
+    color:#141414;
+    font-family:var(--sans); font-weight:700;
+    font-size:0.9rem; letter-spacing:0.03em;
+    box-shadow:0 14px 34px rgba(0,0,0,0.3);
+    transition:transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .hero-cta:hover{ transform:translateY(-2px); box-shadow:0 18px 40px rgba(228,97,30,0.42); }
+  .hero-cta .arrow{ transition:transform 0.3s ease; }
+  .hero-cta:hover .arrow{ transform:translateX(5px); }
+
+  /* ---------- EL TUESTE ---------- */
+  .roast-grid{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:28px;
+  }
+  .roast-step{
+    padding:34px 30px 32px;
+    border:1px solid var(--card-line);
+    border-radius:20px;
+    background:var(--card);
+  }
+  .roast-num{
+    display:block;
+    font-family:var(--serif);
+    font-size:1.5rem;
+    color:var(--accent);
+    margin-bottom:14px;
+  }
+  .roast-step h3{ font-size:1.25rem; margin-bottom:10px; }
+  .roast-step .desc{ color:var(--ink-dim); font-size:0.95rem; line-height:1.7; }
 
   /* ---------- SECTION GENERIC ---------- */
   section{ position:relative; padding:120px 0; background:var(--bg); }
@@ -307,16 +406,14 @@
   /* ---------- DESERT SUNSET SCENE (#nosotros) ---------- */
   /* --desert-floor: distance from the section bottom up to the scene's ground line. */
   #nosotros{
-    /* The table moved to "Nuestra selección", so nothing sits below the horizon here any
-       more and the dunes run all the way to the section edge. */
-    --desert-floor:0px;
-    /* Only shows if the scene fails to paint; matched to the near dunes so a failure
-       degrades to flat ground rather than a foreign colour. */
-    background:#670d46;
-    /* Reserved band below the copy so the mesas, dunes and cacti have room of their
-       own — without it the glass panels sit right on top of the terrain. Sized to keep
-       roughly 120px of open sky between the copy and the tallest mesas. */
-    padding-bottom:clamp(300px, 35vw, 480px);
+    /* Transparent: the sky belongs to .sky-stage now and has to show straight through.
+       The id beats the .section-alt class, which would otherwise paint grey over it. */
+    background:transparent;
+    /* Reserved band below the copy so the mesas, dunes and cacti have room of their own —
+       without it the glass panels sit right on top of the terrain. Tracks .d-far's own
+       clamp with roughly 150px of open sky added on top, so the clearance holds at every
+       width instead of only at the one it was measured on. */
+    padding-bottom:clamp(470px, 47vw, 640px);
   }
 
   .desert{
@@ -333,10 +430,12 @@
     position:absolute;
     background-repeat:no-repeat;
     will-change:transform, opacity;
+    /* Bottom edge, so scaleY grows every layer up out of the ground. Harmless on the sky
+       layers, which only ever translate. */
+    transform-origin:50% 100%;
   }
   /* Only hidden once the script has taken control (see desert-scene.js). */
   .desert[data-anim] .desert-layer{ opacity:0; }
-  .desert-cactus{ transform-origin:50% 100%; }
   /* Terrain bands stretch horizontally (background-size 100% 100%): these are abstract
      landscape polygons, so widening them reads as distance, not distortion. */
   .d-sky, .d-far, .d-mid, .d-near{ left:0; right:0; background-size:100% 100%; }
@@ -359,7 +458,7 @@
     background-image:
       linear-gradient(to bottom, rgba(255,190,119,0) 0%, #ffbe77 26%, #fff997 40%, #fff997 100%),
       linear-gradient(to bottom, #460c6e 0%, #460c6e 10%, #b03c9a 66%, #c9527f 100%);
-    background-size:100% 560px, 100% 100%;
+    background-size:100% 720px, 100% 100%;
     background-position:center bottom, center top;
     background-repeat:no-repeat, no-repeat;
   }
@@ -369,21 +468,25 @@
      view and the stars simply vanish. The top is always clipped by the scene and the
      bottom always dissolves, so no edge is ever visible. */
   .d-stars{
-    left:0; right:0; top:-500px;
-    height:1500px;
+    left:0; right:0; top:-700px;
+    /* Tied to the stage height now that the sky spans the hero as well: a fixed band
+       would run out partway down and the stars would stop halfway. */
+    height:calc(100% + 700px);
     background-image:url('assets/desierto/SVG/estrellas.svg');
     background-size:640px auto;
     background-repeat:repeat;
-    -webkit-mask-image:linear-gradient(to bottom, #000 70%, transparent 100%);
-    mask-image:linear-gradient(to bottom, #000 70%, transparent 100%);
-    opacity:0.9;
+    -webkit-mask-image:linear-gradient(to bottom, #000 0%, #000 58%, transparent 86%);
+    mask-image:linear-gradient(to bottom, #000 0%, #000 58%, transparent 86%);
+    /* Dimmer than it was: the field used to sit behind the glass panels of one section,
+       and at full strength across an open hero it speckles the copy. */
+    opacity:0.72;
   }
-  /* Resting point is low because the moon has the largest lag of any layer: it swings
-     roughly +/-590px, climbing well above the scene at one end and dropping behind the
-     mesas at the other. It is painted before the terrain, so the mesas occlude it. */
   .d-sun{
-    right:14%; bottom:640px;
-    width:190px; height:190px;
+    /* Anchored to the TOP of the stage, not the ground line: it has to be up in the hero
+       when the page loads. From there the largest lag of any layer walks it down through
+       the sky as you scroll into the second section. */
+    right:11%; top:clamp(122px, 19vh, 232px); bottom:auto;
+    width:clamp(112px, 12.5vw, 190px); height:clamp(112px, 12.5vw, 190px);
     background-image:url('assets/desierto/SVG/luna.svg');
     background-size:contain;
   }
@@ -396,18 +499,26 @@
      their gradient settles into — sitting directly beneath the artwork and running past
      the ground line. Without it, riding up under parallax would tear a strip of sky open
      along the horizon. The near dunes need none: they hold still as the ground line. */
+  /* Ridge height is a single custom property per band, because it has to appear in three
+     places at once: the artwork's size, where the colour block starts underneath it, and
+     the element's own height. Writing the number three times is how these drifted apart
+     before. It is also a clamp rather than a fixed height — the open sky reserved above
+     the terrain scales with the viewport, so a ridge frozen in pixels grew into the copy
+     on middling screens while leaving a gap on wide ones. */
   .d-far{
-    bottom:-260px; height:590px;
+    --ridge:clamp(320px, 33vw, 480px);
+    bottom:-260px; height:calc(var(--ridge) + 260px);
     background-image:url('assets/desierto/SVG/desierto3-w.svg'), linear-gradient(#d36e4b, #d36e4b);
-    background-size:100% 330px, 100% 260px;
-    background-position:left top, left 330px;
+    background-size:100% var(--ridge), 100% 260px;
+    background-position:left top, left var(--ridge);
     background-repeat:no-repeat, repeat-x;
   }
   .d-mid{
-    bottom:-260px; height:535px;
+    --ridge:clamp(255px, 26vw, 385px);
+    bottom:-260px; height:calc(var(--ridge) + 260px);
     background-image:url('assets/desierto/SVG/desierto2-w.svg'), linear-gradient(#b63a59, #b63a59);
-    background-size:100% 275px, 100% 260px;
-    background-position:left top, left 275px;
+    background-size:100% var(--ridge), 100% 260px;
+    background-position:left top, left var(--ridge);
     background-repeat:no-repeat, repeat-x;
   }
   .d-near{ bottom:0; height:130px; background-image:url('assets/desierto/SVG/desierto_1-w.svg'); }
@@ -631,22 +742,30 @@
   }
 
   @media (max-width: 760px){
-    .nav-links, .nav-pill .btn-accent{ display:none; }
-    .burger{ display:flex; }
+    .nav-links, .nav-pill .nav-cta{ display:none; }
+    /* The hidden links and button vacate their grid cells entirely, so without an explicit
+       column the burger slides up next to the logo instead of holding the right edge. */
+    .burger{ display:flex; grid-column:3; }
+    .nav-pill{ padding-left:14px; }
+    /* Two short lines beat one long wrapped one on a 390px screen. */
+    .hero-kicker{ font-size:0.62rem; letter-spacing:0.18em; padding:8px 16px; }
+    .hero{ padding-top:clamp(112px, 15vh, 150px); }
     section{ padding:80px 0; }
 
     /* Narrow screens: shorter terrain, a tighter scene band, and the two smallest
        cacti dropped so the foreground doesn't crowd. */
-    #nosotros{ --desert-floor:0px; padding-bottom:390px; }
+    .sky-stage{ --desert-floor:0px; }
+    #nosotros{ padding-bottom:450px; }
+    .roast-grid{ grid-template-columns:1fr; }
     #cafe{ padding-bottom:300px; }
     #contacto{ --shore-surge:200px; }
-    .d-far{ height:470px; background-size:100% 210px, 100% 260px; background-position:left top, left 210px; }
-    .d-mid{ height:440px; background-size:100% 180px, 100% 260px; background-position:left top, left 180px; }
+    .d-far{ --ridge:275px; }
+    .d-mid{ --ridge:220px; }
     .d-near{ height:85px; }
     /* Glow band shortened to sit against the lower mesas here. */
-    .d-sky{ background-size:100% 400px, 100% 100%; }
-    .d-stars{ top:-400px; height:1200px; background-size:420px auto; }
-    .d-sun{ right:12%; bottom:480px; width:92px; height:92px; }
+    .d-sky{ background-size:100% 470px, 100% 100%; }
+    .d-stars{ background-size:420px auto; }
+    .d-sun{ right:8%; top:clamp(104px, 15vh, 150px); width:96px; height:96px; }
     /* Bases pushed well below the ground line (and clipped there): the near dunes are only
        58px on narrow screens, so there is far less crest to hide a rising foot behind. */
     .d-c2{ left:2%;  bottom:-80px; width:67px; height:330px; }
@@ -658,7 +777,9 @@
 
   .mobile-menu{
     position:fixed; inset:0; z-index:99;
-    background:rgba(255,255,255,0.98);
+    /* Fully opaque: the hero behind it is dark now, and the old 98% let the headline
+       ghost through the panel. */
+    background:#FFFFFF;
     display:flex; flex-direction:column; align-items:center; justify-content:center;
     gap:34px;
     transform:translateY(-100%);

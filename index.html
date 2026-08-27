@@ -24,34 +24,64 @@
 <nav id="nav">
   <div class="nav-pill">
     <a href="#top" class="nav-brand">
-      <img src="assets/navbar-icon.svg" alt="Árido" class="nav-brand-icon">
+      <img src="assets/navbar-icon.svg" alt="" class="nav-brand-icon">
       <img src="assets/arido-navbar.svg" alt="Árido" class="nav-brand-word" id="navBrandWord">
     </a>
     <div class="nav-links">
-      <a href="#nosotros">Nosotros</a>
-      <a href="#cafe">Café</a>
+      <a href="#cafe">Cafés</a>
+      <a href="#nosotros">Nuestra historia</a>
+      <a href="#tueste">El tueste</a>
       <a href="#contacto">Contacto</a>
     </div>
-    <a href="#contacto" class="btn btn-accent">Escríbenos</a>
+    <a href="#cafe" class="btn btn-accent nav-cta">Comprar café</a>
     <button class="burger" id="burgerBtn" aria-label="Abrir menú">☰</button>
   </div>
 </nav>
 
 <div class="mobile-menu" id="mobileMenu">
   <button class="close-btn" id="closeMenuBtn" aria-label="Cerrar menú">✕</button>
-  <a href="#nosotros">Nosotros</a>
-  <a href="#cafe">Café</a>
+  <a href="#cafe">Cafés</a>
+  <a href="#nosotros">Nuestra historia</a>
+  <a href="#tueste">El tueste</a>
   <a href="#contacto">Contacto</a>
   <a href="https://wa.me/56972497925" target="_blank" rel="noopener">WhatsApp</a>
 </div>
 
-<header class="hero" id="top">
-  <div class="hero-frame">
-    <div class="hero-logo reveal-scale">
-      <img src="assets/arido.svg" alt="Árido — un café de culto" id="heroLogo">
-    </div>
+<!-- Sky stage: the desert scene is a child of this wrapper, not of #nosotros, so the
+     sky and the moon start at the very top of the page and the scene descends into the
+     second section. The terrain still lands on the wrapper's bottom edge, which is the
+     bottom of #nosotros — so the horizon sits exactly where it did before. -->
+<div class="sky-stage" id="skyStage">
+
+  <div class="desert" id="desert" aria-hidden="true">
+    <div class="desert-layer d-sky"   data-anchor="stage" data-parallax="0"></div>
+    <div class="desert-layer d-stars" data-anchor="stage" data-parallax="0.45"></div>
+    <!-- The moon keeps 80% of the scroll: it hangs in the sky the whole way down while
+         sinking towards the mesas, which paint after it and hide it at the end. -->
+    <div class="desert-layer d-sun"   data-anchor="stage" data-parallax="0.80"></div>
+    <div class="desert-layer d-far"   data-parallax="0.11"  data-in="0"    data-span="0.40"></div>
+    <div class="desert-layer d-mid"   data-parallax="0.07"  data-in="0.06" data-span="0.40"></div>
+    <!-- The near dunes now rise BEFORE the mid-distance pair. Those two stand on the
+         crest with their feet just behind it, and the dunes are what hides the cut: if the
+         cacti grew first they would spend a moment rooted in open sky. Paint order is
+         unchanged — the dunes still come after them in the DOM, which is what does the
+         hiding. -->
+    <div class="desert-layer d-near"  data-rise="slide" data-parallax="0"     data-in="0.13" data-span="0.36"></div>
+    <div class="desert-layer d-c5 desert-cactus" data-parallax="0"     data-in="0.21" data-span="0.36"></div>
+    <div class="desert-layer d-c4 desert-cactus" data-parallax="0"     data-in="0.26" data-span="0.36"></div>
+    <div class="desert-layer d-c2 desert-cactus" data-parallax="-0.13" data-in="0.32" data-span="0.38"></div>
+    <div class="desert-layer d-c1 desert-cactus" data-parallax="-0.10" data-in="0.42" data-span="0.36"></div>
+    <div class="desert-layer d-c3 desert-cactus" data-parallax="-0.08" data-in="0.52" data-span="0.36"></div>
   </div>
-</header>
+
+  <header class="hero" id="top">
+    <div class="hero-inner">
+      <span class="hero-kicker">Café de especialidad · Antofagasta, Chile</span>
+      <h1>Tostado al norte.<br><em>Hecho con carácter.</em></h1>
+      <p class="hero-sub">Cafés de especialidad seleccionados por su origen y tostados en Antofagasta, donde el desierto imprime nuestra forma de entender el café.</p>
+      <a href="#cafe" class="hero-cta">Descubrir nuestros cafés <span class="arrow" aria-hidden="true">→</span></a>
+    </div>
+  </header>
 
 <section class="section-alt" id="nosotros">
   <!-- Desert sunset scene. Layers are background-images on divs, never inline SVG:
@@ -62,30 +92,15 @@
        so it reads as nearer. The stars therefore take the largest value and the near
        dunes sit at 0 — they are the ground line, and holding them still keeps the horizon
        welded to the table. The sky is exempt because a bare gradient shows no motion. -->
-  <!-- data-in / data-span place each layer's entrance along the section's scroll (0-1),
-       so the scene builds back to front and the three foreground cacti sprout at clearly
-       separated moments rather than together.
+  <!-- data-in / data-span place each layer's entrance along the TERRAIN's own clock (0-1),
+       which runs as the horizon crosses the lower three quarters of the screen — not along
+       the section's scroll. See desert-scene.js. The scene builds back to front and the
+       foreground cacti sprout at clearly separated moments rather than together.
        data-parallax is lag, not depth: positive holds a layer back against the scroll so
        it reads as further away, negative runs it ahead so it reads as nearer. The near
        dunes stay at 0 — they are the ground line, and holding them still keeps the
        horizon welded to the table. The sky is exempt; a bare gradient shows no motion. -->
-  <div class="desert" id="desert" aria-hidden="true">
-    <div class="desert-layer d-sky"   data-parallax="0"     data-in="0"    data-span="0.10"></div>
-    <div class="desert-layer d-stars" data-parallax="0.42"  data-in="0.04" data-span="0.14"></div>
-    <!-- Big lag plus a low resting point: the moon climbs into view, then sets behind
-         the mesas, which paint after it. -->
-    <div class="desert-layer d-sun"   data-parallax="0.70"  data-in="0.06" data-span="0.12"></div>
-    <div class="desert-layer d-far"   data-parallax="0.11"  data-in="0.12" data-span="0.12"></div>
-    <div class="desert-layer d-mid"   data-parallax="0.07"  data-in="0.17" data-span="0.12"></div>
-    <!-- The mid-distance pair stays put: their feet hide just behind the near crest, and
-         any rise would lift a cut-off base into view. -->
-    <div class="desert-layer d-c5 desert-cactus" data-parallax="0"     data-in="0.21" data-span="0.09"></div>
-    <div class="desert-layer d-c4 desert-cactus" data-parallax="0"     data-in="0.24" data-span="0.09"></div>
-    <div class="desert-layer d-near"  data-parallax="0"     data-in="0.27" data-span="0.11"></div>
-    <div class="desert-layer d-c2 desert-cactus" data-parallax="-0.13" data-in="0.34" data-span="0.11"></div>
-    <div class="desert-layer d-c1 desert-cactus" data-parallax="-0.10" data-in="0.47" data-span="0.11"></div>
-    <div class="desert-layer d-c3 desert-cactus" data-parallax="-0.08" data-in="0.58" data-span="0.11"></div>
-  </div>
+  
   <div class="container">
     <div class="section-head reveal">
       <div class="eyebrow">Nuestro origen</div>
@@ -111,6 +126,35 @@
         </div>
       </div>
     </div>
+  </div>
+</section>
+</div><!-- /sky-stage -->
+
+<section id="tueste">
+  <div class="container">
+    <div class="section-head reveal">
+      <div class="eyebrow">El tueste</div>
+      <h2>Tostado aquí, no heredado</h2>
+      <p>Cada origen se tuesta en Antofagasta buscando el punto en que el grano muestra lo suyo sin que el tueste se imponga por encima.</p>
+    </div>
+    <div class="roast-grid">
+      <div class="roast-step reveal">
+        <span class="roast-num">01</span>
+        <h3>La tostadora</h3>
+        <p class="desc">[MODELO Y CAPACIDAD DE LA TOSTADORA — PENDIENTE]</p>
+      </div>
+      <div class="roast-step reveal">
+        <span class="roast-num">02</span>
+        <h3>El perfil</h3>
+        <p class="desc">[PERFIL DE TUESTE POR ORIGEN — PENDIENTE]</p>
+      </div>
+      <div class="roast-step reveal">
+        <span class="roast-num">03</span>
+        <h3>Los lotes</h3>
+        <p class="desc">[FRECUENCIA DE TUESTE Y TAMAÑO DE LOTE — PENDIENTE]</p>
+      </div>
+    </div>
+    <p class="cafe-note reveal">* Estamos documentando el proceso. Escríbenos por WhatsApp si quieres conocer los detalles del tueste de un lote concreto.</p>
   </div>
 </section>
 
