@@ -12,7 +12,7 @@
 
 <!-- ?v= fuerza a recargar css y js al publicar: sin el, el navegador
      reutiliza la copia en cache y se sigue viendo la version anterior. -->
-<link rel="stylesheet" href="styles.css?v=202609111700">
+<link rel="stylesheet" href="styles.css?v=202609102104">
 </head>
 <body>
 
@@ -52,19 +52,19 @@
     <!-- The moon keeps 80% of the scroll: it hangs in the sky the whole way down while
          sinking towards the mesas, which paint after it and hide it at the end. -->
     <div class="desert-layer d-sun"   data-anchor="stage" data-parallax="0.80"></div>
-    <div class="desert-layer d-far"   data-parallax="0.13"  data-in="0"    data-span="0.72"></div>
-    <div class="desert-layer d-mid"   data-parallax="0.09"  data-in="0.08" data-span="0.72"></div>
+    <div class="desert-layer d-far"   data-parallax="0.13"  data-in="0"    data-span="0.62"></div>
+    <div class="desert-layer d-mid"   data-parallax="0.09"  data-in="0.10" data-span="0.62"></div>
     <!-- The near dunes now rise BEFORE the mid-distance pair. Those two stand on the
          crest with their feet just behind it, and the dunes are what hides the cut: if the
          cacti grew first they would spend a moment rooted in open sky. Paint order is
          unchanged — the dunes still come after them in the DOM, which is what does the
          hiding. -->
-    <div class="desert-layer d-near"  data-rise="slide" data-parallax="0"     data-in="0.22" data-span="0.55"></div>
-    <div class="desert-layer d-c5 desert-cactus" data-parallax="0"     data-in="0.34" data-span="0.50"></div>
-    <div class="desert-layer d-c4 desert-cactus" data-parallax="0"     data-in="0.38" data-span="0.50"></div>
-    <div class="desert-layer d-c2 desert-cactus" data-parallax="-0.08" data-in="0.42" data-span="0.50"></div>
-    <div class="desert-layer d-c1 desert-cactus" data-parallax="-0.07" data-in="0.46" data-span="0.50"></div>
-    <div class="desert-layer d-c3 desert-cactus" data-parallax="-0.05" data-in="0.50" data-span="0.50"></div>
+    <div class="desert-layer d-near"  data-rise="slide" data-parallax="0"     data-in="0.20" data-span="0.34"></div>
+    <div class="desert-layer d-c5 desert-cactus" data-parallax="0"     data-in="0.15" data-span="0.36"></div>
+    <div class="desert-layer d-c4 desert-cactus" data-parallax="0"     data-in="0.19" data-span="0.36"></div>
+    <div class="desert-layer d-c2 desert-cactus" data-parallax="-0.18" data-in="0.25" data-span="0.38"></div>
+    <div class="desert-layer d-c1 desert-cactus" data-parallax="-0.15" data-in="0.34" data-span="0.36"></div>
+    <div class="desert-layer d-c3 desert-cactus" data-parallax="-0.12" data-in="0.43" data-span="0.36"></div>
   </div>
 
   <header class="hero" id="top">
@@ -134,36 +134,8 @@
   <!-- Pestaña flotante anclada al borde izquierdo. Sticky dentro de un carril de
        ancho cero, para que acompañe el scroll sin ocupar espacio en el layout. -->
 
-  <div class="container">
 
-    <!-- CTA normal, dentro del flujo de la seccion: ni fijo ni flotante. Estaba en
-         position:fixed y eso arrastraba una cola de problemas —ancestros que le robaban
-         el bloque contenedor, unidades de ventana que se recalculan al scrollear— para
-         un boton que no necesita nada de eso. Al vivir en el flujo, sube y baja con la
-         pagina como cualquier otro elemento y no hay nada que se pueda romper. -->
-    <div class="pick-dock" aria-hidden="false">
-    <button type="button" class="pick-tab" id="pickTab"
-            aria-expanded="false" aria-controls="pickPanel">
-      <span class="pick-bean" aria-hidden="true">
-        <!-- assets/SVG/café-cta.svg, tal cual: mismo viewBox, mismo unico <path> con sus
-             dos subtrazados y su color. NO se parte en dos mitades, asi que el grano ya
-             no se abre al desplegar el panel: abrirlo exigia separarlas. -->
-        <svg viewBox="0 0 1221.24 1294">
-          <path fill="#664237" d="M3.14,811.26c17.27-177.75,105.17-371.13,247.51-544.49,55.35-67.41,119.72-123.98,191.34-168.13,68.97-42.53,141.69-71.79,216.14-86.98,38.06-7.77,75.57-11.65,112.27-11.65,34.67,0,68.63,3.47,101.62,10.41,32.94,6.93,64.25,17.2,93.75,30.72,19.68,9.02,18.32,37.48-2.12,44.59-73.99,25.72-141.39,64.94-198.49,115.96-83.68,74.76-140.52,170.67-164.36,277.35-11.44,51.19-15.83,104.78-20.08,156.6-4.67,56.95-9.49,115.84-23.8,169.47-28.51,106.87-96.79,202.15-197.47,275.54-55.07,40.16-120.74,74.38-195.73,102.05-24.93,9.2-52.9,1.63-69.83-18.85C21.33,1076.1-10.68,953.55,3.14,811.26ZM1177.98,702.93c-29.37,78.84-72.33,153-127.68,220.41-68.65,83.61-146.19,156-230.46,215.16-81.18,56.99-164.97,99.25-249.04,125.58-83.43,26.14-162.71,35.21-235.63,26.97-46.1-5.21-88.41-17.26-126.5-35.98-18.49-9.09-17.5-35.7,1.58-43.46,65.92-26.8,124.55-58.81,175.01-95.6,108.87-79.37,182.86-182.98,213.98-299.64,15.33-57.43,20.32-118.31,25.14-177.19,4.13-50.34,8.39-102.39,19.17-150.62,21.83-97.69,73.98-185.61,150.8-254.24,66.35-59.28,147.88-101.4,237.79-123.16,20.62-4.99,42.28,1.12,57.25,16.15,38.5,38.66,69.17,84.46,91.43,136.64,27.22,63.83,40.81,134.49,40.41,210.04-.41,75.98-14.96,153.01-43.25,228.94Z"/>
-        </svg>
-      </span>
-      <span class="pick-label">Elige tu café</span>
-      <span class="pick-chevron" aria-hidden="true">
-        <svg viewBox="0 0 12 20" fill="none">
-          <path d="M2 2l8 8-8 8" stroke="currentColor" stroke-width="2.2"
-                stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </span>
-    </button>
-    <button type="button" class="prod-back" id="prodBack">
-      <span aria-hidden="true">&#8592;</span> Volver al tueste
-    </button>
-  </div>
+  <div class="container">
 
     <!-- ---------- ESTADO 1: NARRATIVA DEL TUESTE ---------- -->
     <div class="roast-stage" id="roastStage">
@@ -218,6 +190,9 @@
 
       <!-- Columna editorial -->
       <div class="prod-copy" id="prodCopy">
+        <button type="button" class="prod-back" id="prodBack">
+          <span aria-hidden="true">&#8592;</span> Volver al tueste
+        </button>
         <span class="prod-origin" id="prodOrigin"></span>
         <h3 class="prod-name" id="prodName"></h3>
         <p class="prod-subtitle" id="prodSubtitle"></p>
@@ -299,6 +274,7 @@
   </div>
 </section>
 
+
 <!-- La pestaña, el velo y el cajón viven fuera de #tueste y cuelgan directamente del
      body. Dentro de la sección no valen: #tueste lleva overflow-x:clip y hay motores que
      toman ese ancestro como bloque contenedor de los position:fixed, con lo que la
@@ -306,32 +282,40 @@
      ningún ancestro que pueda romperlo.
      Su estado lo marcan clases en el <body> (t-near, t-open, t-sheet), no en la sección,
      porque ya no son descendientes suyos. -->
+  <div class="pick-dock" aria-hidden="false">
+    <button type="button" class="pick-tab" id="pickTab"
+            aria-expanded="false" aria-controls="pickPanel">
+      <span class="pick-bean" aria-hidden="true">
+        <!-- Dos mitades partidas por el surco: al abrir el panel se separan, como un
+             grano que se abre. Antes era una elipse entera con el surco pintado encima. -->
+        <svg viewBox="0 0 34 52" fill="none">
+          <path class="bean-half bean-l"
+                d="M17 3C12 12 12 17 17 26C22 35 22 40 17 49A16 25 0 0 1 17 3Z"
+                fill="currentColor"/>
+          <path class="bean-half bean-r"
+                d="M17 3C12 12 12 17 17 26C22 35 22 40 17 49A16 25 0 0 0 17 3Z"
+                fill="currentColor"/>
+        </svg>
+      </span>
+      <span class="pick-label">Elige tu café</span>
+      <span class="pick-chevron" aria-hidden="true">
+        <svg viewBox="0 0 12 20" fill="none">
+          <path d="M2 2l8 8-8 8" stroke="currentColor" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+    </button>
+  </div>
   <!-- Velo: solo activo en móvil, donde el panel es una hoja inferior -->
   <div class="pick-scrim" id="pickScrim" hidden></div>
 
   <!-- Menú lateral de productos. La lista la construye roast-experience.js -->
   <div class="pick-panel" id="pickPanel" role="group" aria-label="Elige tu café" hidden>
     <div class="pick-panel-head">
-      <h3 class="pick-title">Nuestros cafés</h3>
-      <p class="pick-kicker">Tostado al norte · Hecho con carácter</p>
+      <span class="eyebrow">Nuestros cafés</span>
     </div>
     <ul class="pick-list" id="pickList"></ul>
-    <div class="pick-foot">
-      <p class="pick-foot-note">Escríbenos para conocer disponibilidad.</p>
-      <a class="pick-wa" href="https://wa.me/56972497925" target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-          <path fill="currentColor" d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm0 18.15h-.01a8.2 8.2 0 0 1-4.18-1.15l-.3-.18-3.11.82.83-3.04-.2-.31a8.17 8.17 0 0 1-1.26-4.38c0-4.54 3.7-8.23 8.24-8.23a8.2 8.2 0 0 1 8.23 8.24c0 4.54-3.7 8.23-8.24 8.23Zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.16.25-.64.8-.79.97-.14.16-.29.19-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.01-.38.11-.51.11-.11.25-.29.37-.43.13-.15.17-.25.25-.41.08-.17.04-.31-.02-.44-.06-.12-.56-1.35-.76-1.84-.2-.48-.4-.42-.56-.43h-.47c-.17 0-.43.06-.66.31-.23.25-.86.85-.86 2.07 0 1.22.89 2.4 1.01 2.56.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.48-.07 1.47-.6 1.67-1.18.21-.58.21-1.08.15-1.18-.06-.11-.23-.17-.48-.29Z"/>
-        </svg>
-        <span>Consultar por WhatsApp</span>
-      </a>
-      <!-- Cordillera decorativa, el mismo motivo que cierra la seccion Nuestro origen. -->
-      <svg class="pick-ridge" viewBox="0 0 320 64" fill="none" aria-hidden="true" focusable="false" preserveAspectRatio="none">
-        <path d="M0 56 L46 30 L74 44 L110 14 L148 42 L182 26 L214 48 L250 22 L286 46 L320 32"
-              stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" opacity=".55"/>
-        <path d="M0 64 L38 46 L80 58 L116 36 L156 56 L196 42 L232 60 L268 40 L302 58 L320 50"
-              stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" opacity=".3"/>
-      </svg>
-    </div>
+    <p class="pick-foot">Escríbenos por WhatsApp para conocer disponibilidad.</p>
   </div>
 
 <footer>
@@ -348,12 +332,12 @@
   </div>
 </footer>
 
-<script src="main.js?v=202609111700"></script>
+<script src="main.js?v=202609102104"></script>
 
-<script src="sand-effect.js?v=202609111700"></script>
-<script src="desert-scene.js?v=202609111700"></script>
-<script src="shore.js?v=202609111700"></script>
-<script src="roast-experience.js?v=202609111700"></script>
+<script src="sand-effect.js?v=202609102104"></script>
+<script src="desert-scene.js?v=202609102104"></script>
+<script src="shore.js?v=202609102104"></script>
+<script src="roast-experience.js?v=202609102104"></script>
 
 </body>
 </html>

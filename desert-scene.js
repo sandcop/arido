@@ -36,7 +36,10 @@
   // Peak travel in px for a layer of lag 1.0. The terrain bands carry a matching block of
   // colour below their artwork, so they can ride this far without opening a notch at the
   // ground line.
-  var TRAVEL = 840;
+  var TRAVEL = 1180;
+  // Lo que asoma un cactus al subir. Corto a proposito: su base va por debajo de la linea
+  // de suelo y la duna le tapa el pie, asi que lo unico que tiene que hacer es despuntar.
+  var CACTUS_RISE = 90;
   // The sky layers take no fixed figure: their drift is a FRACTION of how far the stage
   // itself scrolls, so data-parallax reads directly as "how much of the scroll this layer
   // keeps". 0.80 means the moon holds 80% of the scroll and slips up the screen at the
@@ -103,8 +106,16 @@
     // ridges are already rising by the time anything else is on screen.
     // The head start cannot go much past the height of the mesas — earlier than that and
     // the growth happens entirely below the fold, which is the bug this replaced.
-    var HEAD_START = vh * 0.65;
-    var RUN = vh * 1.55;
+    // El reloj se estira hasta 2.2 pantallas: es el maximo que permite la geometria. El
+    // terreno solo esta a la vista durante ~1.7 pantallas de scroll (desde que la cresta
+    // rompe el borde inferior hasta que la linea de suelo sale por arriba), asi que un
+    // reloj mas largo dejaria las mesetas a medio crecer cuando la seccion ya se ha ido.
+    // A cambio de la lentitud, el terreno se ve arrancar con ~1/4 de su altura ya puesta:
+    // no esta plano del todo al aparecer, pero sube menos de la mitad de rapido que antes.
+    var RUN = vh * 2.2;
+    // Calculado a partir de RUN para que el crecimiento termine justo cuando el suelo se
+    // va por arriba (ground ~= 0.05vh), y no antes: asi se reparte por toda la ventana.
+    var HEAD_START = RUN - vh * 0.95;
     var ground = scene.getBoundingClientRect().bottom;
     var build = clamp01((vh - ground + HEAD_START) / RUN);
 
@@ -126,6 +137,20 @@
       // horizon line and scaleY(1) stands it at full height. The mesa bands hang 260px
       // below the ground line and the scene clips there, so what shows is a ridge pushing
       // up through the horizon rather than a shape being squashed.
+      if(layer.isCactus){
+        // Un recorrido corto y fijo, no scaleY. Escalando, un cactus de 400px crecia esos
+        // 400px enteros y se veia salir del suelo estirandose; ademas el escalado lo
+        // achata mientras dura. Asi solo asoma CACTUS_RISE por detras de la cresta de la
+        // duna, con sus proporciones intactas.
+        layer.el.style.transform =
+          'translate3d(0,' + (y + (1 - t) * CACTUS_RISE).toFixed(2) + 'px,0)';
+        // Aqui el fundido si hace falta: con un recorrido tan corto, antes de su turno el
+        // cactus se quedaria aparcado 90px mas abajo y a la vista. Con scaleY(0) no hacia
+        // falta porque la capa no tenia altura.
+        layer.el.style.opacity = clamp01(t * 2.2).toFixed(3);
+        continue;
+      }
+
       if(layer.slides){
         layer.el.style.transform =
           'translate3d(0,' + (y + (1 - t) * layer.lift).toFixed(2) + 'px,0)';

@@ -350,10 +350,7 @@
        el cursor sin que la sección hubiera cambiado de alto. */
     overflow-anchor:none;
   }
-  /* El CTA ocupa la primera fila y los dos estados comparten la segunda. Sin filas
-     explicitas el CTA se colocaba solo despues de ellos y acababa al pie de la seccion. */
-  .pick-dock{ grid-row:1; }
-  .roast-stage, .product-stage{ grid-area:2 / 1; }
+  .roast-stage, .product-stage{ grid-area:1 / 1; }
 
   /* --- narrativa del tueste (estado inicial) --- */
   .roast-phases{
@@ -417,140 +414,107 @@
   /* --- pestaña "Elige tu café" --- */
   /* Carril de ancho cero pegado al borde izquierdo: la pestaña va sticky dentro, de modo
      que acompaña el scroll sin ocupar sitio en el layout ni empujar el contenido. */
-  /* Sigue en el flujo —sube y baja con la pagina—, pero con z-index propio: el fondo de
-     la escena va posicionado con z-index 0, y un elemento posicionado pinta por encima de
-     uno estatico aunque vaya antes en el DOM. Sin esto el render tapaba el CTA. */
-  .pick-dock{
-    display:flex; flex-wrap:wrap; align-items:center;
-    gap:clamp(10px, 1.2vw, 16px);
-    margin:0 0 clamp(26px, 3.4vw, 44px);
-    position:relative; z-index:2;
-    /* A la izquierda, en la vertical de la ficha. Estuvo a la derecha mientras el CTA
-       iba en esta fila; ahora el CTA es un asa pegada al borde de la ventana y, alineado
-       a la derecha, "Volver al tueste" quedaba tapado por el panel al abrirse. */
-    justify-content:flex-start;
-    /* La pestaña ya no va en el flujo de esta fila: se posiciona en absoluto contra el
-       borde de la ventana. Aqui solo queda "Volver al tueste". */
-    position:relative;
-    min-height:44px;
-  }
-  /* Abierto, la fila se aparta justo el ancho del panel y queda pegada a su canto: la
-     pestaña sigue a la vista —se lee como la lengüeta del cajon, igual que la referencia—
-     en vez de quedar sepultada debajo, y "Volver al tueste" deja de salir cortado.
-     Esto NO es seguir el scroll: es un cambio de estado, el boton sigue quieto en la
-     pagina mientras se hace scroll, que es lo que se pidio.
-     En movil el panel es una hoja inferior y --panel-w vale 0px, asi que no se mueve. */
-  /* Abierta, la pestaña se aparta justo el ancho del panel y queda pegada a su canto.
-     No es seguir el scroll: es un cambio de estado. En movil --panel-w vale 0 y no se
-     mueve, porque alli el panel es una hoja inferior. */
-  body.t-open .pick-tab{ --tab-open:var(--panel-w); }
-  /* Con la ficha a la vista el hueco se estrecha: es alto que gana la descripcion, que
-     conviene tenerla lo mas arriba posible sobre el cielo del render. */
-  body.t-show .pick-dock{ margin-bottom:clamp(14px, 1.8vw, 22px); }
-  /* "Volver al tueste" vive en esta fila, junto al CTA, y no dentro de la ficha: ahi
-     quedaba debajo del CTA y los dos se pisaban. Solo existe con el producto a la vista. */
-  .prod-back{ display:none; }
-  body.t-show .prod-back{ display:inline-flex; }
+  /* Envoltorio sin geometria: la pestaña se posiciona sola con position:fixed. */
+  .pick-dock{ position:static; }
   .pick-tab{
-    /* CTA en el flujo. Nada de position:fixed: se desplaza con la pagina como cualquier
-       boton, que es justo lo que hace que no se pueda descolocar. */
+    z-index:91;
+    --pick-crease:rgba(255,255,255,0.28);
+    /* fixed y no sticky: sticky arranca en su sitio natural y solo se engancha cuando el
+       scroll lo alcanza, asi que al entrar en la seccion todavia subia con la pagina.
+       Fijo al viewport no se mueve nunca. Se muestra solo mientras la seccion esta
+       cerca — lo gobierna la clase is-near desde roast-experience.js. */
+    position:fixed;
+    /* Por que borde se ancla. Lo lee el JS: getComputedStyle().top devuelve pixeles
+       aunque el CSS diga `auto`, asi que desde JS no hay forma de saberlo si no se
+       declara aqui. */
+    --tab-anchor:top;
+    /* En pixeles, NO en vh. `13vh` se recalcula cada vez que cambia la altura de la
+       ventana, y en los navegadores moviles esa altura cambia sola al hacer scroll porque
+       la barra de direcciones se pliega y se despliega. El resultado es un elemento fijo
+       que se desliza mientras scrolleas — exactamente lo que se veia. En escritorio el vh
+       es constante, por eso las pruebas en ventana fija nunca lo reproducian.
+       Un valor en px no depende de nada y no se puede mover. */
+    top:126px;
+    right:0;
+    pointer-events:auto;
+    opacity:0;
+    visibility:hidden;
+    display:flex; align-items:center; gap:12px;
+    /* En espejo: el grano queda hacia dentro y el chevron hacia el borde. */
+    flex-direction:row-reverse;
+    padding:14px 16px 14px 20px;
+    /* El desplazamiento horizontal va por variable y no escrito en cada regla: asi el
+       deslizamiento al abrir el panel y el del hover no se pisan entre si. La correccion
+       vertical del ancla NO va aqui — usa `top`, que no esta en la transicion. */
     --tab-x:0px;
-    --tab-open:0px;
-    /* Contra el borde de la ventana: se sale del .container lo que mide su margen, que
-       lo calcula el JS en --dock-out. En absoluto dentro del dock —no fixed— para que
-       siga viajando con la pagina y no con el viewport. */
-    position:absolute;
-    top:0;
-    right:calc(-1 * var(--dock-out, 0px));
-    /* Vertical: grano arriba, flecha abajo. */
-    display:inline-flex; flex-direction:column; align-items:center; justify-content:center;
-    width:62px;
-    margin:0;
-    padding:20px 0 16px;
-    gap:16px;
+    transform:translate3d(var(--tab-x), 0, 0);
+    transition:transform .45s cubic-bezier(0.22,1,0.36,1),
+               box-shadow .45s cubic-bezier(0.22,1,0.36,1),
+               gap .5s cubic-bezier(0.22,1,0.36,1),
+               background .35s ease;
     border:1px solid var(--card-line);
-    /* Lengüeta: el lado izquierdo redondeado y el derecho recto, con su linea naranja.
-       Ese canto recto es el que se apoya contra el borde de la pantalla y contra el
-       panel cuando se abre. */
-    border-radius:31px 0 0 31px;
-    border-right:3px solid var(--accent);
+    border-right:none;
+    border-radius:100px 0 0 100px;
     background:var(--card);
-    box-shadow:0 12px 30px rgba(0,0,0,0.12);
+    box-shadow:0 16px 40px rgba(0,0,0,0.14);
     cursor:pointer;
     color:var(--ink);
     font-family:var(--sans);
-    transform:translateX(calc(var(--tab-x) - var(--tab-open)));
-    transition:transform .35s cubic-bezier(0.22,1,0.36,1),
-               box-shadow .35s cubic-bezier(0.22,1,0.36,1),
-               background .3s ease;
   }
-  .pick-tab:hover{
-    --tab-x:-4px;
-    box-shadow:0 18px 38px rgba(0,0,0,0.16);
-  }
-  .pick-tab:focus-visible{ outline:2px solid var(--accent); outline-offset:3px; }
-
+  body.t-open .pick-tab{ gap:9px; }
   .pick-bean{
-    /* La caja guarda la relacion del viewBox del archivo (1221.24 x 1294 = 0.9437), asi
-       el grano se dibuja sin franjas vacias a los lados ni deformarse. El color va en el
-       propio <path>, como en el archivo. */
-    /* 38px y no 26: el surco del dibujo mide 44 unidades de viewBox en su parte mas
-       estrecha, o sea 0.036 del ancho. A 26px eso son 0.88px —por debajo de un pixel—, el
-       antialias lo funde y el grano se ve como una mancha solida en vez de partido. A 38
-       el surco pasa de 1.37px y aguanta. El relleno de la pestaña baja de 14 a 11px para
-       que el boton no crezca de alto al subir el icono. */
-    display:block; width:35.86px; height:38px;
-    flex-shrink:0;
-    transition:transform .4s cubic-bezier(0.22,1,0.36,1);
+    display:block; width:19px; height:29px;
+    color:#2A1B12;                       /* el grano; el surco usa --pick-crease */
+    transition:transform .5s cubic-bezier(0.22,1,0.36,1);
   }
   .pick-bean svg{ width:100%; height:100%; display:block; }
-  /* La etiqueta esta plegada y solo se despliega al pasar por encima o al enfocar con
-     teclado. Se pliega con max-width y no con display:none a proposito: el texto sigue
-     en el DOM, asi que el boton conserva su nombre accesible ("Elige tu café") aunque no
-     se vea. El relleno tambien se pliega, o quedaria un hueco vacio entre grano y flecha. */
-  /* En vertical: la lengüeta mide 62px de ancho, ahi no cabe el texto en horizontal.
-     Se pliega con max-height —no display:none— para que el boton conserve su nombre
-     accesible ("Elige tu café") aunque el texto no se vea. */
   .pick-label{
-    writing-mode:vertical-rl;
-    font-size:0.68rem; font-weight:800;
+    font-size:0.74rem; font-weight:800;
     letter-spacing:0.2em; text-transform:uppercase;
     white-space:nowrap;
-    max-height:0; opacity:0; overflow:hidden; padding:0;
-    transition:max-height .5s cubic-bezier(0.22,1,0.36,1),
-               opacity .32s ease,
-               padding .5s cubic-bezier(0.22,1,0.36,1);
+    max-width:14ch; opacity:1;
+    transition:max-width .5s cubic-bezier(0.22,1,0.36,1), opacity .3s ease;
   }
-  .pick-tab:hover .pick-label,
-  .pick-tab:focus-visible .pick-label{
-    max-height:13em; opacity:1; padding:5px 0 2px;
-  }
-  /* Sin hover no hay forma de descubrir el texto, asi que en tactil va siempre desplegado:
-     un icono suelto y sin etiqueta seria el unico acceso a toda la seccion de producto. */
-  @media (hover: none){
-    .pick-label{ max-height:13em; opacity:1; padding:5px 0 2px; }
-  }
+  /* Con el panel abierto la etiqueta ya no dice nada que no se vea, y ocupando 140px se
+     comía la columna editorial. Se pliega y la pestaña queda como asa del panel. */
+  /* También plegada con el producto a la vista, no solo con el panel abierto: desplegada
+     asoma hasta unos 190px desde el borde y caía justo encima de la descripción, que
+     ahora empieza en la misma vertical que el resto de los textos de la web. */
+  body.t-open .pick-label,
+  body.t-show .pick-label{ max-width:0; opacity:0; overflow:hidden; }
+  body.t-show .pick-tab{ gap:9px; }
   .pick-chevron{
-    display:block; width:21px; height:35px; color:var(--accent);
-    flex-shrink:0;
-    transition:transform .4s cubic-bezier(0.22,1,0.36,1);
+    display:block; width:9px; height:15px; color:var(--accent);
+    transition:transform .5s cubic-bezier(0.22,1,0.36,1);
   }
   .pick-chevron svg{ width:100%; height:100%; display:block; }
-  .pick-tab:hover .pick-bean{ transform:scale(1.06); }
+  body.t-near .pick-tab{ opacity:1; visibility:visible; }
+  .pick-tab:hover{
+    --tab-x:-5px;
+    box-shadow:0 20px 46px rgba(0,0,0,0.18);
+  }
+  .pick-tab:hover .pick-bean{ transform:rotate(-9deg) scale(1.06); }
   .pick-tab:focus-visible{
     outline:2px solid var(--accent);
     outline-offset:3px;
   }
   /* Abierto: la pestaña se corre hasta el canto del panel y se queda pegada a el, en vez
      de quedar encima. El grano, ademas, se parte en dos. */
-  body.t-open .pick-chevron{ transform:rotate(180deg); }
+  .pick-chevron{ transform:rotate(180deg); }
+  body.t-open .pick-chevron{ transform:rotate(0deg); }
   body.t-open .pick-tab{
-    background:var(--bg-alt);
-    box-shadow:0 8px 20px rgba(0,0,0,0.10);
+    --tab-x:calc(-1 * var(--panel-w));
+    border-radius:16px 0 0 16px;
+    box-shadow:0 20px 46px rgba(0,0,0,0.20);
   }
+  body.t-open .pick-tab:hover{ --tab-x:calc(-1 * var(--panel-w) - 4px); }
 
-  /* Aqui vivian las reglas que abrian el grano separando sus dos mitades. Se han quitado
-     con ellas: el icono es ahora el archivo sin partir y no hay mitades que mover. */
+  .bean-half{
+    transform-origin:17px 26px;
+    transition:transform .55s cubic-bezier(0.22,1,0.36,1);
+  }
+  body.t-open .bean-l{ transform:translateX(-3.4px) rotate(-9deg); }
+  body.t-open .bean-r{ transform:translateX(3.4px)  rotate(9deg); }
 
   /* --- panel de productos --- */
   :root{ --panel-w:clamp(280px, 25vw, 360px); }
@@ -576,47 +540,29 @@
     overflow-y:auto;
   }
   body.t-open .pick-panel{ transform:none; }
-  .pick-panel-head{ margin-bottom:clamp(18px, 2.4vh, 26px); }
-  .pick-title{
-    font-family:var(--serif); font-weight:600;
-    font-size:clamp(1.5rem, 2.1vw, 1.85rem);
-    line-height:1.1; color:var(--ink);
-    margin:0 0 10px;
+  .pick-panel-head{
+    display:flex; align-items:flex-start;
+    gap:12px; margin-bottom:22px;
   }
-  .pick-kicker{
-    margin:0;
-    font-size:0.62rem; font-weight:700;
-    letter-spacing:0.18em; text-transform:uppercase;
-    line-height:1.7; color:#7A5730;
-  }
+  .pick-panel-head .eyebrow{ margin-bottom:0; }
   .pick-list{ list-style:none; display:flex; flex-direction:column; gap:10px; }
-  /* Cada cafe es una tarjeta con borde propio, no una fila suelta: sin fondo ni borde
-     los cinco se leian como una lista corrida y no se distinguia cual estaba elegido. */
   .pick-item{
     width:100%;
     display:grid; grid-template-columns:46px 1fr 12px;
     align-items:center; gap:14px;
-    padding:13px 14px 13px 12px;
-    border:1px solid rgba(90,58,30,0.16);
-    border-radius:16px;
-    background:rgba(255,252,244,0.16);
+    padding:14px 14px 14px 12px;
+    border:1px solid transparent;
+    border-radius:14px;
+    background:transparent;
     cursor:pointer; text-align:left;
     font-family:var(--sans); color:var(--ink);
-    transition:background .3s ease, border-color .3s ease, box-shadow .3s ease,
-               transform .3s cubic-bezier(0.22,1,0.36,1);
+    transition:background .3s ease, border-color .3s ease, transform .3s cubic-bezier(0.22,1,0.36,1);
   }
-  .pick-item:hover{
-    background:rgba(255,252,244,0.62);
-    border-color:rgba(90,58,30,0.28);
-    transform:translateX(-3px);
-  }
+  .pick-item:hover{ background:rgba(255,252,244,0.55); transform:translateX(-3px); }
   .pick-item:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
-  /* El elegido sube a tarjeta clara y con sombra: es el unico salto de contraste fuerte
-     del panel, asi se localiza de un vistazo entre los cinco. */
   .pick-item.is-current{
-    background:#FFFCF4;
-    border-color:rgba(90,58,30,0.20);
-    box-shadow:0 10px 24px rgba(60,36,16,0.14);
+    background:rgba(255,252,244,0.72);
+    border-color:rgba(90,58,30,0.28);
   }
   .pick-item.is-current .pick-arrow{ color:var(--accent); transform:translateX(2px); }
   .pick-thumb{
@@ -624,25 +570,14 @@
     display:flex; align-items:flex-end; justify-content:center;
     overflow:hidden;
   }
-  /* El SVG de reserva se dibuja para llenar la caja, asi que con el ancho basta. */
-  .pick-thumb svg{ width:100%; height:auto; display:block; }
-  /* Las fotos NO: son de 1024x1536, mas esbeltas que esta caja de 46x56. Con
-     width:100% se dibujaban a 69px de alto y, ancladas abajo por el flex-end del
-     contenedor, el overflow:hidden les cortaba 13px justo por arriba. `contain` las
-     encaja enteras; quedan algo mas estrechas, pero completas. */
-  .pick-thumb img{
-    width:100%; height:100%; display:block;
-    object-fit:contain; object-position:bottom center;
-  }
+  .pick-thumb svg, .pick-thumb img{ width:100%; height:auto; display:block; }
   .pick-text{ display:flex; flex-direction:column; gap:3px; min-width:0; }
   .pick-name{
     font-family:var(--serif); font-size:1.05rem; font-weight:600;
     line-height:1.2;
   }
   .pick-sub{
-    font-size:0.58rem; font-weight:600;
-    letter-spacing:0.13em; text-transform:uppercase;
-    color:#7A5730; line-height:1.6;
+    font-size:0.72rem; color:#6B4A2A; line-height:1.4;
   }
   .pick-arrow{
     width:9px; height:15px; color:#8A6234;
@@ -650,41 +585,8 @@
   }
   .pick-arrow svg{ width:100%; height:100%; display:block; }
   .pick-foot{
-    margin-top:auto; padding-top:clamp(20px, 3vh, 30px);
-    display:flex; flex-direction:column; gap:14px;
-  }
-  .pick-foot-note{
-    margin:0;
-    font-size:0.58rem; font-weight:700;
-    letter-spacing:0.16em; text-transform:uppercase;
-    color:#7A5730; line-height:1.7;
-  }
-  .pick-wa{
-    display:flex; align-items:center; justify-content:center; gap:9px;
-    padding:13px 18px;
-    border-radius:100px;
-    border:1px solid rgba(90,58,30,0.22);
-    background:#FFFCF4;
-    box-shadow:0 8px 20px rgba(60,36,16,0.12);
-    color:var(--ink); text-decoration:none;
-    font-size:0.66rem; font-weight:800;
-    letter-spacing:0.14em; text-transform:uppercase;
-    transition:transform .3s cubic-bezier(0.22,1,0.36,1), box-shadow .3s ease,
-               border-color .3s ease;
-  }
-  .pick-wa svg{ width:17px; height:17px; flex-shrink:0; color:#1E7D45; }
-  .pick-wa:hover{
-    transform:translateY(-2px);
-    box-shadow:0 14px 28px rgba(60,36,16,0.18);
-    border-color:var(--accent);
-  }
-  .pick-wa:focus-visible{ outline:2px solid var(--accent); outline-offset:3px; }
-  /* Cordillera: cierra el panel por abajo y lo ata al desierto del resto de la pagina.
-     preserveAspectRatio none porque solo interesa la silueta, no su proporcion. */
-  .pick-ridge{
-    display:block; width:100%; height:clamp(34px, 5vh, 52px);
-    color:#8A6234;
-    margin-bottom:-4px;
+    margin-top:auto; padding-top:22px;
+    font-size:0.74rem; color:#6B4A2A; line-height:1.6;
   }
 
   .pick-scrim{
@@ -756,10 +658,10 @@
   .prod-back{
     /* width:max-content y no inline-flex: como inline compartía línea con el "ORIGEN ·"
        que va justo detrás, y en móvil los dos se pisaban. */
-    width:max-content; align-items:center; gap:8px;
-    margin:0; padding:8px 16px 8px 12px;
+    display:flex; width:max-content; align-items:center; gap:8px;
+    margin-bottom:20px; padding:8px 16px 8px 12px;
     border:1px solid var(--card-line); border-radius:100px;
-    background:var(--card); box-shadow:0 8px 20px rgba(0,0,0,0.10); cursor:pointer;
+    background:transparent; cursor:pointer;
     font-family:var(--sans); font-size:0.68rem; font-weight:700;
     letter-spacing:0.14em; text-transform:uppercase; color:var(--ink-dim);
     transition:border-color .25s ease, color .25s ease, transform .25s ease;
@@ -1088,26 +990,12 @@
   /* Foreground trio, sized well past the mid-distance pair to sell the depth gap. Widths
      follow each file's own aspect so nothing is squashed. They share the dunes' colour,
      so whatever falls below the crest merges into it and only the silhouette reads.
-     Las bases van por debajo de la linea de suelo, y el lag esta acotado para que en el
-     pico del parallax (lag x TRAVEL = 94px, 83px y 59px) el pie siga por debajo de la
-     cresta de la duna, que mide 130px (85px en movil). Con los lags anteriores (0.18,
-     0.15, 0.12) el pie subia a 172px y asomaba por encima de la cresta: el cactus se veia
-     despegar del suelo. Si TRAVEL cambia, hay que rehacer esta cuenta. */
-  /* El tamano se gobierna desde `width`, no desde `height`: con background-size:contain
-     la escala la fija el lado que limita, y con estas cajas siempre limita el ancho. El
-     `height` es solo la caja que sostiene el dibujo, un poco holgada; tocarlo no cambia
-     nada de lo que se ve. Altura dibujada = width / anchoArte x altoArte.
-     El tamano y la ALTURA A LA QUE SE PLANTAN son dos ajustes distintos, y conviene no
-     confundirlos. `width` decide lo grande que es la planta; `bottom`, cuanta se ve, porque
-     la duna tapa todo lo que quede por debajo de su cresta (130px). Con las bases hundidas
-     (-40/-20/-10) solo asomaba el 40/29/37% de cada cactus y los dos de la derecha se leian
-     como muñones. Subidas, se ve el 53/45/52% sin que la planta crezca.
-     Techo de `bottom`: el pie tiene que seguir por debajo de la cresta en el pico del
-     parallax (lag x TRAVEL = 94/83/59px), y con margen, porque el perfil de la duna es
-     irregular y baja unos 25px en los valles. Los pies quedan en 90/91/83px. */
-  .d-c2{ left:2%;   bottom:-4px; width:82px; height:300px; background-image:url('assets/desierto/SVG/cactus2.svg'); }
-  .d-c1{ left:66%;  bottom:8px;  width:81px; height:225px; background-image:url('assets/desierto/SVG/cactus1.svg'); }
-  .d-c3{ left:87%;  bottom:24px; width:75px; height:235px; background-image:url('assets/desierto/SVG/cactus3.svg'); }
+     Bases are set below the ground line and the heights padded to match, so that at peak
+     parallax rise (lag x TRAVEL: 109px, 84px and 67px) each foot still lands under the
+     ~100px crest and no cut-off base is ever exposed. */
+  .d-c2{ left:2%;   bottom:-40px; width:103px; height:400px; background-image:url('assets/desierto/SVG/cactus2.svg'); }
+  .d-c1{ left:66%;  bottom:-20px; width:87px;  height:250px; background-image:url('assets/desierto/SVG/cactus1.svg'); }
+  .d-c3{ left:87%;  bottom:-10px; width:82px;  height:255px; background-image:url('assets/desierto/SVG/cactus3.svg'); }
 
   /* ---------- #nosotros copy over the scene: light type + glass panels ---------- */
   #nosotros .section-head h2{ color:#FDFBF4; }
@@ -1252,10 +1140,7 @@
     /* Se estira más allá de la caja del escenario para tapar también el relleno vertical
        de la sección. Sin esto quedaba una franja blanca entre "Nuestro origen" y el
        principio de la ficha. --sec-pad vale lo que el padding de section. */
-    /* --cta-row lo mide el JS: es lo que ocupa la fila del CTA, que quedo por encima del
-       escenario. Sin sumarlo, el fondo arrancaba por debajo y dejaba una franja blanca
-       entre "Nuestro origen" y la ficha. */
-    top:calc(-1 * (var(--sec-pad) + var(--cta-row, 0px)));
+    top:calc(-1 * var(--sec-pad));
     bottom:calc(-1 * var(--sec-pad));
     /* En escritorio da igual porque va en absoluto, pero en móvil vuelve al flujo y en el
        DOM está detrás de la ficha: sin esto la banda salía debajo del texto. */
@@ -1285,22 +1170,6 @@
     transition:opacity .9s ease;
   }
   .scene-in .scene-backdrop{ opacity:1; }
-
-  /* La bolsa sobre su roca, en una capa aparte del mismo lienzo que el fondo (misma
-     imagen partida en dos PNG). Comparte --scene-size con .scene-backdrop -mismo tamano
-     de cover- pero tiene su propia posicion, --bag-pos: el JS la mueve mas rapido que
-     --scene-pos a proposito, para que fondo y bolsa lean como dos planos con distinta
-     profundidad en vez de uno solo. */
-  .scene-bag{
-    position:absolute;
-    inset:0;
-    background-repeat:no-repeat;
-    background-size:var(--scene-size, cover);
-    background-position:var(--bag-pos, center);
-    opacity:0;
-    transition:opacity .9s ease;
-  }
-  .scene-in .scene-bag{ opacity:1; }
 
   /* Los granos van por encima del render: se posan en el canto de la roca de la foto. */
   .scene-beans{
@@ -1350,9 +1219,10 @@
        los parrafos del resto de la web. */
     max-width:min(560px, 100%);
     padding:0 0 clamp(30px, 4vh, 56px);
-    /* Arranca pegado a la fila del CTA, que es lo mas arriba que puede ir sin taparla.
-       Antes subia con un margen negativo y se montaba encima del boton. */
-    margin-top:0;
+    /* Sube por encima del borde del .container, aprovechando el relleno de la seccion:
+       el fondo llega hasta ahi, asi que el bloque sigue apoyado sobre cielo y deja mas
+       piedra libre por abajo. */
+    margin-top:calc(-1 * clamp(40px, 8vh, 104px));
   }
   .product-stage.has-scene .prod-copy > *{
     opacity:0;
@@ -1376,7 +1246,6 @@
      asi que el contraste depende del trozo de foto que quede debajo. */
   .product-stage.has-scene .prod-back{
     border-color:var(--card-line); color:var(--ink);
-    background:var(--card);
   }
   .product-stage.has-scene .prod-back:hover{
     border-color:var(--accent); color:var(--accent-deep);
@@ -1446,34 +1315,32 @@
      El fondo pasa a banda a sangre en la parte de arriba y la ficha va debajo, en oscuro
      sobre claro como el resto de la web. */
   @media (max-width: 900px){
+    /* Sticky contra el pie de la ventana: con `bottom` no llega a engancharse nunca (su
+       posición natural nunca cae por debajo) y la pestaña se va con el scroll. Fijando
+       `top` a una altura de ventana menos su alto, queda abajo y al alcance del pulgar.
+       Aquí es obligado: el texto arranca en el borde del .container y con la pestaña a
+       media altura le caía justo encima del título. */
     /* Anclada por `bottom`, no por `top: 100svh - algo`. Con position:fixed, `bottom` se
        resuelve contra el borde inferior de la ventana sin pasar por ninguna unidad de
        altura, asi que la barra del navegador no la puede arrastrar. */
-    .pick-tab{ width:54px; padding:16px 0 13px; gap:13px; border-radius:27px 0 0 27px; }
-    .pick-bean{ width:30.2px; height:32px; }
-    .pick-chevron{ width:18px; height:30px; }
-
+    .pick-tab{ --tab-anchor:bottom; top:auto; bottom:22px; padding:10px 13px 10px 11px; gap:9px; }
+    .pick-bean{ width:16px; height:24px; }
+    /* Pista libre al final de cada bloque para que no acabe sobre la última línea. */
+    .roast-stage, .product-stage{ padding-bottom:76px; }
 
     .product-stage.has-scene{ min-height:0; align-content:start; }
     .prod-scene{
       position:relative; left:auto; top:auto; bottom:auto; transform:none;
       width:100vw; margin-left:calc(50% - 50vw);
-      /* El alto de la banda es lo que decide el tamano de la bolsa, no el recorte lateral:
-         con `cover` la escala la manda el eje que necesita mas, y aqui siempre es el alto.
-         A 380px ampliaba el render a x0.44 y la bolsa ocupaba el 53% del ancho de pantalla,
-         dejando fuera casi la mitad de la foto. A 300 ocupa el 42% y se ve el 68%.
-         Por debajo de ~260 la bolsa se mete bajo la fila del CTA y su etiqueta deja de
-         leerse, asi que este es el suelo practico. */
-      height:min(44vh, 300px);
+      height:min(56vh, 380px);
       /* Sube a pegarse al borde de la sección: la banda va arriba del todo y el relleno
          blanco por encima sobra igual que en escritorio. */
       margin-top:calc(-1 * var(--sec-pad));
       margin-bottom:26px;
     }
-    /* El encuadre ya NO se fija aquí. Lo calcula el JS a partir de la bolsa de cada café
-       y lo escribe en .prod-scene, que es de donde lo leen también los granos. Con la
-       regla puesta aquí, fondo y granos usaban encuadres distintos. */
-    .scene-backdrop, .scene-bag{ inset:-4% 0; --scene-size:cover; }
+    /* Con el texto debajo ya no hay que despejar la izquierda: el encuadre se centra
+       para que la bolsa salga entera, que es lo que cuenta aquí. */
+    .scene-backdrop{ inset:-4% 0; --scene-size:cover; --scene-pos:center 56%; }
     .product-stage.has-scene .prod-copy{ max-width:none; padding:0; color:var(--ink); }
     /* En móvil el texto va debajo del fondo, no encima: la pestaña ya no lo pisa. */
     .product-stage.has-scene .prod-back{ border-color:var(--card-line); color:var(--ink-dim); }
@@ -1508,9 +1375,13 @@
     .roast-phases{ grid-template-columns:repeat(3, 1fr); gap:20px 10px; }
     .roast-phases li::after{ display:none; }
 
-
+    body.t-open .pick-label,
+    body.t-show .pick-label{ max-width:14ch; opacity:1; }
+    /* Con la hoja abierta la pestaña no aporta: la hoja trae su propio cierre. */
+    body.t-open .pick-tab{ opacity:0; pointer-events:none; }
     .pick-label{ font-size:0.6rem; letter-spacing:0.13em; }
-
+    body.t-open .pick-tab{ --tab-x:0px; }
+    body.t-open .pick-tab:hover{ --tab-x:0px; }
     .pick-panel{
       position:fixed;
       left:0; right:0; bottom:0; top:auto;
@@ -1561,8 +1432,8 @@
     .d-sun{ right:8%; top:clamp(104px, 15vh, 150px); width:96px; height:96px; }
     /* Bases pushed well below the ground line (and clipped there): the near dunes are only
        58px on narrow screens, so there is far less crest to hide a rising foot behind. */
-    .d-c2{ left:2%;  bottom:-45px; width:61px; height:225px; }
-    .d-c1{ left:64%; bottom:-20px; width:57px; height:210px; }
+    .d-c2{ left:2%;  bottom:-80px; width:67px; height:330px; }
+    .d-c1{ left:64%; bottom:-50px; width:57px; height:210px; }
     .d-c4{ left:80%; bottom:78px;  width:23px; height:75px; }
     .d-c3, .d-c5{ display:none; }
     #nosotros .about-copy{ padding:28px 24px 26px; }
