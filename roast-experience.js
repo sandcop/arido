@@ -199,66 +199,14 @@
   var section = document.getElementById('tueste');
   if(!section) return;
 
-  var tab      = document.getElementById('pickTab');
-  var panel    = document.getElementById('pickPanel');
-  var scrim    = document.getElementById('pickScrim');
-  var list     = document.getElementById('pickList');
   var stage    = document.getElementById('productStage');
   var backBtn  = document.getElementById('prodBack');
-  var dock     = section.querySelector('.pick-dock');
-
-  // Alto de la fila del CTA, para que el fondo de la escena lo cubra. Se mide en vez de
-  // escribirlo a mano porque el boton y su margen cambian de tamaño con el ancho.
-  function medirFilaCta(){
-    if(!dock) return;
-    // Se mide la CAJA DE LA FILA, no la distancia hasta el escenario. Restando posiciones
-    // se leian valores de un estado intermedio —el escenario aun no habia recolocado— y
-    // --cta-row se quedaba con el alto de la narrativa (88px) estando ya en modo ficha
-    // (66px). El fondo de la escena se pasaba entonces 22px por encima de la seccion.
-    var alto = dock.offsetHeight +
-               (parseFloat(window.getComputedStyle(dock).marginBottom) || 0);
-    if(alto > 0) section.style.setProperty('--cta-row', Math.round(alto) + 'px');
-  }
-  // Cuanto tiene que apartarse la fila del CTA para quedar A HUESO con el canto del panel.
-  // Solo con -(ancho del panel) queda un hueco: la fila esta alineada al borde del
-  // .container, que no llega al borde de la pantalla —hay margen de centrado y relleno—,
-  // y ese sobrante hay que devolverlo. Se mide porque depende del ancho de la ventana.
-  var cont = section.querySelector('.container');
-  var panelEl = document.getElementById('pickPanel');
-  function medirDesplazamiento(){
-    if(!cont) return;
-    var r = cont.getBoundingClientRect();
-    var relleno = parseFloat(window.getComputedStyle(cont).paddingRight) || 0;
-    // Lo que va del borde del texto al borde de la ventana: margen de centrado del
-    // .container mas su relleno. La pestaña se saca por ahi para quedar a ras de pantalla
-    // sin dejar de estar en el flujo, que es lo que la mantiene quieta con el scroll.
-    section.style.setProperty('--dock-out',
-      Math.max(0, Math.round(window.innerWidth - (r.right - relleno))) + 'px');
-  }
-
-  function medirTodo(){ medirFilaCta(); medirDesplazamiento(); }
-  medirTodo();
-  window.addEventListener('load', medirTodo);
-  var ctaTimer;
-  window.addEventListener('resize', function(){
-    window.clearTimeout(ctaTimer);
-    ctaTimer = window.setTimeout(medirTodo, 160);
-  });
-  if(!tab || !panel || !list || !stage) return;
+  if(!stage) return;
 
   // El marcado trae hidden para que sin JS la ficha no se vea. A partir de aquí la
-  // visibilidad la gobierna la clase is-showing y el hueco se conserva siempre, así la
+  // visibilidad la gobierna la clase is-open y el hueco se conserva siempre, así la
   // sección no cambia de alto al abrir ni al cerrar.
   stage.removeAttribute('hidden');
-
-  // La pestaña, el velo y el cajon cuelgan del <body>, no de la seccion, asi que su
-  // estado se marca alli. La seccion conserva sus propias clases para lo que si vive
-  // dentro (narrativa, escenario, ficha).
-  var body = document.body;
-  function marcar(clase, on){
-    section.classList.toggle(clase, on);
-    body.classList.toggle({ 'is-open':'t-open', 'is-showing':'t-show' }[clase] || clase, on);
-  }
 
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var PENDING = /^\[.*\]$/;
@@ -324,25 +272,94 @@
            c.accent + '10 38%, rgba(255,255,255,0) 72%)';
   }
 
-  // ------------------------------------------------------------- menú lateral
+  // ------------------------------------------------------------- estado actual
   var current = 0;
 
-  list.innerHTML = COFFEES.map(function(c, i){
-    return '<li>' +
-      '<button type="button" class="pick-item" data-i="' + i + '" aria-pressed="false">' +
-        '<span class="pick-thumb" style="--accent:' + c.accent + '">' + packMarkup(c, 'pick-thumb-img') + '</span>' +
-        '<span class="pick-text">' +
-          '<span class="pick-name' + (isPending(c.name) ? ' is-pending' : '') + '">' + esc(c.name) + '</span>' +
-          '<span class="pick-sub' + (isPending(c.subtitle) ? ' is-pending' : '') + '">' + esc(c.subtitle) + '</span>' +
-        '</span>' +
-        '<span class="pick-arrow" aria-hidden="true">' +
-          '<svg viewBox="0 0 12 20" fill="none"><path d="M2 2l8 8-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
-        '</span>' +
-      '</button>' +
-    '</li>';
-  }).join('');
+  // ------------------------------------------------------------- grilla de cafés
+  var gridTrack   = document.getElementById('coffeeGridTrack');
+  var gridDots    = document.getElementById('coffeeGridDots');
+  var cards = [];
 
-  var items = [].slice.call(list.querySelectorAll('.pick-item'));
+  function buildGrid(){
+    if(!gridTrack) return;
+    gridTrack.innerHTML = COFFEES.map(function(c, i){
+      return '<button type="button" class="coffee-card" data-i="' + i + '" aria-pressed="false">' +
+        '<span class="coffee-card-thumb">' + packMarkup(c, 'coffee-card-thumb-img') +
+          '<span class="coffee-card-quickview" aria-hidden="true">Vista rápida</span>' +
+        '</span>' +
+        '<span class="coffee-card-name' + (isPending(c.name) ? ' is-pending' : '') + '">' + esc(c.name) + '</span>' +
+        '<span class="coffee-card-sub' + (isPending(c.subtitle) ? ' is-pending' : '') + '">' + esc(c.subtitle) + '</span>' +
+      '</button>';
+    }).join('');
+    cards = [].slice.call(gridTrack.querySelectorAll('.coffee-card'));
+    cards.forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var i = +btn.getAttribute('data-i');
+        // Clic en la ya activa: cierra. En cualquier otra: abre/cambia.
+        if(showing && i === current) closeDetail();
+        else openDetail(i);
+      });
+    });
+  }
+  buildGrid();
+
+  // -------------------------------------------------- puntos del carrusel movil
+  var dotButtons = [];
+  function buildDots(){
+    if(!gridDots) return;
+    gridDots.innerHTML = COFFEES.map(function(c, i){
+      return '<button type="button" data-i="' + i + '" aria-label="Ver café ' +
+        esc(isPending(c.name) ? '' : c.name) + '"></button>';
+    }).join('');
+    dotButtons = [].slice.call(gridDots.querySelectorAll('button'));
+    dotButtons.forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var card = cards[+btn.getAttribute('data-i')];
+        if(card) card.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', inline: 'center', block: 'nearest' });
+      });
+    });
+    actualizarDots();
+  }
+
+  // Marca activo el punto de la tarjeta mas centrada en el carril visible.
+  var dotsTimer = null;
+  function actualizarDots(){
+    if(!gridTrack || !dotButtons.length || !cards.length) return;
+    var centro = gridTrack.getBoundingClientRect().left + gridTrack.clientWidth / 2;
+    var masCerca = 0, distMin = Infinity;
+    cards.forEach(function(card, i){
+      var r = card.getBoundingClientRect();
+      var d = Math.abs((r.left + r.width / 2) - centro);
+      if(d < distMin){ distMin = d; masCerca = i; }
+    });
+    dotButtons.forEach(function(btn, i){ btn.classList.toggle('is-on', i === masCerca); });
+  }
+  if(gridTrack){
+    gridTrack.addEventListener('scroll', function(){
+      window.clearTimeout(dotsTimer);
+      dotsTimer = window.setTimeout(actualizarDots, 80);
+    });
+  }
+  window.addEventListener('resize', function(){
+    window.clearTimeout(dotsTimer);
+    dotsTimer = window.setTimeout(actualizarDots, 150);
+  });
+
+  buildDots();
+
+  // Flechas izquierda/derecha para recorrer las tarjetas (mismo patron que
+  // ya usaban arriba/abajo en el panel viejo).
+  if(gridTrack){
+    gridTrack.addEventListener('keydown', function(e){
+      var i = cards.indexOf(document.activeElement);
+      if(i < 0) return;
+      if(e.key === 'ArrowRight' || e.key === 'ArrowLeft'){
+        e.preventDefault();
+        var next = (i + (e.key === 'ArrowRight' ? 1 : cards.length - 1)) % cards.length;
+        cards[next].focus();
+      }
+    });
+  }
 
   // ------------------------------------------------------------ ficha producto
   var elOrigin = document.getElementById('prodOrigin');
@@ -357,6 +374,31 @@
   var copy     = document.getElementById('prodCopy');
   var bgLayers = [].slice.call(stage.querySelectorAll('.prod-bg-layer'));
   var bgTurn   = 0;
+
+  // ------------------------------------------------------ formato + WhatsApp
+  // Las dos presentaciones son las mismas para los cinco cafés (dato real, no
+  // por-café), así que el marcado ya viene escrito en el HTML: aquí solo se
+  // cablea el clic y se arma el link de WhatsApp con el café y el tamaño
+  // elegidos.
+  var elSizeBtns  = [].slice.call(stage.querySelectorAll('.prod-size'));
+  var elWhatsapp  = document.getElementById('prodWhatsapp');
+  var selectedSize = elSizeBtns.length ? elSizeBtns[0].getAttribute('data-size') : '';
+
+  function actualizarWhatsapp(){
+    if(!elWhatsapp) return;
+    var c = COFFEES[current];
+    var nombre = isPending(c.name) ? 'café' : c.name;
+    var texto = '¡Hola! Quiero consultar stock del café ' + nombre + ' (' + selectedSize + ').';
+    elWhatsapp.href = 'https://wa.me/56972497925?text=' + encodeURIComponent(texto);
+  }
+
+  elSizeBtns.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      selectedSize = btn.getAttribute('data-size');
+      elSizeBtns.forEach(function(b){ b.classList.toggle('is-current', b === btn); });
+      actualizarWhatsapp();
+    });
+  });
 
   function meterMarkup(label, value){
     var dots = '';
@@ -444,19 +486,13 @@
       return pts[pts.length-1][1];
     }
 
-    // Borde derecho de la ficha, en fraccion del canvas. 0 si no la pisa: en movil el
-    // texto va DEBAJO de la banda, no encima, y ahi no hay nada que esquivar.
+    // Desde que la ficha vive en su propia columna (.prod-copy), separada de la caja
+    // de imagen (.prod-media), el texto nunca se superpone al escenario -ni apilado
+    // en movil ni al lado en escritorio-, asi que no hay nada de lo que esquivar los
+    // granos. Se deja la funcion (en vez de quitar la llamada) por si algun dia vuelve
+    // a haber una composicion con texto superpuesto.
     function limiteTexto(){
-      var copy = elScene.parentNode && elScene.parentNode.querySelector('.prod-copy');
-      if(!copy || !canvas) return 0;
-      var rc = copy.getBoundingClientRect(), rk = canvas.getBoundingClientRect();
-      if(!rk.width || !rc.width) return 0;
-      if(rc.bottom <= rk.top || rc.top >= rk.bottom) return 0;   // no se solapan
-      // El velo blanco sobresale un 2% por la derecha de la caja (ver ::before en el CSS),
-      // y encima se le suma un margen para que el grano no roce el degradado.
-      var derecha = rc.right + rc.width * 0.02 + 12;
-      var lim = (derecha - rk.left) / rk.width;
-      return lim < 0 ? 0 : lim > 0.9 ? 0.9 : lim;
+      return 0;
     }
 
     function calcularSuelo(){
@@ -1009,6 +1045,13 @@
 
     elFacts.innerHTML = factsMarkup(c.facts);
 
+    // Cada café abre con el formato mas chico elegido por defecto.
+    if(elSizeBtns.length){
+      selectedSize = elSizeBtns[0].getAttribute('data-size');
+      elSizeBtns.forEach(function(b, k){ b.classList.toggle('is-current', k === 0); });
+    }
+    actualizarWhatsapp();
+
     var conEscena = buildScene(c);
     // Con decorado, la bolsa es una capa más de la escena y los granos sobran: la
     // referencia de marca no los lleva. Sin decorado se mantiene la composición
@@ -1025,138 +1068,83 @@
     if(incoming){ incoming.style.backgroundImage = bgValue(c); incoming.classList.add('is-on'); }
     if(outgoing){ outgoing.classList.remove('is-on'); }
     bgTurn++;
+  }
 
-    items.forEach(function(btn, j){
+  // ------------------------------------------------------------ abrir / cerrar
+  // Un unico estado: `showing`. La ficha es un popup ("vista rápida") con velo
+  // detras; ya no comparte celda con la narrativa ni con la grilla.
+  var showing = false;
+  var closeTimer = null;
+  var scrim = document.getElementById('quickviewScrim');
+
+  function openDetail(i){
+    var cambiaDeCafe = showing && i !== current;
+    current = i;
+    if(cambiaDeCafe && !reduced){
+      // Mismo fundido de salida/entrada que ya usaba select() al cambiar de
+      // cafe con el panel viejo.
+      copy.classList.add('is-swapping');
+      elPack.classList.add('is-swapping');
+      window.setTimeout(function(){
+        paint(i);
+        copy.classList.remove('is-swapping');
+        elPack.classList.remove('is-swapping');
+      }, 220);
+    } else {
+      paint(i);
+    }
+    if(!showing){
+      showing = true;
+      window.clearTimeout(closeTimer);
+      document.body.classList.add('has-quickview');
+      if(scrim) scrim.hidden = false;
+      requestAnimationFrame(function(){
+        requestAnimationFrame(function(){
+          stage.classList.add('is-open');
+          if(scrim) scrim.classList.add('is-open');
+        });
+      });
+      if(!COFFEES[current].scene) beans.start();
+    }
+    cards.forEach(function(btn, j){
       var on = j === i;
       btn.classList.toggle('is-current', on);
       btn.setAttribute('aria-pressed', on ? 'true' : 'false');
     });
+    // Foco al encabezado de la ficha: quien navega con teclado aterriza donde
+    // empieza el contenido nuevo, no se queda perdido en la tarjeta.
+    if(elName) elName.setAttribute('tabindex', '-1');
+    window.setTimeout(function(){ if(elName) elName.focus({ preventScroll:true }); }, reduced ? 0 : 340);
   }
 
-  var swapTimer = null;
-  function select(i, viaClick){
-    current = i;
-    if(reduced){
-      paint(i);
-      if(viaClick && isSheet()) closePanel(false);
-      return;
-    }
-    // Sale con opacity + desplazamiento; entra con lo mismo en sentido contrario.
-    copy.classList.add('is-swapping');
-    elPack.classList.add('is-swapping');
-    window.clearTimeout(swapTimer);
-    swapTimer = window.setTimeout(function(){
-      paint(i);
-      copy.classList.remove('is-swapping');
-      elPack.classList.remove('is-swapping');
-    }, 220);
-    if(viaClick && isSheet()) closePanel(false);
-  }
-
-  // ------------------------------------------------------------ abrir / cerrar
-  // Dos estados independientes, no uno.
-  //   showing -> la seccion esta en modo producto
-  //   open    -> el panel de seleccion esta desplegado
-  // Estaban unidos, y en movil el panel se cierra al elegir un cafe: eso arrastraba
-  // consigo al producto, asi que la pantalla volvia a la narrativa justo despues de
-  // elegir, que es lo contrario de lo que se pide.
-  var showing = false;
-  var open = false;
-  var closeTimer = null;
-  // Mismo umbral que la media query del CSS que convierte el panel en hoja inferior.
-  // Si los dos números se separan, hay un tramo de anchos en el que el JS cierra el panel
-  // al elegir un café mientras el CSS sigue mostrándolo como panel lateral.
-  function isSheet(){ return window.matchMedia('(max-width: 760px)').matches; }
-
-  function showProduct(){
-    if(showing) return;
-    showing = true;
-    window.clearTimeout(closeTimer);
-    section.classList.add('is-picking');
-    paint(current);
-    requestAnimationFrame(function(){
-      requestAnimationFrame(function(){
-        marcar('is-showing', true);
-        // Una vuelta mas antes de medir: el margen de la fila del CTA cambia con la clase
-        // t-show, y midiendo en el mismo fotograma se lee todavia el valor anterior. Con
-        // el valor viejo, el fondo de la escena se pasaba 22px por encima de la seccion.
-        requestAnimationFrame(medirFilaCta);
-      });
-    });
-    if(!COFFEES[current].scene) beans.start();
-  }
-
-  function hideProduct(){
+  function closeDetail(){
     if(!showing) return;
     showing = false;
-    marcar('is-showing', false);
-    // La fila del CTA cambia de alto entre estados —aparece "Volver al tueste" y el hueco
-    // de debajo se estrecha—, asi que hay que volver a medirla o el fondo deja franja.
-    requestAnimationFrame(medirFilaCta);
+    stage.classList.remove('is-open');
+    if(scrim) scrim.classList.remove('is-open');
+    document.body.classList.remove('has-quickview');
+    cards.forEach(function(btn){
+      btn.classList.remove('is-current');
+      btn.setAttribute('aria-pressed', 'false');
+    });
     window.clearTimeout(closeTimer);
     closeTimer = window.setTimeout(function(){
       if(showing) return;
-      section.classList.remove('is-picking');
       beans.stop();
-    }, reduced ? 0 : 620);
-  }
-
-  function openPanel(){
-    if(open) return;
-    open = true;
-    showProduct();
-    panel.hidden = false;
-    if(scrim && isSheet()) scrim.hidden = false;
-    // Un fotograma de margen para que el navegador registre el estado inicial antes de
-    // que arranquen las transiciones; sin esto el panel aparece de golpe.
-    requestAnimationFrame(function(){
-      requestAnimationFrame(function(){ marcar('is-open', true); });
-    });
-    tab.setAttribute('aria-expanded', 'true');
-    var first = items[current] || items[0];
-    if(first) first.focus({ preventScroll:true });
-  }
-
-  function closePanel(refocus){
-    if(!open) return;
-    open = false;
-    marcar('is-open', false);
-    tab.setAttribute('aria-expanded', 'false');
-    window.setTimeout(function(){
-      if(open) return;
-      panel.hidden = true;
+      sceneBeans.stop();
       if(scrim) scrim.hidden = true;
-    }, reduced ? 0 : 620);
-    if(refocus !== false) tab.focus({ preventScroll:true });
+    }, reduced ? 0 : 320);
+    // Devuelve el foco a la tarjeta que se acaba de cerrar.
+    var btn = cards[current];
+    if(btn) btn.focus({ preventScroll:true });
   }
 
-  tab.addEventListener('click', function(){ open ? closePanel() : openPanel(); });
-  if(scrim) scrim.addEventListener('click', function(){ closePanel(); });
-  if(backBtn) backBtn.addEventListener('click', function(){
-    closePanel(false);
-    hideProduct();
-    tab.focus({ preventScroll:true });
-  });
+  if(backBtn) backBtn.addEventListener('click', closeDetail);
+  if(scrim) scrim.addEventListener('click', closeDetail);
 
-  items.forEach(function(btn){
-    btn.addEventListener('click', function(){ select(+btn.getAttribute('data-i'), true); });
-  });
-
-  // Flechas arriba/abajo para recorrer la lista.
-  list.addEventListener('keydown', function(e){
-    var i = items.indexOf(document.activeElement);
-    if(i < 0) return;
-    if(e.key === 'ArrowDown' || e.key === 'ArrowUp'){
-      e.preventDefault();
-      items[(i + (e.key === 'ArrowDown' ? 1 : items.length - 1)) % items.length].focus();
-    }
-  });
-
-  // ESC cierra primero el panel; con el panel ya cerrado, sale del modo producto.
+  // ESC cierra el detalle si esta abierto.
   document.addEventListener('keydown', function(e){
-    if(e.key !== 'Escape') return;
-    if(open) closePanel();
-    else if(showing){ hideProduct(); tab.focus({ preventScroll:true }); }
+    if(e.key === 'Escape' && showing) closeDetail();
   });
 
   // ------------------------------------------------------------ granos que caen
@@ -1292,9 +1280,8 @@
     };
   })();
 
-  // Si la sección sale de pantalla con el panel abierto, el bucle se para solo. El mismo
-  // observador enciende y apaga la pestaña: va en position:fixed, así que sin esto se
-  // quedaría flotando sobre el resto de la página.
+  // Si la sección sale de pantalla con el detalle abierto, la animación (escena o
+  // granos sueltos) se para sola y se reanuda al volver a entrar.
 
   if('IntersectionObserver' in window){
     new IntersectionObserver(function(e){

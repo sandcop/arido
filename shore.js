@@ -1,10 +1,14 @@
-/* Shoreline swash at the foot of "Hablemos".
+/* Shoreline swash — attaches to every .shore-layer canvas found (today:
+   "Hablemos" and "Edición especial", each with its own independent cycle).
    The sea lies past the bottom edge; each wave runs up over the sand and drains back.
    What sells it as water is not the shape of the water but the timing: real swash rushes
    up in about a second and takes three or four to drain away. Every wave draws a fresh
    reach, duration and pause, so the cycle never reads as a loop. */
 (function(){
-  var canvas = document.getElementById('shoreCanvas');
+  // Envuelto en una función: ahora hay dos playas (Hablemos y Edición especial),
+  // cada una con su propio oleaje, y cada llamada crea su propio estado
+  // (wave, foam, wetY/wetT...) sin compartir nada con la otra.
+  function attachShore(canvas){
   if(!canvas || !canvas.getContext) return;
 
   var ctx = canvas.getContext('2d');
@@ -131,14 +135,10 @@
     return base + edgeOffset(x, w, now, 17 * dpr * (0.55 + 0.45 * adv));
   }
 
-  // Last frame's state, so the sand trail can ask where the water currently is.
-  var lastAdv = 0, lastNow = 0;
-
   function draw(now){
     ctx.clearRect(0, 0, W, H);
 
     var adv = wave ? advance(wave, now) : 0;
-    lastAdv = adv; lastNow = now;
     var i, x, y;
 
     // wet sand: darkened where the water has been, drying off column by column.
@@ -262,19 +262,6 @@
     draw(now);
   }
 
-  // Published so the finger-trail layer can rub out whatever the water is currently
-  // covering. Coordinates are this canvas's own device pixels; the caller offsets by the
-  // difference in canvas heights, since both are pinned to the same section.
-  window.AridoShore = {
-    height: function(){ return H; },
-    waterTopAt: function(x){
-      if(!wave) return Infinity;
-      var i = Math.round(x / colW);
-      if(i < 0) i = 0; else if(i > COLS - 1) i = COLS - 1;
-      return edgeYAt(i, wave, lastAdv, lastNow);
-    }
-  };
-
   if(prefersReduced){ still(); return; }
 
   if('IntersectionObserver' in window){
@@ -284,4 +271,9 @@
   } else {
     start();
   }
+  }
+
+  // Una playa por cada canvas .shore-layer que haya en la página (hoy, dos:
+  // Hablemos y Edición especial), cada una con su propio ciclo de olas.
+  [].slice.call(document.querySelectorAll('.shore-layer')).forEach(attachShore);
 })();

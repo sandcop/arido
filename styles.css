@@ -332,28 +332,16 @@
 
   #tueste{
     position:relative;
-    /* Igual al padding vertical de section; lo usa .prod-scene para desbordarlo. */
-    --sec-pad:120px;
     /* `clip` y no `hidden`: hidden convierte la sección en contenedor de scroll, y eso
        deja sin efecto el position:sticky de la pestaña — se quedaba clavada abajo del
        todo en vez de acompañar el scroll. `clip` recorta igual sin crear scrollport. */
     overflow-x:clip;
   }
-  /* Los dos estados se apilan en la misma celda de grid en vez de sacar uno del flujo.
-     Con position:absolute la sección encogía 630px al abrir el panel y la página pegaba
-     un salto bajo el cursor; apilados, la altura la sigue marcando la narrativa y no se
-     mueve nada. */
+  /* Narrativa, grilla y detalle son tres bloques apilados en el flujo normal:
+     ya no comparten celda de grid ni se hacen crossfade entre si. */
   #tueste .container{
-    position:relative; z-index:1; display:grid;
-    /* Chrome reajusta el scroll cuando cambia el contenido de la página para "mantener
-       la vista": al intercambiar narrativa por producto eso movía la página ~200px bajo
-       el cursor sin que la sección hubiera cambiado de alto. */
-    overflow-anchor:none;
+    position:relative; z-index:1;
   }
-  /* El CTA ocupa la primera fila y los dos estados comparten la segunda. Sin filas
-     explicitas el CTA se colocaba solo despues de ellos y acababa al pie de la seccion. */
-  .pick-dock{ grid-row:1; }
-  .roast-stage, .product-stage{ grid-area:2 / 1; }
 
   /* --- narrativa del tueste (estado inicial) --- */
   .roast-phases{
@@ -414,358 +402,180 @@
     margin:0 0 52px;
   }
 
-  /* --- pestaña "Elige tu café" --- */
-  /* Carril de ancho cero pegado al borde izquierdo: la pestaña va sticky dentro, de modo
-     que acompaña el scroll sin ocupar sitio en el layout ni empujar el contenido. */
-  /* Sigue en el flujo —sube y baja con la pagina—, pero con z-index propio: el fondo de
-     la escena va posicionado con z-index 0, y un elemento posicionado pinta por encima de
-     uno estatico aunque vaya antes en el DOM. Sin esto el render tapaba el CTA. */
-  .pick-dock{
-    display:flex; flex-wrap:wrap; align-items:center;
-    gap:clamp(10px, 1.2vw, 16px);
-    margin:0 0 clamp(26px, 3.4vw, 44px);
-    position:relative; z-index:2;
-    /* A la izquierda, en la vertical de la ficha. Estuvo a la derecha mientras el CTA
-       iba en esta fila; ahora el CTA es un asa pegada al borde de la ventana y, alineado
-       a la derecha, "Volver al tueste" quedaba tapado por el panel al abrirse. */
-    justify-content:flex-start;
-    /* La pestaña ya no va en el flujo de esta fila: se posiciona en absoluto contra el
-       borde de la ventana. Aqui solo queda "Volver al tueste". */
-    position:relative;
-    min-height:44px;
+  /* --- grilla de cafés --- */
+  /* Margen arriba: separa las tarjetas de las bolsas de los tres recuadros de
+     "La tostadora / El perfil / Los lotes", que si no quedaban pegados. */
+  .coffee-grid{ margin:clamp(48px, 7vw, 84px) 0 clamp(40px, 6vw, 72px); }
+  .coffee-grid-track{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));
+    gap:clamp(14px, 2vw, 22px);
   }
-  /* Abierto, la fila se aparta justo el ancho del panel y queda pegada a su canto: la
-     pestaña sigue a la vista —se lee como la lengüeta del cajon, igual que la referencia—
-     en vez de quedar sepultada debajo, y "Volver al tueste" deja de salir cortado.
-     Esto NO es seguir el scroll: es un cambio de estado, el boton sigue quieto en la
-     pagina mientras se hace scroll, que es lo que se pidio.
-     En movil el panel es una hoja inferior y --panel-w vale 0px, asi que no se mueve. */
-  /* Abierta, la pestaña se aparta justo el ancho del panel y queda pegada a su canto.
-     No es seguir el scroll: es un cambio de estado. En movil --panel-w vale 0 y no se
-     mueve, porque alli el panel es una hoja inferior. */
-  body.t-open .pick-tab{ --tab-open:var(--panel-w); }
-  /* Con la ficha a la vista el hueco se estrecha: es alto que gana la descripcion, que
-     conviene tenerla lo mas arriba posible sobre el cielo del render. */
-  body.t-show .pick-dock{ margin-bottom:clamp(14px, 1.8vw, 22px); }
-  /* "Volver al tueste" vive en esta fila, junto al CTA, y no dentro de la ficha: ahi
-     quedaba debajo del CTA y los dos se pisaban. Solo existe con el producto a la vista. */
-  .prod-back{ display:none; }
-  body.t-show .prod-back{ display:inline-flex; }
-  .pick-tab{
-    /* CTA en el flujo. Nada de position:fixed: se desplaza con la pagina como cualquier
-       boton, que es justo lo que hace que no se pueda descolocar. */
-    --tab-x:0px;
-    --tab-open:0px;
-    /* Contra el borde de la ventana: se sale del .container lo que mide su margen, que
-       lo calcula el JS en --dock-out. En absoluto dentro del dock —no fixed— para que
-       siga viajando con la pagina y no con el viewport. */
-    position:absolute;
-    top:0;
-    right:calc(-1 * var(--dock-out, 0px));
-    /* Vertical: grano arriba, flecha abajo. */
-    display:inline-flex; flex-direction:column; align-items:center; justify-content:center;
-    width:62px;
-    margin:0;
-    padding:20px 0 16px;
-    gap:16px;
+  .coffee-card{
+    display:flex; flex-direction:column; align-items:center;
+    gap:10px;
+    padding:clamp(18px, 2vw, 26px) clamp(14px, 1.6vw, 20px) 20px;
     border:1px solid var(--card-line);
-    /* Lengüeta: el lado izquierdo redondeado y el derecho recto, con su linea naranja.
-       Ese canto recto es el que se apoya contra el borde de la pantalla y contra el
-       panel cuando se abre. */
-    border-radius:31px 0 0 31px;
-    border-right:3px solid var(--accent);
+    border-radius:18px;
     background:var(--card);
-    box-shadow:0 12px 30px rgba(0,0,0,0.12);
     cursor:pointer;
-    color:var(--ink);
     font-family:var(--sans);
-    transform:translateX(calc(var(--tab-x) - var(--tab-open)));
-    transition:transform .35s cubic-bezier(0.22,1,0.36,1),
-               box-shadow .35s cubic-bezier(0.22,1,0.36,1),
-               background .3s ease;
+    color:var(--ink);
+    text-align:center;
+    transition:border-color .3s ease, box-shadow .3s ease, transform .3s cubic-bezier(0.22,1,0.36,1);
   }
-  .pick-tab:hover{
-    --tab-x:-4px;
-    box-shadow:0 18px 38px rgba(0,0,0,0.16);
+  .coffee-card:hover{
+    border-color:var(--accent);
+    box-shadow:0 14px 30px rgba(0,0,0,0.10);
+    transform:translateY(-3px);
   }
-  .pick-tab:focus-visible{ outline:2px solid var(--accent); outline-offset:3px; }
-
-  .pick-bean{
-    /* La caja guarda la relacion del viewBox del archivo (1221.24 x 1294 = 0.9437), asi
-       el grano se dibuja sin franjas vacias a los lados ni deformarse. El color va en el
-       propio <path>, como en el archivo. */
-    /* 38px y no 26: el surco del dibujo mide 44 unidades de viewBox en su parte mas
-       estrecha, o sea 0.036 del ancho. A 26px eso son 0.88px —por debajo de un pixel—, el
-       antialias lo funde y el grano se ve como una mancha solida en vez de partido. A 38
-       el surco pasa de 1.37px y aguanta. El relleno de la pestaña baja de 14 a 11px para
-       que el boton no crezca de alto al subir el icono. */
-    display:block; width:35.86px; height:38px;
-    flex-shrink:0;
-    transition:transform .4s cubic-bezier(0.22,1,0.36,1);
+  .coffee-card:focus-visible{ outline:2px solid var(--accent); outline-offset:3px; }
+  /* La tarjeta cuyo detalle está abierto: mismo lenguaje de contraste que
+     usaba `.pick-item.is-current`. */
+  .coffee-card.is-current{
+    border-color:var(--accent);
+    box-shadow:0 14px 30px rgba(0,0,0,0.14);
   }
-  .pick-bean svg{ width:100%; height:100%; display:block; }
-  /* La etiqueta esta plegada y solo se despliega al pasar por encima o al enfocar con
-     teclado. Se pliega con max-width y no con display:none a proposito: el texto sigue
-     en el DOM, asi que el boton conserva su nombre accesible ("Elige tu café") aunque no
-     se vea. El relleno tambien se pliega, o quedaria un hueco vacio entre grano y flecha. */
-  /* En vertical: la lengüeta mide 62px de ancho, ahi no cabe el texto en horizontal.
-     Se pliega con max-height —no display:none— para que el boton conserve su nombre
-     accesible ("Elige tu café") aunque el texto no se vea. */
-  .pick-label{
-    writing-mode:vertical-rl;
-    font-size:0.68rem; font-weight:800;
-    letter-spacing:0.2em; text-transform:uppercase;
-    white-space:nowrap;
-    max-height:0; opacity:0; overflow:hidden; padding:0;
-    transition:max-height .5s cubic-bezier(0.22,1,0.36,1),
-               opacity .32s ease,
-               padding .5s cubic-bezier(0.22,1,0.36,1);
-  }
-  .pick-tab:hover .pick-label,
-  .pick-tab:focus-visible .pick-label{
-    max-height:13em; opacity:1; padding:5px 0 2px;
-  }
-  /* Sin hover no hay forma de descubrir el texto, asi que en tactil va siempre desplegado:
-     un icono suelto y sin etiqueta seria el unico acceso a toda la seccion de producto. */
-  @media (hover: none){
-    .pick-label{ max-height:13em; opacity:1; padding:5px 0 2px; }
-  }
-  .pick-chevron{
-    display:block; width:21px; height:35px; color:var(--accent);
-    flex-shrink:0;
-    transition:transform .4s cubic-bezier(0.22,1,0.36,1);
-  }
-  .pick-chevron svg{ width:100%; height:100%; display:block; }
-  .pick-tab:hover .pick-bean{ transform:scale(1.06); }
-  .pick-tab:focus-visible{
-    outline:2px solid var(--accent);
-    outline-offset:3px;
-  }
-  /* Abierto: la pestaña se corre hasta el canto del panel y se queda pegada a el, en vez
-     de quedar encima. El grano, ademas, se parte en dos. */
-  body.t-open .pick-chevron{ transform:rotate(180deg); }
-  body.t-open .pick-tab{
-    background:var(--bg-alt);
-    box-shadow:0 8px 20px rgba(0,0,0,0.10);
-  }
-
-  /* Aqui vivian las reglas que abrian el grano separando sus dos mitades. Se han quitado
-     con ellas: el icono es ahora el archivo sin partir y no hay mitades que mover. */
-
-  /* --- panel de productos --- */
-  :root{ --panel-w:clamp(280px, 25vw, 360px); }
-  /* A la derecha, y se despliega desde ese borde. Cuelga del body, no de #tueste. */
-  .pick-panel{
-    /* fixed, igual que la pestaña. Absoluto viajaba con la seccion mientras la pestaña se
-       quedaba clavada al viewport, asi que se desalineaban en cuanto habia scroll. Fijos
-       los dos, van siempre juntos y el panel se comporta como un cajon. */
-    position:fixed;
-    right:0; top:0; bottom:0;
-    width:var(--panel-w);
-    max-width:34vw;
-    z-index:90;
-    pointer-events:auto;
-    display:flex; flex-direction:column;
-    padding:clamp(92px, 12vh, 130px) clamp(20px, 2vw, 28px) clamp(28px, 3vw, 40px);
-    /* Tierra de desierto en lugar del blanco de tarjeta. */
-    background:linear-gradient(178deg, #E8D8C0 0%, #D9C2A2 55%, #CDB18E 100%);
-    border-left:1px solid rgba(90,58,30,0.22);
-    box-shadow:-26px 0 60px rgba(60,36,16,0.18);
-    transform:translateX(101%);
-    transition:transform .62s cubic-bezier(0.22,1,0.36,1);
-    overflow-y:auto;
-  }
-  body.t-open .pick-panel{ transform:none; }
-  .pick-panel-head{ margin-bottom:clamp(18px, 2.4vh, 26px); }
-  .pick-title{
-    font-family:var(--serif); font-weight:600;
-    font-size:clamp(1.5rem, 2.1vw, 1.85rem);
-    line-height:1.1; color:var(--ink);
-    margin:0 0 10px;
-  }
-  .pick-kicker{
-    margin:0;
-    font-size:0.62rem; font-weight:700;
-    letter-spacing:0.18em; text-transform:uppercase;
-    line-height:1.7; color:#7A5730;
-  }
-  .pick-list{ list-style:none; display:flex; flex-direction:column; gap:10px; }
-  /* Cada cafe es una tarjeta con borde propio, no una fila suelta: sin fondo ni borde
-     los cinco se leian como una lista corrida y no se distinguia cual estaba elegido. */
-  .pick-item{
-    width:100%;
-    display:grid; grid-template-columns:46px 1fr 12px;
-    align-items:center; gap:14px;
-    padding:13px 14px 13px 12px;
-    border:1px solid rgba(90,58,30,0.16);
-    border-radius:16px;
-    background:rgba(255,252,244,0.16);
-    cursor:pointer; text-align:left;
-    font-family:var(--sans); color:var(--ink);
-    transition:background .3s ease, border-color .3s ease, box-shadow .3s ease,
-               transform .3s cubic-bezier(0.22,1,0.36,1);
-  }
-  .pick-item:hover{
-    background:rgba(255,252,244,0.62);
-    border-color:rgba(90,58,30,0.28);
-    transform:translateX(-3px);
-  }
-  .pick-item:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
-  /* El elegido sube a tarjeta clara y con sombra: es el unico salto de contraste fuerte
-     del panel, asi se localiza de un vistazo entre los cinco. */
-  .pick-item.is-current{
-    background:#FFFCF4;
-    border-color:rgba(90,58,30,0.20);
-    box-shadow:0 10px 24px rgba(60,36,16,0.14);
-  }
-  .pick-item.is-current .pick-arrow{ color:var(--accent); transform:translateX(2px); }
-  .pick-thumb{
-    width:46px; height:56px;
+  .coffee-card-thumb{
+    position:relative;
+    width:100%; height:clamp(150px, 16vw, 210px);
     display:flex; align-items:flex-end; justify-content:center;
     overflow:hidden;
   }
-  /* El SVG de reserva se dibuja para llenar la caja, asi que con el ancho basta. */
-  .pick-thumb svg{ width:100%; height:auto; display:block; }
-  /* Las fotos NO: son de 1024x1536, mas esbeltas que esta caja de 46x56. Con
-     width:100% se dibujaban a 69px de alto y, ancladas abajo por el flex-end del
-     contenedor, el overflow:hidden les cortaba 13px justo por arriba. `contain` las
-     encaja enteras; quedan algo mas estrechas, pero completas. */
-  .pick-thumb img{
+  .coffee-card-thumb svg{ width:70%; height:auto; display:block; }
+  /* Las fotos son 1024x1536 (mas esbeltas que la caja): contain para verlas
+     enteras, igual que ya hace `.pick-thumb img`. */
+  .coffee-card-thumb img{
     width:100%; height:100%; display:block;
     object-fit:contain; object-position:bottom center;
   }
-  .pick-text{ display:flex; flex-direction:column; gap:3px; min-width:0; }
-  .pick-name{
-    font-family:var(--serif); font-size:1.05rem; font-weight:600;
-    line-height:1.2;
-  }
-  .pick-sub{
-    font-size:0.58rem; font-weight:600;
-    letter-spacing:0.13em; text-transform:uppercase;
-    color:#7A5730; line-height:1.6;
-  }
-  .pick-arrow{
-    width:9px; height:15px; color:#8A6234;
-    transition:transform .3s ease, color .3s ease;
-  }
-  .pick-arrow svg{ width:100%; height:100%; display:block; }
-  .pick-foot{
-    margin-top:auto; padding-top:clamp(20px, 3vh, 30px);
-    display:flex; flex-direction:column; gap:14px;
-  }
-  .pick-foot-note{
-    margin:0;
-    font-size:0.58rem; font-weight:700;
-    letter-spacing:0.16em; text-transform:uppercase;
-    color:#7A5730; line-height:1.7;
-  }
-  .pick-wa{
-    display:flex; align-items:center; justify-content:center; gap:9px;
-    padding:13px 18px;
-    border-radius:100px;
-    border:1px solid rgba(90,58,30,0.22);
-    background:#FFFCF4;
-    box-shadow:0 8px 20px rgba(60,36,16,0.12);
-    color:var(--ink); text-decoration:none;
-    font-size:0.66rem; font-weight:800;
-    letter-spacing:0.14em; text-transform:uppercase;
-    transition:transform .3s cubic-bezier(0.22,1,0.36,1), box-shadow .3s ease,
-               border-color .3s ease;
-  }
-  .pick-wa svg{ width:17px; height:17px; flex-shrink:0; color:#1E7D45; }
-  .pick-wa:hover{
-    transform:translateY(-2px);
-    box-shadow:0 14px 28px rgba(60,36,16,0.18);
-    border-color:var(--accent);
-  }
-  .pick-wa:focus-visible{ outline:2px solid var(--accent); outline-offset:3px; }
-  /* Cordillera: cierra el panel por abajo y lo ata al desierto del resto de la pagina.
-     preserveAspectRatio none porque solo interesa la silueta, no su proporcion. */
-  .pick-ridge{
-    display:block; width:100%; height:clamp(34px, 5vh, 52px);
-    color:#8A6234;
-    margin-bottom:-4px;
-  }
-
-  .pick-scrim{
-    position:fixed; inset:0; z-index:89;
-    background:rgba(20,16,12,0.5);
-    opacity:0; transition:opacity .5s ease;
-  }
-  body.t-open .pick-scrim{ opacity:1; }
-
-  /* --- composición de producto --- */
-  /* El bloque narrativo no se destruye: se atenúa y se aparta, para poder volver a él
-     al cerrar el panel sin reconstruir nada. */
-  .roast-stage{
-    transition:opacity .5s ease, transform .62s cubic-bezier(0.22,1,0.36,1);
-  }
-  #tueste.is-showing .roast-stage{
-    opacity:0; transform:translateY(-18px);
+  /* "Vista rápida": oculta hasta que el cursor pasa por la tarjeta (o esta
+     recibe foco por teclado), igual que en kickinghorsecoffee.com. En tactil
+     no hay hover que la revele, asi que ahi se deja siempre visible. */
+  .coffee-card-quickview{
+    position:absolute; left:8px; right:8px; bottom:8px;
+    padding:9px 0;
+    border-radius:10px;
+    background:rgba(20,16,12,0.82);
+    color:#fff;
+    font-size:0.64rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase;
+    opacity:0; transform:translateY(6px);
+    transition:opacity .25s ease, transform .25s ease;
     pointer-events:none;
   }
+  .coffee-card:hover .coffee-card-quickview,
+  .coffee-card:focus-visible .coffee-card-quickview{
+    opacity:1; transform:none;
+  }
+  @media (hover: none){
+    .coffee-card-quickview{ opacity:1; transform:none; }
+  }
+  .coffee-card-name{
+    font-family:var(--serif); font-weight:600;
+    font-size:1.05rem; line-height:1.2;
+  }
+  .coffee-card-sub{
+    font-size:0.68rem; font-weight:600;
+    letter-spacing:0.08em;
+    color:var(--ink-dim);
+    line-height:1.5;
+  }
+  /* El carrusel (puntos) solo existe en la banda movil: ver la media query
+     de 900px, mas abajo. */
+  .coffee-grid-dots{ display:none; }
+
+  /* --- ficha de detalle: popup "vista rápida" --- */
+  /* Velo detras del popup. Clic encima lo cierra (ver JS). */
+  .quickview-scrim{
+    position:fixed; inset:0; z-index:190;
+    background:rgba(20,16,12,0.55);
+    opacity:0; pointer-events:none;
+    transition:opacity .3s ease;
+  }
+  .quickview-scrim.is-open{ opacity:1; pointer-events:auto; }
+  /* Mientras el popup esta abierto, la pagina de detras no hace scroll (ver JS,
+     que pone esta clase en <body>). */
+  body.has-quickview{ overflow:hidden; }
 
   .product-stage{
     --accent:#B4712F;
-    position:relative;
-    display:grid;
-    grid-template-columns:minmax(0, 1fr) minmax(0, 0.9fr);
-    align-items:center;
-    align-content:center;
-    gap:clamp(30px, 5vw, 70px);
-    /* Sin sangria: con el panel a la derecha el texto ya no queda nunca debajo de el. */
-    opacity:0; transform:translateY(22px);
+    position:fixed;
+    inset:0;
+    margin:auto;
+    width:min(720px, calc(100vw - 32px));
+    max-height:calc(100vh - 48px);
+    overflow-y:auto;
+    z-index:200;
+    /* Flexbox en columna, no grid: apila .prod-media y .prod-copy uno debajo del
+       otro sin ninguna ambiguedad de colocacion — cada uno es un bloque normal,
+       en el orden en que aparecen en el HTML, punto. */
+    display:flex;
+    flex-direction:column;
+    gap:clamp(20px, 3vw, 32px);
+    padding:clamp(24px, 3vw, 40px);
+    background:var(--card);
+    border-radius:22px;
+    box-shadow:0 40px 100px rgba(0,0,0,0.35);
+    opacity:0; transform:translateY(16px) scale(0.98);
     pointer-events:none;
-    /* visibility y no el atributo `hidden`: hidden no hacía nada aquí, porque la regla
-       .product-stage{display:grid} gana al [hidden]{display:none} del navegador. La ficha
-       seguía en el flujo Y sus botones seguían siendo alcanzables con el tabulador
-       estando invisible. visibility:hidden sí los saca del recorrido de teclado, y al
-       conservar el hueco la sección nunca cambia de alto al abrir o cerrar.
-       El retardo en visibility deja que termine el fundido antes de desaparecer. */
+    /* visibility y no display: saca los botones del recorrido de teclado
+       mientras esta cerrado sin dejar de poder animar la entrada/salida. */
     visibility:hidden;
-    transition:opacity .55s ease .12s,
-               transform .62s cubic-bezier(0.22,1,0.36,1) .12s,
-               visibility 0s linear .7s;
+    transition:opacity .3s ease, transform .35s cubic-bezier(0.22,1,0.36,1),
+               visibility 0s linear .3s;
   }
-  #tueste.is-showing .product-stage{
+  .product-stage.is-open{
     opacity:1; transform:none; pointer-events:auto; visibility:visible;
-    transition:opacity .55s ease .12s,
-               transform .62s cubic-bezier(0.22,1,0.36,1) .12s,
+    transition:opacity .3s ease, transform .35s cubic-bezier(0.22,1,0.36,1),
                visibility 0s;
   }
-  /* Sin JS la ficha no debe aparecer nunca: el script quita el atributo al arrancar. */
-  #tueste .product-stage[hidden]{ display:none; }
+  /* Sin JS la ficha no debe aparecer nunca: el script quita el atributo al arrancar.
+     Sin el prefijo #tueste: el popup cuelga del <body>, fuera de esa seccion. */
+  .product-stage[hidden]{ display:none; }
 
-  .prod-bg{ position:absolute; inset:-40px -30vw -40px -30vw; z-index:0; pointer-events:none; }
-  .prod-bg-layer{
-    position:absolute; inset:0;
-    background-size:cover; background-position:center;
-    opacity:0; transition:opacity .6s ease;
+  /* Boton de cerrar: circulo en la esquina superior derecha del popup. */
+  .prod-back{
+    position:absolute; top:14px; right:14px; z-index:5;
+    width:36px; height:36px;
+    display:flex; align-items:center; justify-content:center;
+    padding:0; margin:0;
+    border:1px solid var(--card-line); border-radius:50%;
+    background:var(--card); box-shadow:0 8px 20px rgba(0,0,0,0.12); cursor:pointer;
+    font-size:0.95rem; color:var(--ink-dim);
+    transition:border-color .25s ease, color .25s ease, transform .25s ease;
   }
-  .prod-bg-layer.is-on{ opacity:1; }
+  .prod-back:hover{ border-color:var(--accent); color:var(--accent-deep); transform:scale(1.06); }
+  .prod-back:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+
+  /* Halo de color de reserva: sobraba con la imagen ya contenida en su propia
+     caja (.prod-media) — el popup queda limpio, sin atmosfera de fondo. */
+  .prod-bg{ display:none; }
+
+  /* Caja de imagen: aloja la escena con parallax+granos (Perú) o la bolsa suelta
+     con sus propios granos (el resto) — el CSS de mas abajo oculta la que no toque. */
+  .prod-media{
+    position:relative;
+    /* flex-shrink:0 y width:100%: en un flex column, sin esto un hijo con
+       aspect-ratio puede encogerse por debajo de su alto natural si el padre
+       anda corto de espacio, y ahi es cuando el texto de abajo empieza a
+       treparle encima. Fijando su alto por aspect-ratio y prohibiendo que
+       encoja, siempre reserva el espacio completo antes que .prod-copy. */
+    flex:0 0 auto;
+    width:100%;
+    border-radius:16px;
+    overflow:hidden;
+    background:var(--bg-alt);
+    /* Horizontal: la imagen va arriba, ancha, y la ficha debajo. */
+    aspect-ratio:16 / 9;
+  }
 
   .prod-copy{
     position:relative; z-index:2;
-    max-width:520px;
-    transition:opacity .22s ease, transform .22s ease;
+    flex:1 1 auto;
+    width:100%;
+    padding-top:6px;
   }
-  .prod-copy.is-swapping{ opacity:0; transform:translateY(10px); }
-
-  /* Salida explicita del modo producto: sin esto, cerrar el panel en movil dejaba al
-     visitante en la ficha sin manera evidente de volver a la narrativa. */
-  .prod-back{
-    /* width:max-content y no inline-flex: como inline compartía línea con el "ORIGEN ·"
-       que va justo detrás, y en móvil los dos se pisaban. */
-    width:max-content; align-items:center; gap:8px;
-    margin:0; padding:8px 16px 8px 12px;
-    border:1px solid var(--card-line); border-radius:100px;
-    background:var(--card); box-shadow:0 8px 20px rgba(0,0,0,0.10); cursor:pointer;
-    font-family:var(--sans); font-size:0.68rem; font-weight:700;
-    letter-spacing:0.14em; text-transform:uppercase; color:var(--ink-dim);
-    transition:border-color .25s ease, color .25s ease, transform .25s ease;
-  }
-  .prod-back:hover{ border-color:var(--accent); color:var(--accent-deep); transform:translateX(-2px); }
-  .prod-back:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+  .prod-copy.is-swapping{ opacity:0; transform:translateY(10px); transition:opacity .22s ease, transform .22s ease; }
 
   .prod-origin{
     display:inline-block;
@@ -834,22 +644,58 @@
   }
   .prod-facts .fact dd{ font-size:0.92rem; color:var(--ink); }
 
-  /* Dato aún sin definir. Mismo lenguaje que los pendientes de la sección Contacto. */
-  #tueste .is-pending{
+  /* Dato aún sin definir. Mismo lenguaje que los pendientes de la sección Contacto.
+     Sin el prefijo #tueste: el popup ahora vive fuera de esa sección (ver mas abajo,
+     junto al velo), asi que ese ancestro ya no envuelve a .prod-desc/.prod-facts/etc. */
+  .is-pending{
     color:var(--accent-deep);
     opacity:0.75;
     font-style:italic;
     font-weight:400;
   }
-  #tueste .prod-notes li.is-pending{ text-transform:none; letter-spacing:0.04em; }
+  .prod-notes li.is-pending{ text-transform:none; letter-spacing:0.04em; }
 
-  /* --- arte: bolsa + granos --- */
+  /* --- formato (250 g / 500 g) --- */
+  .prod-sizes{
+    display:flex; gap:10px;
+    margin:26px 0 16px;
+  }
+  .prod-size{
+    padding:10px 22px;
+    border:1px solid var(--card-line); border-radius:100px;
+    background:var(--card); cursor:pointer;
+    font-family:var(--sans); font-size:0.78rem; font-weight:700;
+    color:var(--ink);
+    transition:border-color .25s ease, background .25s ease, color .25s ease;
+  }
+  .prod-size:hover{ border-color:var(--accent); }
+  .prod-size:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+  .prod-size.is-current{
+    border-color:var(--accent); background:var(--accent); color:#fff;
+  }
+
+  /* --- consultar stock por WhatsApp --- */
+  .prod-whatsapp{
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    width:100%;
+    padding:15px 20px;
+    border-radius:100px;
+    border:1px solid transparent;
+    background:linear-gradient(135deg, var(--accent-light), var(--accent));
+    color:#141414;
+    font-family:var(--sans); font-weight:700; font-size:0.9rem;
+    transition:transform .25s ease, box-shadow .25s ease;
+  }
+  .prod-whatsapp svg{ width:20px; height:20px; flex-shrink:0; color:#1E7D45; }
+  .prod-whatsapp:hover{ transform:translateY(-2px); box-shadow:0 14px 28px rgba(228,97,30,0.30); }
+  .prod-whatsapp:focus-visible{ outline:2px solid var(--accent-deep); outline-offset:3px; }
+
+  /* --- arte: bolsa + granos (cafés sin escena) --- */
+  /* Llena la caja .prod-media, igual que hace .prod-scene para los que si tienen. */
   .prod-art{
-    position:relative; z-index:2;
+    position:absolute; inset:0; z-index:2;
     display:flex; align-items:flex-end; justify-content:center;
-    /* Franja bajo la base del paquete donde el montón se ve entero. */
-    padding-bottom:26px;
-    min-height:clamp(360px, 46vh, 520px);
+    padding-bottom:18px;
   }
   /* Delante de la bolsa, no detrás. Detrás, el montón se formaba justo donde el paquete
      lo tapa y solo se veían los dos o tres granos que caían por fuera. Delante se lee la
@@ -863,7 +709,7 @@
   }
   .prod-pack{
     position:relative; z-index:2;
-    width:clamp(190px, 22vw, 300px);
+    width:min(70%, 260px);
     filter:drop-shadow(0 30px 50px rgba(0,0,0,0.28));
     transition:opacity .22s ease, transform .22s ease;
   }
@@ -871,7 +717,7 @@
   .prod-pack svg, .prod-pack img{ width:100%; height:auto; display:block; }
 
   @media (prefers-reduced-motion: reduce){
-    .pick-panel, .pick-tab, .product-stage, .roast-stage,
+    .product-stage, .quickview-scrim, .coffee-card,
     .prod-copy, .prod-pack, .prod-bg-layer{ transition:none; }
   }
 
@@ -939,16 +785,9 @@
   #nosotros .container{ position:relative; }
   #nosotros .section-head,
   #nosotros .about-grid{ position:relative; z-index:1; }
-  #contacto .container{ position:relative; z-index:1; }
-  /* The shore occupies exactly the reserved band, so the padding and the canvas height
-     are driven by one value and cannot drift apart. */
-  #contacto{
-    --shore-height:clamp(300px, 30vw, 420px);
-    /* Headroom above the beach band so the occasional surge can climb in among the
-       cards. The cards sit at z-index 1, so the water passes behind them. */
-    --shore-surge:280px;
-    padding-bottom:var(--shore-height);
-  }
+  /* La franja "Hablemos" (playa sola, sin nada encima) se quitó: con la misma
+     playa ya de fondo en "Edición especial", repetirla aquí sin texto no
+     aportaba nada. #contacto ahora es el <footer> (ver HTML). */
   .shore-layer{
     position:absolute;
     left:0; bottom:0;
@@ -1153,74 +992,148 @@
     box-shadow:0 0 0 4px rgba(185,225,240,0.22);
   }
 
-  .cafe-note{
-    margin-top:30px; font-size:0.9rem; color:var(--ink-dim); font-style:italic;
+  /* ---------- EDICIÓN ESPECIAL ---------- */
+  /* Misma playa clara que "Hablemos" (arena + oleaje, sin oscurecer): la pidió
+     así, tal cual, para esta sección. El título usa el mismo negro/naranja
+     que el resto del sitio -es arena clara, no un fondo oscuro-; las tarjetas
+     llevan su propio velo oscuro por dentro, así que su texto blanco sigue
+     leyéndose igual sin importar el tono del fondo. */
+  #especial{
+    /* position:relative ya la trae la regla general de section{}. */
+    background:#EBDBB4; /* respaldo solido: se ve un instante antes de que el canvas pinte */
+    --shore-height:clamp(140px, 14vw, 200px);
+    --shore-surge:120px;
+    padding-bottom:var(--shore-height);
+  }
+  #especial .container{ position:relative; z-index:1; }
+  #especial .section-head h2{
+    text-shadow:0 1px 12px rgba(255,255,255,0.55);
   }
 
-  /* ---------- CONTACT ---------- */
-  .contact-grid{
+  .promo-grid{
     display:grid;
     grid-template-columns:1fr 1fr;
-    gap:60px;
+    gap:20px;
   }
-  .contact-list{ display:flex; flex-direction:column; gap:22px; margin-top:8px; }
-  .contact-item{
-    display:flex; align-items:center; gap:18px;
-    padding:20px 22px;
-    background:var(--card);
-    border:1px solid var(--card-line);
-    border-radius:16px;
-    box-shadow:0 10px 26px rgba(0,0,0,0.05);
-    transition:border-color 0.3s ease, transform 0.3s ease;
+  /* Flex, con el contenido pegado abajo: sea el hijo un <h3> suelto (tarjetas
+     chicas) o el bloque .promo-copy (la ancha), align-items:flex-end lo baja
+     igual, sin reglas por separado para cada caso. */
+  .promo-card{
+    position:relative;
+    display:flex;
+    align-items:flex-end;
+    overflow:hidden;
+    border-radius:18px;
+    min-height:260px;
+    color:#fff;
   }
-  .contact-item:hover{ border-color:var(--accent); transform:translateX(6px); }
-  .contact-icon{
-    width:44px; height:44px; border-radius:50%;
-    background:linear-gradient(135deg, var(--accent-light), var(--accent));
+  /* La ancha ocupa las dos columnas y es mas alta: es la pieza principal. */
+  .promo-card-wide{ min-height:320px; grid-column:1 / -1; }
+
+  .promo-media{
+    position:absolute; inset:0;
     display:flex; align-items:center; justify-content:center;
-    flex-shrink:0; color:#141414;
+    /* Marcador de posición: rayas sutiles sobre un degradado oscuro, para que
+       se lea claramente como "falta una foto aquí" y no como diseño final. */
+    background:
+      repeating-linear-gradient(135deg, rgba(255,255,255,0.05) 0 2px, transparent 2px 16px),
+      linear-gradient(160deg, #33291f, #17120d);
+    transition:transform .5s cubic-bezier(0.22,1,0.36,1);
   }
-  .contact-item .label{ font-size:0.78rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--ink-dim); }
-  .contact-item .value{ font-family:var(--serif); font-size:1.15rem; color:var(--ink); margin-top:2px; }
-  .contact-item.pending .value{ color:var(--accent-deep); font-family:var(--sans); font-size:0.95rem; }
+  .promo-card:hover .promo-media{ transform:scale(1.04); }
+  .promo-placeholder-label{
+    font-family:var(--sans); font-size:0.7rem; font-weight:700;
+    letter-spacing:0.14em; text-transform:uppercase;
+    color:rgba(255,255,255,0.4);
+    border:1px dashed rgba(255,255,255,0.3);
+    border-radius:100px;
+    padding:8px 16px;
+  }
+  /* Velo para que el título se lea sobre cualquier foto que se ponga despues.
+     Mas oscuro que antes: el fondo de la sección ya no es negro liso, es arena
+     con grano y espuma, y ese ruido de fondo exige mas contraste. */
+  .promo-card::after{
+    content:'';
+    position:absolute; inset:0;
+    background:linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.2) 55%, transparent 80%);
+  }
+  .promo-title{
+    position:relative; z-index:1;
+    padding:24px;
+    font-family:var(--sans); font-weight:800;
+    font-size:clamp(1.3rem, 2vw, 1.7rem);
+    line-height:1.15;
+    text-transform:uppercase;
+    text-shadow:0 2px 10px rgba(0,0,0,0.5);
+  }
+  .promo-copy{
+    position:relative; z-index:1;
+    padding:28px;
+    max-width:420px;
+  }
+  .promo-card-wide .promo-title{ padding:0; margin-bottom:10px; }
+  .promo-sub{
+    font-size:0.9rem; color:rgba(255,255,255,0.85);
+    margin-bottom:20px;
+    text-shadow:0 1px 6px rgba(0,0,0,0.5);
+  }
+  .promo-btn{
+    border-color:rgba(255,255,255,0.5); color:#fff;
+  }
+  .promo-btn:hover{ border-color:var(--accent-light); color:var(--accent-light); }
 
-  form.contact-form{
-    background:var(--card); border:1px solid var(--card-line);
-    border-radius:22px; padding:40px;
-    box-shadow:0 14px 34px rgba(0,0,0,0.06);
-  }
-  .form-row{ margin-bottom:20px; }
-  .form-row label{ display:block; font-size:0.82rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--ink-dim); margin-bottom:8px; }
-  .form-row input, .form-row textarea{
-    width:100%; padding:14px 16px;
-    background:var(--bg);
-    border:1px solid var(--line);
-    border-radius:12px;
-    color:var(--ink);
-    font-family:var(--sans); font-size:0.95rem;
-    resize:vertical;
-  }
-  .form-row input:focus, .form-row textarea:focus{ outline:none; border-color:var(--accent); }
-  form.contact-form .btn{ width:100%; }
-
+  /* ---------- FOOTER (#contacto) ---------- */
+  /* Oscuro a propósito: el resto del sitio es claro, pero un footer oscuro es
+     un contraste habitual al pie de página y no compite con ninguna sección de
+     contenido (es la última cosa que se ve, no una tarjeta más entre otras). */
   footer{
-    padding:50px 0 30px;
-    border-top:1px solid var(--line);
-    background:var(--bg);
+    padding:56px 0 28px;
+    background:#141414;
+    color:#EDEDEC;
   }
-  .footer-inner{
-    display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:20px;
+  .footer-follow{
+    display:flex; align-items:center; flex-wrap:wrap; gap:14px;
+    padding-bottom:32px;
+    margin-bottom:32px;
+    border-bottom:1px solid rgba(255,255,255,0.14);
+    font-size:0.78rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase;
+  }
+  .footer-follow-label{ color:rgba(255,255,255,0.55); }
+  .footer-follow > a{
+    color:#EDEDEC; text-decoration:underline; text-underline-offset:3px;
+  }
+  .footer-follow > a:hover{ color:var(--accent-light); }
+  .footer-social{ display:flex; gap:12px; margin-left:auto; }
+  .footer-social a{
+    width:34px; height:34px; border-radius:50%; border:1px solid rgba(255,255,255,0.22);
+    display:flex; align-items:center; justify-content:center;
+    color:#EDEDEC; transition:all 0.3s ease;
+  }
+  .footer-social a svg{ width:17px; height:17px; display:block; }
+  .footer-social a:hover{ color:#141414; background:var(--accent-light); border-color:var(--accent-light); transform:translateY(-3px); }
+
+  .footer-cols{
+    display:grid; grid-template-columns:repeat(3, minmax(0,1fr));
+    gap:32px;
+    padding-bottom:36px;
+  }
+  .footer-col{ display:flex; flex-direction:column; gap:13px; }
+  .footer-col h4{
+    font-family:var(--sans); font-size:0.72rem; font-weight:800;
+    letter-spacing:0.14em; text-transform:uppercase;
+    color:rgba(255,255,255,0.5);
+    margin-bottom:4px;
+  }
+  .footer-col a{ font-size:0.9rem; color:#EDEDEC; }
+  .footer-col a:hover{ color:var(--accent-light); }
+
+  .footer-bottom{
+    padding-top:24px;
+    border-top:1px solid rgba(255,255,255,0.14);
   }
   .footer-brand{ display:flex; align-items:center; gap:12px; }
-  .footer-brand .brand-mark{ width:34px; height:34px; }
-  .footer-copy{ font-size:0.85rem; color:var(--ink-dim); }
-  .footer-social{ display:flex; gap:16px; }
-  .footer-social a{
-    width:38px; height:38px; border-radius:50%; border:1px solid var(--line);
-    display:flex; align-items:center; justify-content:center;
-    color:var(--ink-dim); transition:all 0.3s ease;
-  }
-  .footer-social a:hover{ color:var(--accent-deep); border-color:var(--accent); transform:translateY(-3px); }
+  .footer-brand .brand-mark{ width:32px; height:32px; }
+  .footer-copy{ font-size:0.82rem; color:rgba(255,255,255,0.55); }
 
   /* ---------- REVEAL ANIMATIONS ---------- */
   .reveal{
@@ -1233,44 +1146,12 @@
 
   /* ---------- RESPONSIVE ---------- */
 
-  /* ---------- ESCENA DE PRODUCTO ---------- */
-  /* El render va a sangre completa de la seccion y el texto se lee encima, a la
-     izquierda, sobre un velo que oscurece ese lado. */
-  .product-stage.has-scene{
-    position:relative;
-    grid-template-columns:1fr;
-    /* start y no center: centrada, la fila se redimensionaba con el margen negativo de la
-       ficha y se recolocaba sola, asi que el bloque solo subia un tercio de lo pedido. */
-    align-content:start;
-    min-height:clamp(500px, 44vw, 760px);
-    /* Sin hueco propio: el fondo cubre de borde a borde y la ficha va superpuesta. */
-    gap:0;
-  }
-
+  /* ---------- ESCENA DE PRODUCTO (Perú) ---------- */
+  /* Ya no es un fondo a sangre completa con el texto encima: es una capa mas dentro
+     de .prod-media, la misma caja de imagen que usan los cafés sin escena. Por eso
+     no necesita su propia columna, su propio min-height ni desbordar nada. */
   .prod-scene{
-    position:absolute;
-    /* Se estira más allá de la caja del escenario para tapar también el relleno vertical
-       de la sección. Sin esto quedaba una franja blanca entre "Nuestro origen" y el
-       principio de la ficha. --sec-pad vale lo que el padding de section. */
-    /* --cta-row lo mide el JS: es lo que ocupa la fila del CTA, que quedo por encima del
-       escenario. Sin sumarlo, el fondo arrancaba por debajo y dejaba una franja blanca
-       entre "Nuestro origen" y la ficha. */
-    top:calc(-1 * (var(--sec-pad) + var(--cta-row, 0px)));
-    bottom:calc(-1 * var(--sec-pad));
-    /* En escritorio da igual porque va en absoluto, pero en móvil vuelve al flujo y en el
-       DOM está detrás de la ficha: sin esto la banda salía debajo del texto. */
-    order:-1;
-    /* Sale del .container para ocupar el ancho entero. Absoluto y centrado sobre la caja
-       de relleno: asi la sangria que empuja el texto cuando se abre el panel no arrastra
-       tambien al fondo. #tueste lleva overflow-x:clip, que evita el scroll horizontal que
-       el 100vw provocaria por el ancho de la barra de desplazamiento. */
-    left:50%;
-    width:100vw;
-    transform:translateX(-50%);
-    overflow:hidden;
-    z-index:0;
-    border-radius:0;
-    box-shadow:none;
+    position:absolute; inset:0;
   }
 
   /* Fondo quieto: ni parallax ni zoom de entrada. Solo aparece. */
@@ -1313,228 +1194,75 @@
   }
   .scene-in .scene-beans{ opacity:1; }
 
-  /* Velo lateral: el render tiene cactus y zorro en el lado izquierdo, y el texto en
-     crema sobre ese dibujo no se leeria. Se apaga hacia el centro para no tocar la bolsa. */
-  /* Sin velo: el texto va directamente sobre el render. */
-
-  /* --- la ficha, superpuesta a la izquierda --- */
-  /* Manto blanco muy suave detras del texto: el render es una foto a contraluz y sin el
-     los datos mas pequenos se apoyan en piedra y matorral. Se deshace hacia la bolsa para
-     no lavarla. */
-  .product-stage.has-scene .prod-copy::before{
-    content:'';
-    position:absolute;
-    /* Sin backdrop-filter: el desenfoque dibujaba un canto recto sobre la bolsa y la
-       dejaba lavada. Solo un degradado suave, y se apaga antes de llegar al paquete. */
-    inset:-4% -2% -4% -9%;
-    background:
-      linear-gradient(96deg,
-        rgba(255,255,255,0.88) 0%,
-        rgba(255,255,255,0.82) 44%,
-        rgba(255,255,255,0.52) 74%,
-        rgba(255,255,255,0) 98%);
-    /* El degradado solo va en horizontal, asi que arriba y abajo cortaba en recto. La
-       mascara le deshace tambien esos dos cantos. */
-    -webkit-mask-image:linear-gradient(to bottom, transparent 0, #000 14%, #000 86%, transparent 100%);
-    mask-image:linear-gradient(to bottom, transparent 0, #000 14%, #000 86%, transparent 100%);
-    z-index:-1;
-    pointer-events:none;
-  }
-  .product-stage.has-scene .prod-copy{
-    position:relative;
-    z-index:2;
-    /* Arrimada arriba y no centrada: centrada, su ultima fila caia sobre la piedra del
-       render y el texto se leia contra el granito. */
-    align-self:start;
-    /* Sin sangria propia: arranca en el borde del .container, en la misma vertical que
-       los parrafos del resto de la web. */
-    max-width:min(560px, 100%);
-    padding:0 0 clamp(30px, 4vh, 56px);
-    /* Arranca pegado a la fila del CTA, que es lo mas arriba que puede ir sin taparla.
-       Antes subia con un margen negativo y se montaba encima del boton. */
-    margin-top:0;
-  }
-  .product-stage.has-scene .prod-copy > *{
-    opacity:0;
-    transform:translateY(16px);
-    transition:opacity .7s ease, transform .8s cubic-bezier(0.22,1,0.36,1);
-  }
-  /* Se repite `.has-scene` en el selector que enciende: la regla que apaga lleva dos
-     clases mas el descendiente, asi que sin esto gana ella y el texto no aparece nunca. */
-  .product-stage.has-scene.scene-in .prod-copy > *{ opacity:1; transform:none; }
-  /* Cascada: cada bloque entra detras del anterior, ya montado el fondo. */
-  .product-stage.has-scene.scene-in .prod-copy > *:nth-child(1){ transition-delay:.34s; }
-  .product-stage.has-scene.scene-in .prod-copy > *:nth-child(2){ transition-delay:.42s; }
-  .product-stage.has-scene.scene-in .prod-copy > *:nth-child(3){ transition-delay:.50s; }
-  .product-stage.has-scene.scene-in .prod-copy > *:nth-child(4){ transition-delay:.58s; }
-  .product-stage.has-scene.scene-in .prod-copy > *:nth-child(5){ transition-delay:.66s; }
-  .product-stage.has-scene.scene-in .prod-copy > *:nth-child(6){ transition-delay:.74s; }
-  .product-stage.has-scene.scene-in .prod-copy > *:nth-child(7){ transition-delay:.82s; }
-  .product-stage.has-scene.scene-in .prod-copy > *:nth-child(8){ transition-delay:.90s; }
-
-  /* Tipografia en negro sobre el render, igual que el resto de la web. Sin velo detras,
-     asi que el contraste depende del trozo de foto que quede debajo. */
-  .product-stage.has-scene .prod-back{
-    border-color:var(--card-line); color:var(--ink);
-    background:var(--card);
-  }
-  .product-stage.has-scene .prod-back:hover{
-    border-color:var(--accent); color:var(--accent-deep);
-  }
-  /* También en negro. Medido sobre la foto, el naranja de marca se queda en 1,7:1 —el
-     atardecer tiene casi su misma luminosidad— y en negro sube por encima de 7:1. Los
-     datos pendientes se siguen distinguiendo por la cursiva. */
-  .product-stage.has-scene .prod-origin{ color:var(--ink); }
-  .product-stage.has-scene .prod-name{ color:var(--ink); text-shadow:none; }
-  .product-stage.has-scene .prod-subtitle{ color:var(--ink); }
-  .product-stage.has-scene .prod-desc{ color:var(--ink); }
-  .product-stage.has-scene .prod-notes li{
-    background:rgba(255,255,255,0.62);
-    border-color:rgba(0,0,0,0.18);
-    color:var(--ink);
-    backdrop-filter:blur(4px);
-    -webkit-backdrop-filter:blur(4px);
-  }
-  .product-stage.has-scene .prod-meters{ border-color:rgba(0,0,0,0.22); }
-  /* Tres columnas y no dos: con dos, los seis datos ocupaban tres filas y la ultima caia
-     sobre la piedra del render. En tres caben en dos filas y el bloque termina antes. */
-  .product-stage.has-scene .prod-facts{
-    grid-template-columns:repeat(3, minmax(0,1fr));
-    gap:16px 20px;
-  }
-  .product-stage.has-scene .meter-label,
-  .product-stage.has-scene .prod-facts .fact dt{ color:var(--ink); }
-  .product-stage.has-scene .prod-facts .fact dd{ color:var(--ink); }
-  .product-stage.has-scene .meter-dots .dot{ border-color:var(--accent-deep); }
-  .product-stage.has-scene .meter-dots .dot.is-on{ background:var(--accent-deep); }
-  /* Con #tueste delante: la regla general de pendientes es `#tueste .is-pending`, y un
-     ID gana a tres clases, así que sin esto el dato de altitud seguía en naranja — 1,7:1
-     sobre el atardecer, ilegible. */
-  #tueste .product-stage.has-scene .meter-todo,
-  #tueste .product-stage.has-scene .is-pending{ color:var(--ink); opacity:0.72; }
-
-  /* La bolsa suelta y los granos son el respaldo de los cafes sin render: aqui la bolsa
-     ya esta dentro de la composicion. */
+  /* Con escena, la bolsa suelta + granos sueltos sobran: solo una de las dos capas
+     de .prod-media se ve a la vez. El texto ya no vive sobre la foto (ver .prod-copy
+     mas arriba), asi que no necesita ningun color/velo especial por tener escena. */
   .product-stage.has-scene .prod-art{ display:none; }
-  /* El halo de color de reserva sobra: el render ya trae su propia atmósfera. */
-  .product-stage.has-scene .prod-bg{ display:none; }
 
   @media (prefers-reduced-motion: reduce){
-    .scene-backdrop, .product-stage.has-scene .prod-copy > *{
+    .scene-backdrop{
       transition:none;
     }
   }
 
-  @media (max-width: 1180px){
-    :root{ --panel-w:clamp(260px, 30vw, 330px); }
-    /* En una sola columna el bloque es más bajo que la narrativa, y como los dos estados
-       comparten celda para no provocar salto, centrarlo dejaba un vacío grande encima.
-       Arrimado al inicio, la holgura sobrante se lee como aire al pie de la sección. */
-    .product-stage{ grid-template-columns:1fr; gap:26px; align-content:start; }
-    /* Menos ancho útil: el texto se lleva algo más de la mitad. */
-    .product-stage.has-scene .prod-copy{ max-width:min(58%, 460px); }
-    .prod-copy{ max-width:none; }
-    /* Apilado en una sola columna el bloque crece, y si supera a la narrativa la sección
-       se estira al abrirla. Recortando aquí el alto del arte, los dos estados miden
-       prácticamente lo mismo y no se mueve nada debajo. */
-    .prod-art{ min-height:clamp(230px, 30vh, 330px); }
-    .prod-pack{ width:clamp(170px, 30vw, 240px); }
-  }
-
-  /* Por debajo de 900px no caben las dos cosas a la vez: una columna de texto de 480px
-     sobre una imagen de 820 deja a la bolsa sin sitio y el encuadre la expulsa del cuadro.
-     El fondo pasa a banda a sangre en la parte de arriba y la ficha va debajo, en oscuro
-     sobre claro como el resto de la web. */
-  @media (max-width: 900px){
-    /* Anclada por `bottom`, no por `top: 100svh - algo`. Con position:fixed, `bottom` se
-       resuelve contra el borde inferior de la ventana sin pasar por ninguna unidad de
-       altura, asi que la barra del navegador no la puede arrastrar. */
-    .pick-tab{ width:54px; padding:16px 0 13px; gap:13px; border-radius:27px 0 0 27px; }
-    .pick-bean{ width:30.2px; height:32px; }
-    .pick-chevron{ width:18px; height:30px; }
-
-
-    .product-stage.has-scene{ min-height:0; align-content:start; }
-    .prod-scene{
-      position:relative; left:auto; top:auto; bottom:auto; transform:none;
-      width:100vw; margin-left:calc(50% - 50vw);
-      /* El alto de la banda es lo que decide el tamano de la bolsa, no el recorte lateral:
-         con `cover` la escala la manda el eje que necesita mas, y aqui siempre es el alto.
-         A 380px ampliaba el render a x0.44 y la bolsa ocupaba el 53% del ancho de pantalla,
-         dejando fuera casi la mitad de la foto. A 300 ocupa el 42% y se ve el 68%.
-         Por debajo de ~260 la bolsa se mete bajo la fila del CTA y su etiqueta deja de
-         leerse, asi que este es el suelo practico. */
-      height:min(44vh, 300px);
-      /* Sube a pegarse al borde de la sección: la banda va arriba del todo y el relleno
-         blanco por encima sobra igual que en escritorio. */
-      margin-top:calc(-1 * var(--sec-pad));
-      margin-bottom:26px;
+  /* En pantallas pequeñas el popup se ajusta al ancho disponible. La estructura
+     (imagen arriba, ficha debajo) es la misma que en escritorio. */
+  @media (max-width: 760px){
+    .product-stage{
+      width:calc(100vw - 24px);
+      max-height:calc(100vh - 24px);
+      padding:20px;
+      gap:16px;
     }
-    /* El encuadre ya NO se fija aquí. Lo calcula el JS a partir de la bolsa de cada café
-       y lo escribe en .prod-scene, que es de donde lo leen también los granos. Con la
-       regla puesta aquí, fondo y granos usaban encuadres distintos. */
-    .scene-backdrop, .scene-bag{ inset:-4% 0; --scene-size:cover; }
-    .product-stage.has-scene .prod-copy{ max-width:none; padding:0; color:var(--ink); }
-    /* En móvil el texto va debajo del fondo, no encima: la pestaña ya no lo pisa. */
-    .product-stage.has-scene .prod-back{ border-color:var(--card-line); color:var(--ink-dim); }
-    .product-stage.has-scene .prod-origin{ color:var(--accent-deep); }
-    .product-stage.has-scene .prod-name{ color:var(--ink); text-shadow:none; }
-    .product-stage.has-scene .prod-subtitle,
-    .product-stage.has-scene .prod-desc{ color:var(--ink-dim); }
-    .product-stage.has-scene .prod-notes li{
-      background:var(--card); border-color:var(--card-line); color:var(--ink);
-      backdrop-filter:none; -webkit-backdrop-filter:none;
-    }
-    .product-stage.has-scene .prod-meters{ border-color:var(--line); }
-    .product-stage.has-scene .meter-label,
-    .product-stage.has-scene .prod-facts .fact dt{ color:var(--ink-dim); }
-    .product-stage.has-scene .prod-facts .fact dd{ color:var(--ink); }
-    .product-stage.has-scene .meter-dots .dot{ border-color:var(--accent); }
-    .product-stage.has-scene .meter-dots .dot.is-on{ background:var(--accent); }
-    .product-stage.has-scene .meter-todo,
-    .product-stage.has-scene .is-pending{ color:var(--accent-deep); }
   }
 
   @media (max-width: 900px){
-    .about-grid, .contact-grid{ grid-template-columns:1fr; }
+    /* --- grilla de cafés: carrusel deslizable con puntos --- */
+    .coffee-grid-track{
+      display:flex;
+      overflow-x:auto;
+      scroll-snap-type:x mandatory;
+      -webkit-overflow-scrolling:touch;
+      gap:14px;
+      /* Sin scrollbar visible: los puntos de abajo ya marcan la posicion. */
+      scrollbar-width:none;
+    }
+    .coffee-grid-track::-webkit-scrollbar{ display:none; }
+    .coffee-card{
+      flex:0 0 68%;
+      scroll-snap-align:center;
+    }
+    .coffee-grid-dots{
+      display:flex; justify-content:center; gap:9px;
+      margin-top:14px;
+    }
+    .coffee-grid-dots button{
+      width:8px; height:8px; border-radius:50%;
+      border:1px solid var(--accent);
+      background:transparent;
+      padding:0;
+      cursor:pointer;
+    }
+    .coffee-grid-dots button.is-on{ background:var(--accent); }
+  }
+
+  @media (max-width: 900px){
+    .about-grid{ grid-template-columns:1fr; }
     .stats-row{ grid-template-columns:1fr 1fr; }
+    .footer-cols{ grid-template-columns:1fr 1fr; }
+    .promo-grid{ grid-template-columns:1fr; }
+    .promo-card-wide{ grid-column:auto; }
   }
 
   @media (max-width: 760px){
-    #tueste{ --sec-pad:80px; }
-    /* La pestaña sigue accesible, pero el panel deja de ser una franja estrecha: pasa
-       a hoja inferior a pantalla casi completa, y al elegir un café se cierra sola. */
-    :root{ --panel-w:0px; }
     .roast-phases{ grid-template-columns:repeat(3, 1fr); gap:20px 10px; }
     .roast-phases li::after{ display:none; }
 
-
-    .pick-label{ font-size:0.6rem; letter-spacing:0.13em; }
-
-    .pick-panel{
-      position:fixed;
-      left:0; right:0; bottom:0; top:auto;
-      /* max-width:none es imprescindible. La regla de escritorio limita el cajon a 34vw,
-         y esa limitacion tambien alcanzaba a la hoja: con left:0 y right:0 puestos pero
-         el ancho topado en 34vw, la caja se resolvia contra el borde izquierdo y la hoja
-         salia como un panel estrecho pegado a la izquierda en vez de a lo ancho por
-         abajo. Es justo lo que se veia en pantalla pequeña. */
-      width:auto; max-width:none; max-height:82vh;
-      border-left:none; border-right:none;
-      border-radius:22px 22px 0 0;
-      transform:translateY(101%);
-      box-shadow:0 -20px 60px rgba(0,0,0,0.24);
-      z-index:120;
-    }
-    body.t-open .pick-panel{ transform:none; }
-    .pick-scrim{ z-index:119; }
-    .product-stage{ padding-left:0 !important; min-height:0; }
-    /* Superponer no cabe en 390px: el texto taparia la bolsa entera. El fondo pasa a ser
-       una banda a sangre en la parte de arriba y la ficha va debajo, en oscuro sobre
-       claro como el resto de la web. */
-    /* (la escena apilada vive ahora en su propio bloque de 900px) */
     .prod-facts{ gap:16px 20px; }
     .prod-meters{ gap:20px; }
+
+    .footer-cols{ grid-template-columns:1fr; gap:26px; }
+    .footer-social{ margin-left:0; }
 
     .nav-links, .nav-pill .nav-cta{ display:none; }
     /* The hidden links and button vacate their grid cells entirely, so without an explicit
@@ -1551,7 +1279,7 @@
     .sky-stage{ --desert-floor:0px; }
     #nosotros{ padding-bottom:560px; }
     .roast-grid{ grid-template-columns:1fr; }
-    #contacto{ --shore-surge:200px; }
+    #especial{ --shore-surge:70px; }
     .d-far{ --ridge:360px; }
     .d-mid{ --ridge:285px; }
     .d-near{ height:85px; }
@@ -1592,16 +1320,12 @@
   .sand-layer{
     position:absolute;
     left:0; top:0;
-    width:100%;
+    width:100%; height:100%;
     display:block;
     pointer-events:none;
     opacity:1;
     z-index:0;
   }
-  #sandContacto, #sandContactoTrail{ height:100%; }
-  /* Body copy sitting directly on the sand needs a darker ink — the default dim gray
-     only reaches ~3.8:1 against a lit sand backdrop, under the readable minimum. */
-  #contacto .section-head p{ color:#3A352E; }
   @media (prefers-reduced-motion: reduce){
     .sand-layer{ opacity:0.75; }
   }

@@ -70,15 +70,18 @@
   }, { threshold:0.5 });
   counters.forEach(function(el){ cio.observe(el); });
 
-  // Contact form -> mailto fallback
+  // Contact form -> mailto fallback. La sección "Hablemos" ya no lleva formulario
+  // (se simplificó a solo título + playa), así que el elemento puede no existir.
   var form = document.getElementById('contactForm');
-  form.addEventListener('submit', function(e){
-    e.preventDefault();
-    var name = document.getElementById('name').value;
-    var email = document.getElementById('email').value;
-    var message = document.getElementById('message').value;
-    var subject = encodeURIComponent('Consulta desde la web — ' + name);
-    var body = encodeURIComponent(message + '\n\nEmail de contacto: ' + email);
-    window.location.href = 'mailto:david@aridocafe.cl?subject=' + subject + '&body=' + body;
-  });
+  if(form){
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      var name = document.getElementById('name').value;
+      var email = document.getElementById('email').value;
+      var message = document.getElementById('message').value;
+      var subject = encodeURIComponent('Consulta desde la web — ' + name);
+      var body = encodeURIComponent(message + '\n\nEmail de contacto: ' + email);
+      window.location.href = 'mailto:david@aridocafe.cl?subject=' + subject + '&body=' + body;
+    });
+  }
 })();
