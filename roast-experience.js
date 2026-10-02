@@ -47,8 +47,8 @@
         // roca, transparente en el resto. Al compartir lienzo, la capa de la bolsa
         // (.scene-bag) usa el mismo --scene-size/--scene-pos que el fondo y se recorta
         // y reposiciona exactamente igual en cualquier ancho, sin coordenadas propias.
-        image: 'assets/peru/fondo.png',
-        bagImage: 'assets/peru/bolsa-roca.png',
+        image: 'assets/peru/fondo.webp',
+        bagImage: 'assets/peru/bolsa-roca.webp',
         size: 'cover',
         focus: '0% 50%',
         // Silueta de la roca medida sobre el render actual (bolsa-roca.png), columna a
@@ -277,18 +277,32 @@
 
   // ------------------------------------------------------------- grilla de cafés
   var gridTrack   = document.getElementById('coffeeGridTrack');
-  var gridDots    = document.getElementById('coffeeGridDots');
   var cards = [];
 
   function buildGrid(){
     if(!gridTrack) return;
+    // Ficha editorial: numero, bolsa, origen y nombre a la vista; proceso y "ver ficha"
+    // aparecen al pasar el cursor. Origen y proceso salen de los datos de cada cafe: si
+    // estan pendientes, simplemente no se muestran.
+    function dato(c, etiqueta){
+      for(var k = 0; k < (c.facts || []).length; k++){
+        var f = c.facts[k];
+        if(f.label === etiqueta && !isPending(f.value)) return f.value;
+      }
+      return '';
+    }
     gridTrack.innerHTML = COFFEES.map(function(c, i){
+      var origen = dato(c, 'Región') || dato(c, 'Origen');
+      var proceso = dato(c, 'Proceso');
       return '<button type="button" class="coffee-card" data-i="' + i + '" aria-pressed="false">' +
-        '<span class="coffee-card-thumb">' + packMarkup(c, 'coffee-card-thumb-img') +
-          '<span class="coffee-card-quickview" aria-hidden="true">Vista rápida</span>' +
+        '<span class="coffee-card-num" aria-hidden="true">' + (i < 9 ? '0' : '') + (i + 1) + '</span>' +
+        '<span class="coffee-card-thumb">' + packMarkup(c, 'coffee-card-thumb-img') + '</span>' +
+        '<span class="coffee-card-meta">' +
+          (origen ? '<span class="coffee-card-origin">' + esc(origen) + '</span>' : '') +
+          '<span class="coffee-card-name' + (isPending(c.name) ? ' is-pending' : '') + '">' + esc(c.name) + '</span>' +
+          '<span class="coffee-card-sub' + (isPending(c.subtitle) ? ' is-pending' : '') + '">' + esc(c.subtitle) + '</span>' +
+          '<span class="coffee-card-more">' + (proceso ? 'Proceso ' + esc(proceso).toLowerCase() + ' · ' : '') + 'Ver ficha <span aria-hidden="true">→</span></span>' +
         '</span>' +
-        '<span class="coffee-card-name' + (isPending(c.name) ? ' is-pending' : '') + '">' + esc(c.name) + '</span>' +
-        '<span class="coffee-card-sub' + (isPending(c.subtitle) ? ' is-pending' : '') + '">' + esc(c.subtitle) + '</span>' +
       '</button>';
     }).join('');
     cards = [].slice.call(gridTrack.querySelectorAll('.coffee-card'));
@@ -303,60 +317,164 @@
   }
   buildGrid();
 
-  // -------------------------------------------------- puntos del carrusel movil
-  var dotButtons = [];
-  function buildDots(){
-    if(!gridDots) return;
-    gridDots.innerHTML = COFFEES.map(function(c, i){
-      return '<button type="button" data-i="' + i + '" aria-label="Ver café ' +
-        esc(isPending(c.name) ? '' : c.name) + '"></button>';
-    }).join('');
-    dotButtons = [].slice.call(gridDots.querySelectorAll('button'));
-    dotButtons.forEach(function(btn){
-      btn.addEventListener('click', function(){
-        var card = cards[+btn.getAttribute('data-i')];
-        if(card) card.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', inline: 'center', block: 'nearest' });
-      });
-    });
-    actualizarDots();
-  }
+  // ------------------------------------------------ control del carrusel movil
+  // Se navega deslizando (gesto). Contador "01 / 05" + linea de progreso. Cuenta solo las bolsas visibles,
+  // asi sigue siendo correcto cuando el filtro por tipo oculta algunas.
+  var cgNow  = document.getElementById('cgNow');
+  var cgTotal = document.getElementById('cgTotal');
+  var cgBar  = document.getElementById('cgBar');
 
-  // Marca activo el punto de la tarjeta mas centrada en el carril visible.
-  var dotsTimer = null;
+  function visiblesCarrusel(){ return cards.filter(function(c){ return !c.hidden; }); }
+  function dosDigitos(n){ return (n < 10 ? '0' : '') + n; }
+  function margenCarril(){ return parseFloat(getComputedStyle(gridTrack).scrollPaddingLeft) || 0; }
+
+  // La activa es la que esta mas cerca del borde izquierdo del carril (donde encaja).
+  var navTimer = null;
   function actualizarDots(){
-    if(!gridTrack || !dotButtons.length || !cards.length) return;
-    var centro = gridTrack.getBoundingClientRect().left + gridTrack.clientWidth / 2;
+    if(!gridTrack || !cards.length) return;
+    var vis = visiblesCarrusel();
+    if(!vis.length) return;
+    var borde = gridTrack.getBoundingClientRect().left + margenCarril();
     var masCerca = 0, distMin = Infinity;
-    cards.forEach(function(card, i){
-      var r = card.getBoundingClientRect();
-      var d = Math.abs((r.left + r.width / 2) - centro);
+    vis.forEach(function(card, i){
+      var d = Math.abs(card.getBoundingClientRect().left - borde);
       if(d < distMin){ distMin = d; masCerca = i; }
     });
-    dotButtons.forEach(function(btn, i){ btn.classList.toggle('is-on', i === masCerca); });
+    // Al final del carril la ultima no alcanza el borde: se da por activa.
+    if(gridTrack.scrollLeft > 0 && gridTrack.scrollLeft + gridTrack.clientWidth >= gridTrack.scrollWidth - 4) masCerca = vis.length - 1;
+    if(cgNow) cgNow.textContent = dosDigitos(masCerca + 1);
+    if(cgTotal) cgTotal.textContent = dosDigitos(vis.length);
+    if(cgBar) cgBar.style.transform = 'scaleX(' + ((masCerca + 1) / vis.length).toFixed(3) + ')';
   }
   if(gridTrack){
     gridTrack.addEventListener('scroll', function(){
-      window.clearTimeout(dotsTimer);
-      dotsTimer = window.setTimeout(actualizarDots, 80);
-    });
+      window.clearTimeout(navTimer);
+      navTimer = window.setTimeout(actualizarDots, 60);
+    }, { passive:true });
   }
   window.addEventListener('resize', function(){
-    window.clearTimeout(dotsTimer);
-    dotsTimer = window.setTimeout(actualizarDots, 150);
+    window.clearTimeout(navTimer);
+    navTimer = window.setTimeout(actualizarDots, 150);
   });
+  actualizarDots();
 
-  buildDots();
+  // Arrastre con mouse. El dedo ya desliza de forma nativa, pero con mouse (por ejemplo, la
+  // vista movil en un computador) el navegador no arrastra un contenedor con scroll.
+  // Solo actua cuando el carril realmente desborda (movil/tablet).
+  if(gridTrack){
+    var drag = null;
+    gridTrack.addEventListener('pointerdown', function(e){
+      if(e.pointerType !== 'mouse' || e.button !== 0) return;
+      if(gridTrack.scrollWidth <= gridTrack.clientWidth + 2) return;
+      drag = { x:e.clientX, left:gridTrack.scrollLeft, movio:false, id:e.pointerId };
+    });
+    gridTrack.addEventListener('pointermove', function(e){
+      if(!drag || e.pointerId !== drag.id) return;
+      var dx = e.clientX - drag.x;
+      if(!drag.movio && Math.abs(dx) > 6){
+        drag.movio = true;
+        gridTrack.setPointerCapture(e.pointerId);
+        gridTrack.classList.add('is-dragging');
+      }
+      if(drag.movio) gridTrack.scrollLeft = drag.left - dx;
+    });
+    function soltar(e){
+      if(!drag) return;
+      var d = drag; drag = null;
+      if(!d.movio) return;
+      gridTrack.classList.remove('is-dragging');
+      // Encaja en la bolsa mas cercana, empujando un poco en la direccion del arrastre.
+      var vis = visiblesCarrusel(), m = margenCarril();
+      var base = gridTrack.getBoundingClientRect().left + m, mejor = null, dist = Infinity;
+      var sesgo = (e.clientX - d.x) < 0 ? 40 : -40;
+      vis.forEach(function(card){
+        var dd = Math.abs(card.getBoundingClientRect().left - base + sesgo);
+        if(dd < dist){ dist = dd; mejor = card; }
+      });
+      if(mejor) gridTrack.scrollTo({ left: mejor.offsetLeft - gridTrack.offsetLeft - m, behavior: reduced ? 'auto' : 'smooth' });
+      // Si se arrastro, el clic que sigue no abre la ficha.
+      gridTrack.addEventListener('click', function anular(ev){ ev.stopPropagation(); ev.preventDefault(); }, { capture:true, once:true });
+      window.setTimeout(function(){ gridTrack.dispatchEvent(new Event('scroll')); }, 0);
+    }
+    gridTrack.addEventListener('pointerup', soltar);
+    gridTrack.addEventListener('pointercancel', soltar);
+    gridTrack.addEventListener('dragstart', function(e){ e.preventDefault(); });
+  }
 
-  // Flechas izquierda/derecha para recorrer las tarjetas (mismo patron que
+  // ------------------------------------------------------- filtro por tipo de café
+  // El tipo de cada café no se escribe aparte: se lee de su dato "Tipo" ("Café tipo 1"),
+  // el mismo que muestra la ficha, para que filtro y ficha nunca se contradigan.
+  function tipoDe(c){
+    for(var k = 0; k < (c.facts || []).length; k++){
+      if(c.facts[k].label === 'Tipo'){
+        var m = /tipo\s*(\d+)/i.exec(c.facts[k].value);
+        return m ? m[1] : null;
+      }
+    }
+    return null;
+  }
+
+  var typeBtns   = [].slice.call(document.querySelectorAll('.coffee-type[data-tipo]'));
+  var typesGrid  = document.querySelector('.coffee-types-grid');
+  var typeStatus = document.getElementById('coffeeTypesStatus');
+  var typeStatusText = document.getElementById('coffeeTypesStatusText');
+  var typeAll    = document.getElementById('coffeeTypesAll');
+  var gridEmpty  = document.getElementById('coffeeGridEmpty');
+  var tipoActivo = null;
+
+  function filtrarPorTipo(tipo){
+    tipoActivo = tipo;
+    var visibles = 0;
+    cards.forEach(function(card, i){
+      var ver = !tipo || tipoDe(COFFEES[i]) === tipo;
+      card.hidden = !ver;
+      if(ver) visibles++;
+    });
+    typeBtns.forEach(function(b){
+      b.setAttribute('aria-pressed', b.getAttribute('data-tipo') === tipo ? 'true' : 'false');
+    });
+    if(typesGrid) typesGrid.classList.toggle('has-filter', !!tipo);
+    if(gridEmpty) gridEmpty.hidden = visibles > 0;
+    if(typeStatus){
+      typeStatus.hidden = !tipo;
+      if(tipo && typeStatusText){
+        typeStatusText.textContent = visibles
+          ? 'Mostrando ' + visibles + (visibles === 1 ? ' café' : ' cafés') + ' Tipo ' + tipo + '.'
+          : 'Cafés Tipo ' + tipo + '.';
+      }
+    }
+    if(gridTrack) gridTrack.scrollLeft = 0;
+    actualizarDots();
+  }
+
+  typeBtns.forEach(function(b){
+    b.addEventListener('click', function(){
+      var t = b.getAttribute('data-tipo');
+      // Clic en el tipo ya elegido: vuelve a mostrar todos.
+      filtrarPorTipo(tipoActivo === t ? null : t);
+      // Lleva la vista a las bolsas, que es lo que acaba de cambiar.
+      var destino = document.getElementById('coffeeGrid');
+      if(destino){
+        var r = destino.getBoundingClientRect();
+        if(r.top > window.innerHeight * 0.75 || r.bottom < 0){
+          destino.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' });
+        }
+      }
+    });
+  });
+  if(typeAll) typeAll.addEventListener('click', function(){ filtrarPorTipo(null); });
+
+  // Flechas izquierda/derecha para recorrer las tarjetas visibles (mismo patron que
   // ya usaban arriba/abajo en el panel viejo).
   if(gridTrack){
     gridTrack.addEventListener('keydown', function(e){
-      var i = cards.indexOf(document.activeElement);
+      var visibles = cards.filter(function(c){ return !c.hidden; });
+      var i = visibles.indexOf(document.activeElement);
       if(i < 0) return;
       if(e.key === 'ArrowRight' || e.key === 'ArrowLeft'){
         e.preventDefault();
-        var next = (i + (e.key === 'ArrowRight' ? 1 : cards.length - 1)) % cards.length;
-        cards[next].focus();
+        var next = (i + (e.key === 'ArrowRight' ? 1 : visibles.length - 1)) % visibles.length;
+        visibles[next].focus();
       }
     });
   }
@@ -427,6 +545,98 @@
   // origen", pero disparado por la selección de café en vez de por el scroll.
   var sceneOn = false;
 
+  // ------------------------------------------------------- física común de los granos
+  // Constantes en unidades "por fotograma a 60 Hz": cada paso se escala por el tiempo
+  // real transcurrido, asi que caen igual en un monitor de 60, 120 o 144 Hz.
+  var FISICA = {
+    G: 0.05,          // gravedad (x dpr)
+    // Velocidad terminal (x dpr). Alta a proposito: un grano es denso y el aire apenas
+    // lo frena. Con una baja flotaba y se mecia como un papel.
+    VT: 14,
+    ASENTAR_MS: 260   // lo que tarda un grano en acomodarse tras tocar el suelo
+  };
+  var GIRO_SURCO = -0.70;   // angulo del surco en assets/grano.webp
+
+  function pasoTiempo(t, prev){
+    // Tope de 50 ms: tras una pestaña en segundo plano o un tiron, mejor perder un
+    // poco de tiempo que teletransportar los granos.
+    return prev ? Math.min(t - prev, 50) : 16.667;
+  }
+
+  function easeOut(t){ return 1 - Math.pow(1 - t, 3); }
+
+  // Angulo final equivalente (el grano es simetrico a media vuelta) mas cercano al
+  // actual: el giro de asentamiento es corto, no una vuelta entera de golpe.
+  function anguloCercano(desde, hacia){
+    return hacia + Math.round((desde - hacia) / Math.PI) * Math.PI;
+  }
+
+  // Un grano real da vueltas sobre su eje largo y a ratos se ve de canto. Es grueso: de
+  // canto mide ~70% de su ancho, no una linea. Aplastarlo mas lo hacia leerse como una
+  // hoja de papel girando.
+  function aplanado(fase){ return 0.72 + 0.28 * Math.abs(Math.cos(fase)); }
+
+  function nuevoGiro(b, dpr){
+    b.vr = (Math.random() - 0.5) * 0.055;
+    b.fase = Math.random() * Math.PI * 2;
+    // Vuelta lenta y constante: un aleteo rapido es de objeto liviano.
+    b.vf = (0.025 + Math.random() * 0.045) * (Math.random() < 0.5 ? -1 : 1);
+    b.plano = aplanado(b.fase);
+    b.asent = null;
+    b.botes = 0;
+  }
+
+  // Avanza un grano en el aire `k` fotogramas de 60 Hz.
+  function avanzar(b, k, dpr){
+    var g = FISICA.G * dpr;
+    b.vy += (g - (g / (FISICA.VT * dpr)) * b.vy) * k;
+    b.y += b.vy * k;
+    b.x += (b.vx || 0) * k;
+    b.rot += b.vr * k;
+    b.fase += b.vf * k;
+    b.plano = aplanado(b.fase);
+  }
+
+  // Rebote al tocar el suelo: devuelve true si rebota, false si ya toca asentarse. El
+  // impacto le cambia el giro y frena la voltereta, como a un grano de verdad.
+  function rebotar(b, sueloY, dpr){
+    if(b.botes >= 2 || b.vy <= 1.1 * dpr) return false;
+    b.botes++;
+    b.y = sueloY;
+    b.vy = -b.vy * (0.32 - b.botes * 0.08);
+    b.vx = (b.vx || 0) * 0.5 + (Math.random() - 0.5) * 0.5 * dpr;
+    b.vr = -b.vr * 0.5 + (Math.random() - 0.5) * 0.06;
+    b.vf *= 0.5;
+    return true;
+  }
+
+  // Guarda la pose del aire antes de que el que llama fije la de reposo: el grano
+  // viaja de una a otra en ASENTAR_MS en vez de saltar en un fotograma.
+  function empezarAsiento(b){
+    b.asent = { x:b.x, y:b.y, rot:b.rot, plano:b.plano, t:0 };
+  }
+
+  // Pose a dibujar: la de reposo, la del aire o la intermedia mientras se asienta.
+  function pose(b){
+    var a = b.asent;
+    if(!a) return b;
+    var e = easeOut(Math.min(1, a.t / FISICA.ASENTAR_MS));
+    return {
+      x: a.x + (b.x - a.x) * e,
+      y: a.y + (b.y - a.y) * e,
+      rot: a.rot + (b.rot - a.rot) * e,
+      plano: a.plano + (b.plano - a.plano) * e
+    };
+  }
+
+  // Avanza el asiento; devuelve true mientras sigue en curso.
+  function asentando(b, dtMs){
+    if(!b.asent) return false;
+    b.asent.t += dtMs;
+    if(b.asent.t >= FISICA.ASENTAR_MS){ b.asent = null; return false; }
+    return true;
+  }
+
   // ------------------------------------------------------- granos sobre la escena
   // Caen alrededor de la bolsa y se posan en el canto de la roca del render. La
   // superficie no se adivina: viene del perfil trazado sobre la imagen, y se traduce a
@@ -450,7 +660,22 @@
     // El mismo render 3D que se usa en las fases: nada de elipses dibujadas a mano.
     var sprite = new Image();
     var spriteOk = false;
-    sprite.onload = function(){ spriteOk = true; };
+    // Copia oscurecida del grano, hecha una sola vez: al girar de canto se funde encima
+    // y el costado se lee en sombra, con volumen, en vez de como un recorte plano.
+    var spriteSombra = null;
+    function hacerSombra(){
+      try{
+        var c = document.createElement('canvas');
+        c.width = sprite.naturalWidth; c.height = sprite.naturalHeight;
+        var cx = c.getContext('2d');
+        cx.drawImage(sprite, 0, 0);
+        cx.globalCompositeOperation = 'source-atop';
+        cx.fillStyle = 'rgba(18,9,4,0.85)';
+        cx.fillRect(0, 0, c.width, c.height);
+        spriteSombra = c;
+      }catch(e){ spriteSombra = null; }
+    }
+    sprite.onload = function(){ spriteOk = true; hacerSombra(); };
     sprite.src = 'assets/grano.webp';
 
     // Reproduce background-size:cover + background-position para pasar de coordenadas
@@ -609,13 +834,12 @@
       // hay que recalcular s = (GRANO/61.6)*sFactor con el GRANO nuevo, no volver a
       // sortear el factor (cada grano tiene que conservar SU tamano relativo de siempre).
       var sFactor = 0.85 + Math.random() * 0.3;
-      return {
-        x: sorteoX(),
+      var b = {
+        x: desparramar(sorteoX()),
         y: -40 * dpr - Math.random() * H * 0.5,
         vy: (0.8 + Math.random() * 0.9) * dpr,
         vx: (Math.random() - 0.5) * 0.14 * dpr,
         rot: Math.random() * Math.PI * 2,
-        vr: (Math.random() - 0.5) * 0.055,
         sFactor: sFactor,
         // 61.6 = sprite.width * 0.14, que es como lo usa dibujar(). Asi `s` acaba
         // valiendo lo que haga falta para que el grano mida GRANO pixeles.
@@ -626,9 +850,22 @@
         // El total hasta que se posa el ultimo es mayor —unos 7s, medidos— porque a eso
         // se suma la caida del ultimo grano, que entra desde bastante arriba del lienzo.
         espera: 200 + orden * (3200 / TOTAL) * (0.6 + Math.random() * 0.8),
-        botes: 0,
         posado: false
       };
+      nuevoGiro(b, dpr);
+      return b;
+    }
+
+    // Desparrame horizontal del orden de una columna (poco mas de un grano de ancho).
+    // Sin esto cada grano se posaba exactamente en su x y el siguiente de esa columna se
+    // le ponia justo encima: el monton salia como una fila de torres. Se sortea AL NACER,
+    // no al tocar el suelo: aplicado al aterrizar, el grano saltaba de lado de golpe.
+    function desparramar(x){
+      x += (Math.random() - 0.5) * (W / COLS) * 1.8;
+      // A 1920 el desparrame son unos 50px: un grano sorteado en el borde se colaba
+      // bajo el texto. Se sujeta con un grano de holgura para que el corte no sea recto.
+      if(x < minX) x = minX + Math.random() * GRANO;
+      return x < 0 ? 0 : x > W - 1 ? W - 1 : x;
     }
 
     // Al tocar, rueda un poco cuesta abajo antes de asentarse: en la parte plana casi no
@@ -649,23 +886,18 @@
       }
     }
 
-    function posar(b){
+    // animar: el grano viene del aire y se acomoda en ASENTAR_MS. Sin animar (reduced
+    // motion) se coloca directamente.
+    function posar(b, animar){
+      if(animar) empezarAsiento(b);
       rodar(b);
-      // Desparrame horizontal ANTES de calcular la altura. Sin esto cada grano se posaba
-      // exactamente en su x y el siguiente de esa columna se le ponia justo encima: el
-      // monton salia como una fila de torres verticales en vez de grano amontonado.
-      // Se mueve del orden de una columna, que es poco mas de un grano de ancho.
-      b.x += (Math.random() - 0.5) * (W / COLS) * 1.8;
-      // El desparrame llega a media columna y pico —a 1920 son unos 50px—, asi que un
-      // grano sorteado justo en el borde se colaba bajo el texto. Se sujeta aqui, con un
-      // grano de holgura para que el corte no quede en linea recta.
-      if(b.x < minX) b.x = minX + Math.random() * GRANO;
-      if(b.x < 0) b.x = 0; else if(b.x > W - 1) b.x = W - 1;
       var i = columna(b.x);
       // Sobre piedra plana todos caerian a la misma cota y se leerian como una linea
       // pintada. El desorden vertical y el apilado por columna los reparten.
       b.y = reposo(b.x) + (Math.random() - 0.5) * GRANO * 0.22;
-      b.rot = (Math.random() - 0.5) * 1.1;       // quedan tumbados, en cualquier angulo
+      var rot = (Math.random() - 0.5) * 1.1;     // quedan tumbados, en cualquier angulo
+      b.rot = animar ? anguloCercano(b.rot, rot) : rot;
+      b.plano = 1;                               // en reposo, de cara
       b.posado = true;
       // El monton se reparte tambien a los lados: un grano que cae encima de otros empuja
       // un poco a las columnas vecinas, que es lo que le da forma de monte en vez de
@@ -688,10 +920,23 @@
     function dibujar(b){
       if(!spriteOk) return;
       var w = sprite.width * b.s * 0.14, h = sprite.height * b.s * 0.14;
+      var p = pose(b);
       ctx.save();
-      ctx.translate(b.x, b.y);
-      ctx.rotate(b.rot);
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot);
+      // La voltereta aplana el grano perpendicular al surco, que es su eje largo.
+      if(p.plano < 0.999){
+        ctx.rotate(GIRO_SURCO);
+        ctx.scale(1, p.plano);
+        ctx.rotate(-GIRO_SURCO);
+      }
       ctx.drawImage(sprite, -w/2, -h/2, w, h);
+      // 0 de cara, 1 de canto: cuanto mas de canto, mas sombra.
+      var canto = (1 - p.plano) / 0.28;
+      if(spriteSombra && canto > 0.02){
+        ctx.globalAlpha = Math.min(1, canto) * 0.55;
+        ctx.drawImage(spriteSombra, -w/2, -h/2, w, h);
+      }
       ctx.restore();
     }
 
@@ -706,6 +951,7 @@
       for(var k = 0; k < granos.length; k++){
         var b = granos[k];
         if(!b.posado || b.imgU == null) continue;
+        b.asent = null;
         var sueloAqui = mCache.y0 + interp(geo.surface, b.imgU) * mCache.rh;
         b.x = mCache.x0 + b.imgU * mCache.rw;
         b.y = sueloAqui - b.offGranos * GRANO;
@@ -755,42 +1001,34 @@
       for(var i = 0; i < TOTAL; i++) granos.push(nuevo(i));
     }
 
-    var t0 = 0;
+    var t0 = 0, tPrev = 0;
     function cuadro(t){
       if(!t0) t0 = t;
       var trans = t - t0;
+      var dtMs = pasoTiempo(t, tPrev);
+      tPrev = t;
+      var k = dtMs / 16.667;
       ctx.clearRect(0, 0, W, H);
-      var vivos = 0;
+      // Caen una sola vez: cuando el ultimo se ha posado (y acomodado) el bucle se apaga
+      // y el monton se queda quieto. Nada de reciclar granos, que convertia la escena en
+      // una lluvia continua.
+      var quedan = false;
       for(var i = 0; i < granos.length; i++){
         var b = granos[i];
-        if(b.posado){ dibujar(b); continue; }
-        if(trans < b.espera){ vivos++; continue; }
-        vivos++;
-        b.vy += 0.05 * dpr;
-        b.y += b.vy;
-        b.x += b.vx;
-        b.rot += b.vr;
-        var suelo_y = reposo(b.x);
-        if(b.y >= suelo_y){
-          // Un par de botes cortos antes de asentarse. Clavarse en seco al tocar es lo
-          // que hacia que la caida no pareciera peso, sino desaparicion.
-          if(b.botes < 2 && b.vy > 1.1 * dpr){
-            b.botes++;
-            b.y = suelo_y;
-            b.vy = -b.vy * (0.32 - b.botes * 0.08);
-            b.vx *= 0.5;
-            b.vr *= 0.45;
-          } else {
-            posar(b);
-          }
+        if(b.posado){
+          if(asentando(b, dtMs)) quedan = true;
+          dibujar(b);
+          continue;
         }
+        quedan = true;
+        if(trans < b.espera) continue;
+        avanzar(b, k, dpr);
+        var suelo_y = reposo(b.x);
+        // Un par de botes cortos antes de asentarse. Clavarse en seco al tocar es lo que
+        // hacia que la caida no pareciera peso, sino desaparicion.
+        if(b.y >= suelo_y && !rebotar(b, suelo_y, dpr)) posar(b, true);
         dibujar(b);
       }
-      // Caen una sola vez: cuando el ultimo se ha posado el bucle se apaga y el monton
-      // se queda quieto. Nada de reciclar granos, que convertia la escena en una lluvia
-      // continua.
-      var quedan = false;
-      for(i = 0; i < granos.length; i++) if(!granos[i].posado){ quedan = true; break; }
       if(!quedan){ terminado = true; raf = null; return; }
       raf = requestAnimationFrame(cuadro);
     }
@@ -807,8 +1045,8 @@
       } else {
         cubos = [];
         for(var i = 0; i < granos.length; i++){
-          granos[i].x = sorteoX();
-          posar(granos[i]);
+          granos[i].x = desparramar(sorteoX());
+          posar(granos[i], false);
         }
       }
       for(var i = 0; i < granos.length; i++) dibujar(granos[i]);
@@ -817,7 +1055,7 @@
 
     function arrancar(){
       if(reduced){ if(spriteOk) quieto(); else sprite.onload = function(){ spriteOk = true; quieto(); }; return; }
-      t0 = 0;
+      t0 = 0; tPrev = 0;
       if(!raf) raf = requestAnimationFrame(cuadro);
     }
 
@@ -1156,9 +1394,9 @@
 
     var ctx = canvas.getContext('2d');
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
-    var W = 0, H = 0, raf = null, ro = null;
+    var W = 0, H = 0, raf = null, ro = null, tPrev = 0;
     var falling = [], pile = [], buckets = [];
-    var PILE_CAP = 0, FALL_MAX = 0, COLS = 14;
+    var PILE_CAP = 0, FALL_MAX = 0, COLS = 14, porCaer = 0;
 
     // Reparto uniforme a lo ancho. Concentrarlos en el centro parecía lo lógico —es
     // donde apoya la bolsa— pero ahí es justo donde la bolsa los tapa: el montón crecía
@@ -1166,15 +1404,24 @@
     function spawnX(){ return W * (0.04 + Math.random() * 0.92); }
 
     function make(y){
-      return {
+      var b = {
         x: spawnX(),
         y: y != null ? y : -40 * dpr - Math.random() * H * 0.55,
-        vy: (0.95 + Math.random() * 0.95) * dpr,
+        vy: (0.8 + Math.random() * 0.9) * dpr,
+        vx: (Math.random() - 0.5) * 0.14 * dpr,
         rot: Math.random() * Math.PI * 2,
-        vr: (Math.random() - 0.5) * 0.018,
         s: (0.72 + Math.random() * 0.5) * dpr,
         tone: Math.random()
       };
+      nuevoGiro(b, dpr);
+      return b;
+    }
+
+    // Saca uno de la cola de los que faltan por caer, o null si ya no queda ninguno.
+    function siguiente(){
+      if(porCaer <= 0) return null;
+      porCaer--;
+      return make();
     }
 
     function resize(){
@@ -1189,14 +1436,22 @@
       // tardaba más de diez segundos en formarse y quien mirase dos segundos solo veía
       // granos sueltos en el aire, no una composición.
       var seed = Math.round(PILE_CAP * 0.45);
-      for(var i = 0; i < seed; i++) settle(make(0));
-      for(i = 0; i < FALL_MAX; i++) falling.push(make());
+      for(var i = 0; i < seed; i++) settle(make(0), false);
+      // Caen una sola vez, como en la escena: los que faltan para completar el montón,
+      // de a FALL_MAX en el aire. Reciclarlos era una lluvia sin fin que desaparecía
+      // al tocar la pila.
+      porCaer = PILE_CAP - seed;
+      for(i = 0; i < FALL_MAX; i++){ var b = siguiente(); if(b) falling.push(b); }
     }
 
-    // Coloca un grano en reposo y sube la columna correspondiente.
-    function settle(b){
+    // Coloca un grano en reposo y sube la columna correspondiente. animar: viene del
+    // aire y se acomoda en ASENTAR_MS en vez de saltar a su sitio.
+    function settle(b, animar){
+      if(animar) empezarAsiento(b);
       b.y = restY(b.x);
-      b.rot = (Math.random() - 0.5) * 0.6;      // reposan casi horizontales
+      var rot = (Math.random() - 0.5) * 0.6;    // reposan casi horizontales
+      b.rot = animar ? anguloCercano(b.rot, rot) : rot;
+      b.plano = 1;
       pile.push(b);
       var col = Math.max(0, Math.min(COLS - 1, Math.floor((b.x / W) * COLS)));
       buckets[col] = (buckets[col] || 0) + 5 * dpr;
@@ -1207,9 +1462,12 @@
     function draw(b){
       var rx = 13 * b.s, ry = 9 * b.s;
       var light = 0.5 + b.tone * 0.5;
+      var p = pose(b);
       ctx.save();
-      ctx.translate(b.x, b.y);
-      ctx.rotate(b.rot);
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot);
+      // Voltereta sobre el eje largo (el del surco, horizontal en esta elipse).
+      if(p.plano < 0.999) ctx.scale(1, p.plano);
       ctx.fillStyle = 'rgba(' + Math.round(58 + light * 42) + ',' +
                                 Math.round(33 + light * 26) + ',' +
                                 Math.round(20 + light * 16) + ',0.95)';
@@ -1236,22 +1494,32 @@
       return H - 14 * dpr - mound - (buckets[col] || 0);
     }
 
-    function frame(){
+    function frame(t){
+      var dtMs = pasoTiempo(t, tPrev);
+      tPrev = t;
+      var k = dtMs / 16.667;
       ctx.clearRect(0, 0, W, H);
-      var i;
-      for(i = 0; i < pile.length; i++) draw(pile[i]);
-      for(i = 0; i < falling.length; i++){
+      var quedan = false, i;
+      for(i = 0; i < pile.length; i++){
+        if(asentando(pile[i], dtMs)) quedan = true;
+        draw(pile[i]);
+      }
+      for(i = falling.length - 1; i >= 0; i--){
         var b = falling[i];
-        b.y += b.vy;
-        b.rot += b.vr;
+        avanzar(b, k, dpr);
+        if(b.x < 0) b.x = 0; else if(b.x > W - 1) b.x = W - 1;
         var rest = restY(b.x);
-        if(b.y >= rest){
-          if(pile.length < PILE_CAP) settle(b);
-          falling[i] = make();
+        if(b.y >= rest && !rebotar(b, rest, dpr)){
+          settle(b, true);
+          draw(b);
+          var nuevo = siguiente();
+          if(nuevo) falling[i] = nuevo; else falling.splice(i, 1);
           continue;
         }
         draw(b);
       }
+      if(falling.length) quedan = true;
+      if(!quedan){ raf = null; return; }
       raf = requestAnimationFrame(frame);
     }
 
@@ -1259,7 +1527,7 @@
     function still(){
       ctx.clearRect(0, 0, W, H);
       pile = []; buckets = [];
-      for(var i = 0; i < PILE_CAP; i++) settle(make(0));
+      for(var i = 0; i < PILE_CAP; i++) settle(make(0), false);
       for(i = 0; i < pile.length; i++) draw(pile[i]);
     }
 
@@ -1267,11 +1535,15 @@
       start: function(){
         resize();
         if(reduced){ still(); return; }
+        tPrev = 0;
         if(!raf) raf = requestAnimationFrame(frame);
         if(!ro && 'ResizeObserver' in window){
           ro = new ResizeObserver(function(){
             resize();
-            if(reduced) still();
+            if(reduced){ still(); return; }
+            // resize() deja un lote nuevo por caer; si el bucle ya se habia apagado, se
+            // relanza (antes no hacia falta: la lluvia no paraba nunca).
+            if(!raf && showing){ tPrev = 0; raf = requestAnimationFrame(frame); }
           });
           ro.observe(canvas);
         }

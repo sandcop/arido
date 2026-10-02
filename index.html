@@ -4,17 +4,30 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Árido — Café de especialidad del norte de Chile</title>
-<meta name="description" content="Árido: café de especialidad tostado en Antofagasta y despachado a todo Chile. Lo mejor de los campos de Colombia y Etiopía.">
+<meta name="description" content="Árido, tostaduría de café de especialidad en Antofagasta. Cafés de Perú, Bolivia, Brasil, Colombia y Costa Rica con despacho a todo Chile.">
+<meta name="theme-color" content="#460c6e">
+<link rel="canonical" href="https://sandcop.github.io/arido/">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="es_CL">
+<meta property="og:site_name" content="Árido">
+<meta property="og:title" content="Árido — Café de especialidad del norte de Chile">
+<meta property="og:description" content="Árido es Norte y el Norte es Fauna y Café. Café de especialidad tostado en Antofagasta.">
+<meta property="og:image" content="https://sandcop.github.io/arido/assets/og-arido.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,400&family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,600&display=swap" rel="stylesheet">
+<!-- Una serif editorial (Newsreader) y una sans contemporanea (Manrope): nada mas. -->
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <!-- ?v= fuerza a recargar css y js al publicar: sin el, el navegador
      reutiliza la copia en cache y se sigue viendo la version anterior. -->
-<link rel="stylesheet" href="styles.css?v=202609152330">
+<link rel="stylesheet" href="styles.css?v=202610020600">
 </head>
 <body>
+<a class="skip-link" href="#main">Saltar al contenido</a>
 
 <nav id="nav">
   <div class="nav-pill">
@@ -23,20 +36,20 @@
       <img src="assets/arido-navbar.svg" alt="Árido" class="nav-brand-word" id="navBrandWord">
     </a>
     <div class="nav-links">
-      <a href="#nosotros">Nuestra historia</a>
-      <a href="#tueste">Nuestros cafés</a>
-      <a href="#contacto">Contacto</a>
+      <a href="#nosotros">Lo que somos</a>
+      <a href="#coffeeTypes">Conoce nuestros cafés</a>
+      <a href="#contacto">Contáctanos</a>
     </div>
     <a href="#tueste" class="btn btn-accent nav-cta">Comprar café</a>
-    <button class="burger" id="burgerBtn" aria-label="Abrir menú">☰</button>
+    <button class="burger" id="burgerBtn" aria-label="Abrir menú" aria-controls="mobileMenu">☰</button>
   </div>
 </nav>
 
 <div class="mobile-menu" id="mobileMenu">
   <button class="close-btn" id="closeMenuBtn" aria-label="Cerrar menú">✕</button>
-  <a href="#nosotros">Nuestra historia</a>
-  <a href="#tueste">Nuestros cafés</a>
-  <a href="#contacto">Contacto</a>
+  <a href="#nosotros">Lo que somos</a>
+  <a href="#coffeeTypes">Conoce nuestros cafés</a>
+  <a href="#contacto">Contáctanos</a>
   <a href="https://wa.me/56972497925" target="_blank" rel="noopener">WhatsApp</a>
 </div>
 
@@ -44,6 +57,7 @@
      sky and the moon start at the very top of the page and the scene descends into the
      second section. The terrain still lands on the wrapper's bottom edge, which is the
      bottom of #nosotros — so the horizon sits exactly where it did before. -->
+<main id="main">
 <div class="sky-stage" id="skyStage">
 
   <div class="desert" id="desert" aria-hidden="true">
@@ -52,7 +66,19 @@
     <!-- The moon keeps 80% of the scroll: it hangs in the sky the whole way down while
          sinking towards the mesas, which paint after it and hide it at the end. -->
     <div class="desert-layer d-sun"   data-anchor="stage" data-parallax="0.80"></div>
-    <div class="desert-layer d-far"   data-parallax="0.13"  data-in="0"    data-span="0.72"></div>
+    <!-- Estrellas fugaces y destellos: los crea desert-life.js. Van entre el cielo y el
+         terreno, asi que las mesetas las tapan al caer. -->
+    <div class="sky-fx" id="skyFx"></div>
+    <!-- Siluetas sobre las mesetas: van DENTRO de cada cordillera para heredar su parallax
+         y su crecimiento. --x es la posicion en el ancho, --y la altura de la cresta en ese
+         punto (fraccion de --ridge, medida sobre el SVG) y --c el color de la cresta, asi la
+         silueta se lee como parte de la montana recortada contra el cielo. -->
+    <div class="desert-layer d-far"   data-parallax="0.13"  data-in="0"    data-span="0.72">
+      <i class="sil sil-movil-no" style="--img:url('assets/siluetas/jardin.png');       --ar:394/360; --x:18%;   --y:.230; --h:.085; --c:#e9915f"></i>
+      <i class="sil" style="--img:url('assets/siluetas/cactus-alto.png');  --ar:270/360; --x:34.5%; --y:.237; --h:.115; --c:#e9905f"></i>
+      <i class="sil sil-movil-no" style="--img:url('assets/siluetas/cactus-flor.png');  --ar:273/360; --x:37.4%; --y:.237; --h:.085; --c:#e9905f"></i>
+      <i class="sil" style="--img:url('assets/siluetas/cactus-rocas.png'); --ar:337/360; --x:92.6%; --y:.005; --h:.10;  --c:#fcae70"></i>
+    </div>
     <div class="desert-layer d-mid"   data-parallax="0.09"  data-in="0.08" data-span="0.72"></div>
     <!-- The near dunes now rise BEFORE the mid-distance pair. Those two stand on the
          crest with their feet just behind it, and the dunes are what hides the cut: if the
@@ -65,14 +91,34 @@
     <div class="desert-layer d-c2 desert-cactus" data-parallax="-0.08" data-in="0.42" data-span="0.50"></div>
     <div class="desert-layer d-c1 desert-cactus" data-parallax="-0.07" data-in="0.46" data-span="0.50"></div>
     <div class="desert-layer d-c3 desert-cactus" data-parallax="-0.05" data-in="0.50" data-span="0.50"></div>
+
+    <!-- Primer plano ilustrado (assets/peru): brota cuando las dunas terminan de subir,
+         se mece con el viento y el zorro juega a esconderse. Lo anima desert-life.js.
+         Cada .cast lleva la entrada (CSS) y su .toon el vaiven (JS), para que las dos
+         transformaciones no se pisen. El zorro es una silueta completa del color del suelo:
+         al esconderse se hunde en la duna y desaparece sin dejar corte. -->
+    <div class="desert-cast" id="desertCast">
+      <canvas class="desert-dust" id="desertDust"></canvas>
+      <div class="cast cast-alto"   style="--d:.30s"><div class="toon" data-sway="1.1" data-hop="1"><img src="assets/peru/cactus-alto.webp"  alt="" loading="lazy" decoding="async"></div></div>
+      <div class="cast cast-jardin" style="--d:.45s"><div class="toon" data-sway="0.8" data-dance="1"><img src="assets/peru/jardin.webp"       alt="" loading="lazy" decoding="async"></div></div>
+      <div class="cast cast-flor"   style="--d:.15s"><div class="toon" data-sway="1" data-dance="1"><img src="assets/peru/cactus-flor.webp"  alt="" loading="lazy" decoding="async"></div></div>
+      <div class="cast cast-roca"   style="--d:0s"><img src="assets/peru/roca.webp"           alt="" loading="lazy" decoding="async"></div>
+      <div class="cast-fox" id="foxBox"><i class="fox-sil" style="--img:url('assets/siluetas/zorro-culpeo.png')"></i></div>
+      <div class="cast cast-rocas"  style="--d:.08s"><img src="assets/peru/rocas-cactus.webp" alt="" loading="lazy" decoding="async"></div>
+    </div>
   </div>
 
   <header class="hero" id="top">
     <div class="hero-inner">
-      <span class="hero-kicker">Café de especialidad · Antofagasta, Chile</span>
-      <h1>Tostado al norte.<br><em>Hecho con carácter.</em></h1>
-      <p class="hero-sub">Cafés de especialidad seleccionados por su origen y tostados en Antofagasta, donde el desierto imprime nuestra forma de entender el café.</p>
-      <a href="#tueste" class="hero-cta">Descubrir nuestros cafés <span class="arrow" aria-hidden="true">→</span></a>
+      <span class="hero-kicker">Antofagasta, Chile</span>
+      <h1><span class="hero-l1">Árido es Norte</span><br><em class="hero-l2">y el Norte es Fauna y Café.</em></h1>
+      <p class="hero-sub">En el desierto más <strong>árido</strong> del mundo la vida florece a través de su indómita fauna.<br><br>Y se despiertan sus sentidos con nuestros granos de café que representan el fuego interior del norte grande chileno.</p>
+      <span class="cta-wrap" id="ctaWrap">
+        <!-- Dos cactus sentados detras del boton, asomados por el borde de arriba. -->
+        <span class="cta-toon cta-toon-l" aria-hidden="true"><span class="toon" data-hop="1"><img src="assets/peru/cactus-alto.webp" alt="" decoding="async"></span></span>
+        <span class="cta-toon cta-toon-r" aria-hidden="true"><span class="toon" data-hop="1"><img src="assets/peru/cactus-flor.webp" alt="" decoding="async"></span></span>
+        <a href="#tueste" class="hero-cta">Descubre nuestros cafés <span class="arrow" aria-hidden="true">→</span></a>
+      </span>
     </div>
   </header>
 
@@ -97,23 +143,32 @@
   <div class="container">
     <div class="section-head reveal">
       <div class="eyebrow">Nuestro origen</div>
-      <h2>Nacimos en el desierto más árido del mundo</h2>
-      <p>Árido es un proyecto nuevo, nortino de principio a fin. Creemos que el café de especialidad no debería quedarse solo en el sur — por eso tostamos en el norte y hacemos llegar los granos de los campos de Colombia y Etiopía directamente a las familias de todo Chile.</p>
+      <h2>El espíritu del desierto en cada grano.</h2>
+      <p>Árido nace de la templanza del desierto y la resistencia del alma nortina. Así como la <strong>vicuña</strong> recorre las alturas del altiplano y el <strong>zorro</strong> del desierto desafía la inmensidad, nuestros granos expresan el carácter del norte chileno en cada taza.</p>
     </div>
     <div class="about-grid">
       <div class="about-copy reveal">
-        <p>Cada bolsa de <strong>Árido</strong> nace de la selección cuidadosa de dos orígenes que representan lo mejor del café de especialidad: los valles cafeteros de <strong>Colombia</strong> y las tierras altas de <strong>Etiopía</strong>, cuna histórica del café.</p>
-        <p>Un café de culto no se improvisa: se elige, se tuesta y se comparte con quienes saben esperar por una buena taza — en pleno desierto de Atacama.</p>
+        <p>La mirada vigilante de la <strong>vizcacha</strong> asegura la calidad de la materia prima que usamos, el <strong>chungungo</strong> travieso tuesta con alegría cada grano y la selectiva <strong>parina</strong> prueba con recelo y cuidado cada café.</p>
+        <p>Árido representa la herencia ancestral y la conexión con la vida del desierto. Nuestros valores se ven representados por la fauna del norte chileno.</p>
+        <ul class="fauna-values">
+          <li><strong>Zorro Chilla:</strong> Resiliencia</li>
+          <li><strong>Vizcacha:</strong> Serenidad</li>
+          <li><strong>Vicuña:</strong> Pureza</li>
+          <li><strong>Parina:</strong> Equilibrio</li>
+          <li><strong>Gaviotín Chico:</strong> Libertad</li>
+          <li><strong>Chungungo:</strong> Alegría</li>
+          <li><strong>Ballena Fin:</strong> Trascendencia</li>
+        </ul>
         <div class="stats-row">
-          <div class="stat"><div class="num" data-count="2">0</div><div class="label">Orígenes de café<br>Colombia · Etiopía</div></div>
-          <div class="stat"><div class="num" data-count="16">0</div><div class="label">Regiones de Chile<br>a las que llegamos</div></div>
+          <div class="stat"><div class="num" data-count="3">0</div><div class="label">Tipos de café<br>según su complejidad</div></div>
+          <div class="stat"><div class="num" data-count="16">0</div><div class="label">Regiones de Chile<br>Llegamos a todo Chile por BluExpress</div></div>
         </div>
       </div>
       <div class="map-badge reveal-scale">
         <div class="eyebrow" style="margin-bottom:4px;">Llegamos a</div>
         <div class="region-list">
           <div class="region-item is-wide"><span class="pip"></span>Todo Chile</div>
-          <div class="region-note">De Arica a Magallanes, despacho a domicilio.</div>
+          <div class="region-note">De Arica a Magallanes.</div>
         </div>
       </div>
     </div>
@@ -137,41 +192,102 @@
 
     <!-- ---------- ESTADO 1: NARRATIVA DEL TUESTE ---------- -->
     <div class="roast-stage" id="roastStage">
+      <!-- Titulo a la izquierda, curva de tostado a la derecha. -->
+      <div class="roast-intro">
       <div class="section-head reveal">
         <div class="eyebrow">El tueste</div>
-        <h2>Tostado aquí, no heredado</h2>
-        <p>Cada origen se tuesta en Antofagasta buscando el punto en que el grano muestra lo suyo sin que el tueste se imponga por encima.</p>
+        <h2>Tostamos en Antofagasta, con ciencia y consciencia.</h2>
+        <p>Nos aseguramos de mantener altos estándares de calidad en nuestra materia prima, tostamos midiendo cada parámetro cuidadosamente y catamos cada batch para ajustar con precisión sus curvas de tueste. Desde la recepción del grano verde hasta el empaquetado final, cuidamos el café como quien conoce el clima extremo de nuestra tierra. Así transformamos la energía del grano en una taza balanceada, limpia y con la personalidad única del norte de Chile.</p>
+      </div>
+
+      <!-- Curva de tostado: se dibuja sola al entrar en pantalla (roast-curve.js). -->
+      <div class="roast" data-duration="8.5" role="figure" aria-label="Curva de tostado de café">
+        <div class="roast__inner">
+          <svg viewBox="0 0 1000 540" role="img" aria-label="Curva de tostado: Grano Verde, Turning Point, Secado, Maillard, Primer Crack, Desarrollo, Café Tostado">
+            <line x1="80" y1="100" x2="960" y2="100" stroke="var(--rule)" stroke-width="1.5" stroke-dasharray="3 7" stroke-linecap="round" opacity=".7"/>
+            <line x1="80" y1="56" x2="80" y2="480" stroke="var(--axis)" stroke-width="2" stroke-linecap="round"/>
+            <line x1="80" y1="480" x2="960" y2="480" stroke="var(--rule)" stroke-width="1.5" stroke-linecap="round"/>
+            <text class="axis" x="80" y="40">TEMP</text>
+            <text class="axis" x="960" y="514" text-anchor="end">TIEMPO</text>
+            <text class="zone fade" data-zone="endo" x="376" y="80" text-anchor="middle">REACCIÓN ENDOTÉRMICA</text>
+            <line class="fade" data-zone="exo" x1="671" y1="64" x2="671" y2="480" stroke="var(--rule)" stroke-width="1.5" stroke-dasharray="3 7" stroke-linecap="round"/>
+            <text class="zone zone--exo fade" data-zone="exo" x="815" y="80" text-anchor="middle">EXOTÉRMICA</text>
+            <path class="roast__curve" fill="none" stroke="var(--curve)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"
+              d="M 98 108 C 102 230, 125 340, 160 372 C 190 398, 245 402, 284 378 C 320 356, 355 315, 383 282 C 415 245, 455 210, 495 186 C 545 156, 610 118, 671 107 C 730 98, 840 102, 940 102"/>
+            <g class="roast__hitos"></g>
+            <g class="roast__dot">
+              <circle class="roast__halo" r="14" fill="var(--accent)" opacity=".18"/>
+              <circle r="7" fill="var(--curve)" stroke="var(--bg)" stroke-width="2.5"/>
+            </g>
+          </svg>
+          <ol class="roast__list"></ol>
+        </div>
+      </div>
       </div>
 
       <!-- Secuencia del tueste. El color de cada grano avanza de verde a tostado;
            es toda la narrativa que hace falta, sin párrafos de relleno. -->
       <ol class="roast-phases reveal" aria-label="Fases del tueste">
-        <li style="--phase:#93A860; --shade:0"><span class="phase-bean"></span><span class="phase-name">Grano verde</span></li>
-        <li style="--phase:#CBA95F; --shade:0"><span class="phase-bean"></span><span class="phase-name">Desarrollo</span></li>
-        <li style="--phase:#C07A31; --shade:.06"><span class="phase-bean"></span><span class="phase-name">Primer crack</span></li>
-        <li style="--phase:#9A4F1D; --shade:.18"><span class="phase-bean"></span><span class="phase-name">Aroma</span></li>
-        <li style="--phase:#63321A; --shade:.32"><span class="phase-bean"></span><span class="phase-name">Grano tostado</span></li>
-        <li style="--phase:#3F1E10; --shade:.48"><span class="phase-bean"></span><span class="phase-name">Café Árido</span></li>
+        <li style="--phase:#93A860; --shade:0"><span class="phase-bean"></span><span class="phase-name">Grano verde<br>(entrada)</span></li>
+        <li style="--phase:#B3A866; --shade:0"><span class="phase-bean"></span><span class="phase-name">Turning Point</span></li>
+        <li style="--phase:#CBA95F; --shade:.04"><span class="phase-bean"></span><span class="phase-name">Secado</span></li>
+        <li style="--phase:#C07A31; --shade:.14"><span class="phase-bean"></span><span class="phase-name">Reacción de Maillard</span></li>
+        <li style="--phase:#9A4F1D; --shade:.26"><span class="phase-bean"></span><span class="phase-name">Primer crack</span></li>
+        <li style="--phase:#6B3A1C; --shade:.38"><span class="phase-bean"></span><span class="phase-name">Desarrollo</span></li>
+        <li style="--phase:#3F1E10; --shade:.48"><span class="phase-bean"></span><span class="phase-name">Café tostado<br>(salida)</span></li>
       </ol>
 
-      <p class="roast-line reveal">El tueste revela lo que el origen ya contiene.</p>
+      <p class="roast-line reveal"><span>El Norte es Fauna</span><span class="roast-dot" aria-hidden="true">·</span><span>El Norte es Café</span><span class="roast-dot" aria-hidden="true">·</span><span>El Norte es Árido</span></p>
 
       <div class="roast-grid">
         <div class="roast-step reveal">
           <span class="roast-num">01</span>
           <h3>La tostadora</h3>
-          <p class="desc">[MODELO Y CAPACIDAD DE LA TOSTADORA — PENDIENTE]</p>
+          <p class="desc">Nuestra "Panchita" es una Yoshan SD-3K que baila a ritmo de saya con cada batch. Importada en Chile por nuestros partners de Café Brachi.</p>
         </div>
         <div class="roast-step reveal">
           <span class="roast-num">02</span>
           <h3>El perfil</h3>
-          <p class="desc">[PERFIL DE TUESTE POR ORIGEN — PENDIENTE]</p>
+          <p class="desc">Cada grano, una curva distinta: un perfil creado según las características organolépticas del café, su densidad, humedad, tamaño y resultado en taza.</p>
         </div>
         <div class="roast-step reveal">
           <span class="roast-num">03</span>
           <h3>Los lotes</h3>
-          <p class="desc">[FRECUENCIA DE TUESTE Y TAMAÑO DE LOTE — PENDIENTE]</p>
+          <p class="desc">Tostamos todas las semanas para que siempre puedas contar con café fresco y aproveches así todos los beneficios del grano y su máximo sabor.</p>
         </div>
+      </div>
+    </div>
+
+    <!-- Los tres tipos de café. Cada tarjeta es un filtro de la grilla de abajo:
+         el tipo de cada café sale del dato "Tipo" de COFFEES (roast-experience.js). -->
+    <div class="coffee-types reveal" id="coffeeTypes">
+      <div class="coffee-types-head">
+        <h2>Nuestros cafés</h2>
+        <p>Catalogamos nuestros cafés en función de su complejidad aromática, calidad de procesos y exclusividad del grano. Por lo que segmentamos nuestros granos en 3 tipos.</p>
+      </div>
+      <div class="coffee-types-grid" role="group" aria-label="Filtrar cafés por tipo">
+        <button type="button" class="coffee-type" data-tipo="1" aria-pressed="false">
+          <span class="coffee-type-num">01</span><span class="coffee-type-name">Cafés Tipo 1</span>
+          <span class="coffee-type-label">Orígenes</span><span class="coffee-type-value">Brasil, Perú, Bolivia, Honduras, Colombia</span>
+          <span class="coffee-type-label">Proceso</span><span class="coffee-type-value">Lavado</span>
+          <span class="coffee-type-label">Ideal para</span><span class="coffee-type-value">Espresso, bebidas con leche</span>
+        </button>
+        <button type="button" class="coffee-type" data-tipo="2" aria-pressed="false">
+          <span class="coffee-type-num">02</span><span class="coffee-type-name">Cafés Tipo 2</span>
+          <span class="coffee-type-label">Orígenes</span><span class="coffee-type-value">Perú, Colombia, México, Bolivia</span>
+          <span class="coffee-type-label">Proceso</span><span class="coffee-type-value">Natural o Lavado con fermentación controlada</span>
+          <span class="coffee-type-label">Ideal para</span><span class="coffee-type-value">Espresso y Filtrado</span>
+        </button>
+        <button type="button" class="coffee-type" data-tipo="3" aria-pressed="false">
+          <span class="coffee-type-num">03</span><span class="coffee-type-name">Cafés Tipo 3</span>
+          <span class="coffee-type-note">Cafés excepcionales o con procesos experimentales.</span>
+          <span class="coffee-type-label">Orígenes</span><span class="coffee-type-value">Colombia, Perú</span>
+          <span class="coffee-type-label">Ideal para</span><span class="coffee-type-value">Filtrados</span>
+        </button>
+      </div>
+      <div class="coffee-types-status" id="coffeeTypesStatus" hidden>
+        <span id="coffeeTypesStatusText"></span>
+        <button type="button" class="coffee-types-all" id="coffeeTypesAll">Ver todos los cafés</button>
       </div>
     </div>
 
@@ -180,7 +296,12 @@
          sección, ver justo debajo de </section>). -->
     <div class="coffee-grid" id="coffeeGrid">
       <div class="coffee-grid-track" id="coffeeGridTrack"></div>
-      <div class="coffee-grid-dots" id="coffeeGridDots" aria-hidden="true"></div>
+      <p class="coffee-grid-empty" id="coffeeGridEmpty" hidden>Por ahora no tenemos cafés de este tipo disponibles.</p>
+      <!-- Indicador del carrusel (solo movil y tablet): se navega deslizando; esto solo marca la posicion. -->
+      <div class="coffee-grid-nav">
+        <span class="cg-count" aria-live="polite"><span id="cgNow">01</span> <span class="cg-sep">/</span> <span id="cgTotal">05</span></span>
+        <span class="cg-bar" aria-hidden="true"><i id="cgBar"></i></span>
+      </div>
     </div>
   </div>
 </section>
@@ -228,10 +349,11 @@
 
     <dl class="prod-facts" id="prodFacts"></dl>
 
-    <!-- Formato: las dos únicas presentaciones reales en las que se vende el café. -->
+    <!-- Formato: las tres presentaciones reales en las que se vende el café. -->
     <div class="prod-sizes" role="group" aria-label="Formato">
-      <button type="button" class="prod-size is-current" data-size="250 g">250 g</button>
-      <button type="button" class="prod-size" data-size="500 g">500 g</button>
+      <button type="button" class="prod-size is-current" data-size="125 g">125 g</button>
+      <button type="button" class="prod-size" data-size="250 g">250 g</button>
+      <button type="button" class="prod-size" data-size="1.0 kg">1.0 kg</button>
     </div>
 
     <a class="prod-whatsapp" id="prodWhatsapp" href="https://wa.me/56972497925"
@@ -301,6 +423,8 @@
      #contacto se mueve al footer, que es donde viven los datos reales de
      contacto (WhatsApp, email, Instagram) — los enlaces del nav y del propio
      footer no cambian, siguen apuntando a "#contacto". -->
+</main>
+
 <footer id="contacto">
   <div class="container">
 
@@ -360,7 +484,7 @@
 
     <div class="footer-bottom">
       <div class="footer-brand">
-        <span class="brand-mark"><img src="assets/logo-emblem.png" alt="Árido"></span>
+        <span class="brand-mark"><img src="assets/logo-emblem.webp" alt="Árido" width="38" height="38" loading="lazy"></span>
         <span class="footer-copy">© <span id="year"></span> Árido Coffee Roasters. Un café de culto.</span>
       </div>
     </div>
@@ -368,12 +492,15 @@
   </div>
 </footer>
 
-<script src="main.js?v=202609152030"></script>
+<script src="main.js?v=202610020300"></script>
 
 <script src="sand-effect.js?v=202609152140"></script>
 <script src="desert-scene.js?v=202609111700"></script>
-<script src="shore.js?v=202609152140"></script>
-<script src="roast-experience.js?v=202609151830"></script>
+<script src="desert-life.js?v=202610010330"></script>
+<script src="shore.js?v=202609160900"></script>
+<script src="roast-experience.js?v=202610020600"></script>
+<script src="constellations.js?v=202610012200"></script>
+<script src="roast-curve.js?v=202610020300"></script>
 
 </body>
 </html>

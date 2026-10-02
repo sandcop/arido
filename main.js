@@ -5,10 +5,20 @@
   var burger = document.getElementById('burgerBtn');
   var closeBtn = document.getElementById('closeMenuBtn');
   var menu = document.getElementById('mobileMenu');
-  burger.addEventListener('click', function(){ menu.classList.add('open'); });
-  closeBtn.addEventListener('click', function(){ menu.classList.remove('open'); });
+  function setMenu(open){
+    menu.classList.toggle('open', open);
+    document.body.classList.toggle('menu-open', open);
+    burger.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if(open) closeBtn.focus(); else burger.focus({ preventScroll:true });
+  }
+  burger.setAttribute('aria-expanded', 'false');
+  burger.addEventListener('click', function(){ setMenu(true); });
+  closeBtn.addEventListener('click', function(){ setMenu(false); });
   menu.querySelectorAll('a').forEach(function(a){
-    a.addEventListener('click', function(){ menu.classList.remove('open'); });
+    a.addEventListener('click', function(){ setMenu(false); });
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && menu.classList.contains('open')) setMenu(false);
   });
 
   // Nav sits low (aligned with the hero frame) at the top, then tucks up higher once scrolled.
@@ -17,6 +27,8 @@
   var navEl = document.getElementById('nav');
   var navHeroSection = document.getElementById('top');
   var lastScrollY = window.scrollY;
+  // Al recargar a media pagina la barra debe nacer ya condensada, no esperar al primer scroll.
+  navEl.classList.toggle('nav-scrolled', window.scrollY > 40);
   window.addEventListener('scroll', function(){
     var currentScrollY = window.scrollY;
     navEl.classList.toggle('nav-scrolled', currentScrollY > 40);
@@ -70,18 +82,4 @@
   }, { threshold:0.5 });
   counters.forEach(function(el){ cio.observe(el); });
 
-  // Contact form -> mailto fallback. La sección "Hablemos" ya no lleva formulario
-  // (se simplificó a solo título + playa), así que el elemento puede no existir.
-  var form = document.getElementById('contactForm');
-  if(form){
-    form.addEventListener('submit', function(e){
-      e.preventDefault();
-      var name = document.getElementById('name').value;
-      var email = document.getElementById('email').value;
-      var message = document.getElementById('message').value;
-      var subject = encodeURIComponent('Consulta desde la web — ' + name);
-      var body = encodeURIComponent(message + '\n\nEmail de contacto: ' + email);
-      window.location.href = 'mailto:david@aridocafe.cl?subject=' + subject + '&body=' + body;
-    });
-  }
 })();

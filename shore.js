@@ -23,11 +23,15 @@
   var seaBase = 0;           // the sea never drains away entirely; swash rises off this
   var wetY = null;           // highest point each column has been wetted to
   var wetT = null;           // when that happened, for the drying fade
+  var smoothY = null;        // wetY/wetT despues de rellenar huecos entre columnas (ver draw)
+  var smoothT = null;
   var DRY_MS = 9000;
 
   function resetWet(){
     wetY = new Float32Array(COLS);
     wetT = new Float64Array(COLS);
+    smoothY = new Float32Array(COLS);
+    smoothT = new Float64Array(COLS);
     for(var i = 0; i < COLS; i++){ wetY[i] = H; wetT[i] = -1e9; }
   }
 
@@ -144,11 +148,25 @@
     // wet sand: darkened where the water has been, drying off column by column.
     // Columns high up the beach are only reached by the rare big wave, so they carry an
     // older timestamp and dry out first — the tide line recedes on its own.
+    // El borde de cada ola es irregular (edgeOffset), asi que una ola chica moja una
+    // columna pero no siempre llega igual de alto a la de al lado: sin este repaso,
+    // esa vecina se quedaba con su marca vieja ya seca y aparecia como un hueco sin
+    // sombra en medio de la mancha mojada. Se rellena copiando, de cada columna, el
+    // wetT/wetY mas reciente entre ella y sus dos vecinas a cada lado.
     for(i = 0; i < COLS; i++){
-      var age = now - wetT[i];
+      var bestT = wetT[i], bestY = wetY[i];
+      for(var d = -2; d <= 2; d++){
+        var j = i + d;
+        if(j < 0 || j >= COLS || wetT[j] <= bestT) continue;
+        bestT = wetT[j]; bestY = wetY[j];
+      }
+      smoothT[i] = bestT; smoothY[i] = bestY;
+    }
+    for(i = 0; i < COLS; i++){
+      var age = now - smoothT[i];
       if(age > DRY_MS) continue;
       var wetness = 1 - clamp01(age / DRY_MS);
-      var top = wetY[i];
+      var top = smoothY[i];
       // Integer, non-overlapping bounds. Letting adjacent columns overlap even a single
       // pixel doubles the alpha along every seam and stripes the whole band vertically —
       // and the semi-transparent water above shows those stripes straight through.
