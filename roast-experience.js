@@ -66,7 +66,11 @@
         // Antes de 0.478 no hay roca (el recorte quedo transparente ahi, se ve el
         // desierto de fondo.png): sin sentido dejar caer granos mas alla de donde
         // arranca la piedra.
-        flat: [0.541, 1.00]
+        flat: [0.541, 1.00],
+        // Vertido: el cafe cae en chorro dentro de la boca de la bolsa (medida sobre
+        // bolsa-roca: el borde superior va de 0.75 a 0.92 del ancho, a 0.33 del alto).
+        // Unos pocos granos rebotan y quedan sueltos al pie del paquete.
+        pour: { x0:0.75, x1:0.92, y:0.335 }
       }
     },
     {
@@ -868,6 +872,58 @@
       return x < 0 ? 0 : x > W - 1 ? W - 1 : x;
     }
 
+    // ---------------------------------------------------------------- vertido
+    // Solo en escenas con `pour` (Peru). Los granos no llueven por todo el cielo: caen en
+    // un chorro angosto sobre la boca de la bolsa y desaparecen dentro. Un 15% rebota en
+    // el cafe que ya entro, sale despedido hacia un lado y queda suelto junto al paquete.
+    function boca(){
+      var m = mCache, p = geo.pour;
+      return { x0: m.x0 + p.x0 * m.rw, x1: m.x0 + p.x1 * m.rw, y: m.y0 + p.y * m.rh };
+    }
+    function gauss(){ return (Math.random() + Math.random() + Math.random() - 1.5) / 1.5; }
+    function nuevoVertido(orden, derrama){
+      var bo = boca(), centro = (bo.x0 + bo.x1) / 2, ancho = bo.x1 - bo.x0;
+      var sFactor = 0.85 + Math.random() * 0.3;
+      // El chorro arranca fino, engrosa y vuelve a afinarse: la espera sigue una curva
+      // suave en vez de un reparto uniforme.
+      var f = orden / TOTAL;
+      var b = {
+        x: centro + gauss() * ancho * 0.14,
+        y: -GRANO * (1 + Math.random() * 2),
+        vy: (2.2 + Math.random() * 1.2) * dpr,
+        vx: gauss() * 0.12 * dpr,
+        rot: Math.random() * Math.PI * 2,
+        sFactor: sFactor,
+        s: (GRANO / 61.6) * sFactor,
+        espera: 250 + (f - Math.sin(f * Math.PI * 2) * 0.08) * 2800,
+        posado: false,
+        derrama: derrama
+      };
+      nuevoGiro(b, dpr);
+      return b;
+    }
+    // Donde puede quedar un grano derramado: justo a la izquierda de la bolsa (entre el
+    // zorro y el paquete) o sobre la roca a su derecha. Nunca encima de la cara del zorro.
+    function lugarDerrame(x){
+      var m = mCache, izq = [0.708, 0.726], der = [0.945, 0.99];
+      var u = (x - m.x0) / m.rw;
+      var t = u < 0.835 ? izq : der;
+      u = Math.max(t[0], Math.min(t[1], u + (Math.random() - 0.5) * 0.01));
+      return m.x0 + u * m.rw;
+    }
+    function dibujarDentroDeBoca(b){
+      // Recorte con la boca de la bolsa: el grano se hunde tras el borde en vez de
+      // pasar por delante del paquete.
+      var bo = boca();
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(0, 0, W, H);
+      ctx.rect(bo.x0, bo.y, bo.x1 - bo.x0, H - bo.y);
+      ctx.clip('evenodd');
+      dibujar(b);
+      ctx.restore();
+    }
+
     // Al tocar, rueda un poco cuesta abajo antes de asentarse: en la parte plana casi no
     // se mueve, pero basta para que no queden todos clavados a la misma altura.
     function rodar(b){
@@ -997,6 +1053,11 @@
       // por tres capas. Asi la densidad se ve igual en cualquier pantalla en vez de
       // depender de un numero fijo que en movil sobraba y en pantalla grande se quedaba
       // corto. Con tope, que son objetos baratos pero no gratis.
+      if(geo.pour){
+        TOTAL = 64;
+        for(var j = 0; j < TOTAL; j++) granos.push(nuevoVertido(j, Math.random() < 0.15));
+        return;
+      }
       TOTAL = Math.max(28, Math.min(300, Math.round((W / GRANO) * 3.6)));
       for(var i = 0; i < TOTAL; i++) granos.push(nuevo(i));
     }
@@ -1016,6 +1077,7 @@
       for(var i = 0; i < granos.length; i++){
         var b = granos[i];
         if(b.posado){
+          if(b.oculto) continue;
           if(asentando(b, dtMs)) quedan = true;
           dibujar(b);
           continue;
@@ -1023,6 +1085,36 @@
         quedan = true;
         if(trans < b.espera) continue;
         avanzar(b, k, dpr);
+        if(geo.pour){
+          var bo = boca();
+          if(!b.salto && b.y >= bo.y - GRANO * 0.25){
+            if(b.derrama){
+              // Rebota en el cafe que ya entro y sale despedido hacia un lado.
+              b.salto = true;
+              b.y = bo.y - GRANO * 0.25;
+              b.vy = -(1.4 + Math.random() * 0.8) * dpr;
+              // Apunta a su lugar junto a la bolsa: se calcula el tiempo de vuelo hasta el
+              // pie (subida + caida) y con eso la velocidad lateral justa, asi aterriza
+              // ahi mismo en vez de salir disparado y teletransportarse al posarse.
+              var destino = lugarDerrame(Math.random() < 0.55 ? 0 : 1e6);
+              var g = FISICA.G * dpr, d = reposo(destino) - b.y;
+              var vuelo = (-b.vy + Math.sqrt(b.vy * b.vy + 2 * g * Math.max(d, 1))) / g;
+              b.vx = (destino - b.x) / vuelo;
+              b.destino = destino;
+              b.vr = (Math.random() - 0.5) * 0.18;
+              b.vf *= 1.6;
+            } else if(b.y >= bo.y + GRANO * 0.6){
+              // Ya entro del todo: deja de existir para la escena.
+              b.posado = true; b.oculto = true; b.imgU = null;
+              continue;
+            }
+          }
+          if(!b.derrama){ dibujarDentroDeBoca(b); continue; }
+          var pie = reposo(b.x);
+          if(b.y >= pie && !rebotar(b, pie, dpr)){ if(b.destino != null) b.x += (b.destino - b.x) * 0.5; posar(b, true); }
+          dibujar(b);
+          continue;
+        }
         var suelo_y = reposo(b.x);
         // Un par de botes cortos antes de asentarse. Clavarse en seco al tocar es lo que
         // hacia que la caida no pareciera peso, sino desaparicion.
@@ -1045,11 +1137,17 @@
       } else {
         cubos = [];
         for(var i = 0; i < granos.length; i++){
+          if(geo.pour){
+            if(!granos[i].derrama){ granos[i].posado = true; granos[i].oculto = true; granos[i].imgU = null; continue; }
+            granos[i].x = lugarDerrame(Math.random() < 0.5 ? 0 : 1e6);
+            posar(granos[i], false);
+            continue;
+          }
           granos[i].x = desparramar(sorteoX());
           posar(granos[i], false);
         }
       }
-      for(var i = 0; i < granos.length; i++) dibujar(granos[i]);
+      for(var i = 0; i < granos.length; i++) if(!granos[i].oculto) dibujar(granos[i]);
       terminado = true;
     }
 
@@ -1123,7 +1221,7 @@
         if(!canvas || !ctx || raf) return;
         if(terminado){
           ctx.clearRect(0, 0, W, H);
-          for(var i = 0; i < granos.length; i++) if(granos[i].posado) dibujar(granos[i]);
+          for(var i = 0; i < granos.length; i++) if(granos[i].posado && !granos[i].oculto) dibujar(granos[i]);
           return;
         }
         if(!reduced) raf = requestAnimationFrame(cuadro);

@@ -15,9 +15,9 @@
     { name: 'CAFÉ TOSTADO',  at: 'end',   t: 8.7, lx: 940, ly: 264, anchor: 'end', leader: true }
   ];
   var EXO_INDEX = 4, NS = 'http://www.w3.org/2000/svg';
-  // Bajo este ancho las etiquetas quedarian ilegibles (movil): numeros sobre la curva +
-  // leyenda. En escritorio y tablet se ven los nombres escritos, como el original.
-  var ANGOSTO = 520;
+  // Misma version en todos los tamanos (nombres sobre la curva): el modo con numeros y
+  // leyenda queda desactivado. En movil el CSS agranda el texto del SVG para que se lea.
+  var ANGOSTO = 0;
 
   [].slice.call(document.querySelectorAll('.roast')).forEach(function (root) {
     var path = root.querySelector('.roast__curve'), dot = root.querySelector('.roast__dot'),

@@ -1181,6 +1181,10 @@
     -webkit-mask:var(--img) center bottom / contain no-repeat;
     mask:var(--img) center bottom / contain no-repeat;
   }
+  /* Las mascotas, un tono mas profundas que los cactus: se leen como sombras al
+     contraluz del atardecer, recortadas sobre el filo de la meseta. */
+  .sil-fauna{ background:color-mix(in srgb, var(--c) 62%, #4a1230); }
+
   /* ---------- CONSTELACIONES DE LA FAUNA (constellations.js) ---------- */
   .const{
     position:relative; display:block;
@@ -1748,8 +1752,21 @@
   }
 
   @media (max-width: 760px){
-    .roast-phases{ grid-template-columns:repeat(3, 1fr); gap:20px 10px; }
-    .roast-phases li::after{ display:none; }
+    /* Fases del tueste en una sola linea, de izquierda a derecha, como en escritorio:
+       granos y textos mas chicos para que las siete quepan en el ancho. */
+    .roast-phases{ gap:2px; margin-bottom:32px; }
+    .roast-phases li{ gap:8px; }
+    .phase-bean{ width:30px; height:22px; }
+    .roast-phases li::after{ top:11px; left:calc(50% + 18px); right:calc(-50% + 18px); }
+    .roast-phases .phase-name{ font-size:0.44rem; letter-spacing:0; line-height:1.3; }
+
+    /* Curva: misma version que escritorio, con el texto del SVG agrandado para que se
+       lea a ~350px de ancho. */
+    .roast{ padding:12px 4px; }
+    .roast .lbl{ font-size:22px; letter-spacing:.03em; }
+    .roast .sub{ font-size:19px; }
+    .roast .axis{ font-size:22px; }
+    .roast .zone{ font-size:19px; letter-spacing:.1em; }
 
     .prod-facts{ gap:16px 20px; }
     .prod-meters{ gap:20px; }
