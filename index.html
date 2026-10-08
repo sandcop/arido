@@ -24,7 +24,7 @@
 
 <!-- ?v= fuerza a recargar css y js al publicar: sin el, el navegador
      reutiliza la copia en cache y se sigue viendo la version anterior. -->
-<link rel="stylesheet" href="styles.css?v=202610030315">
+<link rel="stylesheet" href="styles.css?v=202610080900">
 </head>
 <body>
 <a class="skip-link" href="#main">Saltar al contenido</a>
@@ -62,13 +62,11 @@
 
   <div class="desert" id="desert" aria-hidden="true">
     <div class="desert-layer d-sky"   data-anchor="stage" data-parallax="0"></div>
-    <div class="desert-layer d-stars" data-anchor="stage" data-parallax="0.45"></div>
+    <!-- Cielo cosmico animado: estrellas que titilan, destellos y estrellas fugaces (cosmic-sky.js). -->
+    <canvas class="cosmic-sky" id="cosmicSky" aria-hidden="true"></canvas>
     <!-- The moon keeps 80% of the scroll: it hangs in the sky the whole way down while
          sinking towards the mesas, which paint after it and hide it at the end. -->
     <div class="desert-layer d-sun"   data-anchor="stage" data-parallax="0.80"></div>
-    <!-- Estrellas fugaces y destellos: los crea desert-life.js. Van entre el cielo y el
-         terreno, asi que las mesetas las tapan al caer. -->
-    <div class="sky-fx" id="skyFx"></div>
     <!-- Siluetas sobre las mesetas: van DENTRO de cada cordillera para heredar su parallax
          y su crecimiento. --x es la posicion en el ancho, --y la altura de la cresta en ese
          punto (fraccion de --ridge, medida sobre el SVG) y --c el color de la cresta, asi la
@@ -145,36 +143,47 @@
        horizon welded to the table. The sky is exempt; a bare gradient shows no motion. -->
   
   <div class="container">
-    <div class="section-head reveal">
+    <!-- Manifiesto: sin paneles, directo sobre el cielo. Textos originales, sin cambios. -->
+    <header class="ori-head reveal">
       <div class="eyebrow">Nuestro origen</div>
-      <h2>El espíritu del desierto en cada grano.</h2>
-      <p>Árido nace de la templanza del desierto y la resistencia del alma nortina. Así como la <strong>vicuña</strong> recorre las alturas del altiplano y el <strong>zorro</strong> del desierto desafía la inmensidad, nuestros granos expresan el carácter del norte chileno en cada taza.</p>
-    </div>
-    <div class="about-grid">
-      <div class="about-copy reveal">
-        <p>La mirada vigilante de la <strong>vizcacha</strong> asegura la calidad de la materia prima que usamos, el <strong>chungungo</strong> travieso tuesta con alegría cada grano y la selectiva <strong>parina</strong> prueba con recelo y cuidado cada café.</p>
-        <p>Árido representa la herencia ancestral y la conexión con la vida del desierto. Nuestros valores se ven representados por la fauna del norte chileno.</p>
-        <ul class="fauna-values">
-          <li><strong>Zorro Chilla:</strong> Resiliencia</li>
-          <li><strong>Vizcacha:</strong> Serenidad</li>
-          <li><strong>Vicuña:</strong> Pureza</li>
-          <li><strong>Parina:</strong> Equilibrio</li>
-          <li><strong>Gaviotín Chico:</strong> Libertad</li>
-          <li><strong>Chungungo:</strong> Alegría</li>
-          <li><strong>Ballena Fin:</strong> Trascendencia</li>
-        </ul>
-        <div class="stats-row">
-          <div class="stat"><div class="num" data-count="3">0</div><div class="label">Tipos de café<br>según su complejidad</div></div>
-          <div class="stat"><div class="num" data-count="16">0</div><div class="label">Regiones de Chile<br>Llegamos a todo Chile por BluExpress</div></div>
+      <h2>El espíritu del desierto <em>en cada grano.</em></h2>
+      <p class="ori-lead">Árido nace de la templanza del desierto y la resistencia del alma nortina. Así como la <strong>vicuña</strong> recorre las alturas del altiplano y el <strong>zorro</strong> del desierto desafía la inmensidad, nuestros granos expresan el carácter del norte chileno en cada taza.</p>
+    </header>
+
+    <div class="about-grid ori-body">
+      <!-- La frase original, repartida en tres estrellas unidas por una linea. -->
+      <ol class="ori-path reveal">
+        <li>
+          <svg class="ori-star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0 L14.6 9.4 L24 12 L14.6 14.6 L12 24 L9.4 14.6 L0 12 L9.4 9.4 Z"/></svg>
+          <p>La mirada vigilante de la <strong>vizcacha</strong> asegura la calidad de la materia prima que usamos,</p>
+        </li>
+        <li>
+          <svg class="ori-star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0 L14.6 9.4 L24 12 L14.6 14.6 L12 24 L9.4 14.6 L0 12 L9.4 9.4 Z"/></svg>
+          <p>el <strong>chungungo</strong> travieso tuesta con alegría cada grano</p>
+        </li>
+        <li>
+          <svg class="ori-star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0 L14.6 9.4 L24 12 L14.6 14.6 L12 24 L9.4 14.6 L0 12 L9.4 9.4 Z"/></svg>
+          <p>y la selectiva <strong>parina</strong> prueba con recelo y cuidado cada café.</p>
+        </li>
+      </ol>
+
+      <p class="ori-sky reveal">Árido representa la herencia ancestral y la conexión con la vida del desierto. Nuestros valores se ven representados por la fauna del norte chileno.</p>
+
+      <!-- Datos en una sola linea, separados por filetes. data-count lo anima main.js. -->
+      <dl class="ori-facts reveal">
+        <div class="ori-fact">
+          <dt class="num" data-count="3">0</dt>
+          <dd>Tipos de café <br>según su complejidad</dd>
         </div>
-      </div>
-      <div class="map-badge reveal-scale">
-        <div class="eyebrow" style="margin-bottom:4px;">Llegamos a</div>
-        <div class="region-list">
-          <div class="region-item is-wide"><span class="pip"></span>Todo Chile</div>
-          <div class="region-note">De Arica a Magallanes.</div>
+        <div class="ori-fact">
+          <dt class="num" data-count="16">0</dt>
+          <dd>Regiones de Chile <br>Llegamos a todo Chile por BluExpress</dd>
         </div>
-      </div>
+        <div class="ori-fact">
+          <dt class="ori-fact-word"><small>Llegamos a</small>Todo Chile</dt>
+          <dd>De Arica a Magallanes.</dd>
+        </div>
+      </dl>
     </div>
   </div>
 </section>
@@ -194,8 +203,59 @@
 
   <div class="container">
 
-    <!-- ---------- ESTADO 1: NARRATIVA DEL TUESTE ---------- -->
-    <div class="roast-stage" id="roastStage">
+    <!-- Los tres tipos de café. Cada tarjeta es un filtro de la grilla de abajo:
+         el tipo de cada café sale del dato "Tipo" de COFFEES (roast-experience.js). -->
+    <div class="coffee-types reveal" id="coffeeTypes">
+      <div class="coffee-types-head">
+        <h2>Nuestros cafés</h2>
+        <p>Catalogamos nuestros cafés en función de su complejidad aromática, calidad de procesos y exclusividad del grano. Por lo que segmentamos nuestros granos en 3 tipos.</p>
+      </div>
+      <div class="catalog-tools"><span>Elige un origen y conoce sus notas</span><a href="https://wa.me/56972497925?text=Hola%2C%20%C2%BFqu%C3%A9%20caf%C3%A9%20me%20recomiendan%3F" target="_blank" rel="noopener">Ayúdame a elegir ↗</a></div>
+      <details class="type-disclosure" open>
+        <summary>Explorar por tipo de café <span aria-hidden="true">+</span></summary>
+      <div class="coffee-types-grid" role="group" aria-label="Filtrar cafés por tipo">
+        <button type="button" class="coffee-type" data-tipo="1" aria-pressed="false">
+          <span class="coffee-type-num">01</span><span class="coffee-type-name">Cafés Tipo 1</span>
+          <span class="coffee-type-label">Orígenes</span><span class="coffee-type-value">Brasil, Perú, Bolivia, Honduras, Colombia</span>
+          <span class="coffee-type-label">Proceso</span><span class="coffee-type-value">Lavado</span>
+          <span class="coffee-type-label">Ideal para</span><span class="coffee-type-value">Espresso, bebidas con leche</span>
+        </button>
+        <button type="button" class="coffee-type" data-tipo="2" aria-pressed="false">
+          <span class="coffee-type-num">02</span><span class="coffee-type-name">Cafés Tipo 2</span>
+          <span class="coffee-type-label">Orígenes</span><span class="coffee-type-value">Perú, Colombia, México, Bolivia</span>
+          <span class="coffee-type-label">Proceso</span><span class="coffee-type-value">Natural o Lavado con fermentación controlada</span>
+          <span class="coffee-type-label">Ideal para</span><span class="coffee-type-value">Espresso y Filtrado</span>
+        </button>
+        <button type="button" class="coffee-type" data-tipo="3" aria-pressed="false">
+          <span class="coffee-type-num">03</span><span class="coffee-type-name">Cafés Tipo 3</span>
+          <span class="coffee-type-note">Cafés excepcionales o con procesos experimentales.</span>
+          <span class="coffee-type-label">Orígenes</span><span class="coffee-type-value">Colombia, Perú</span>
+          <span class="coffee-type-label">Ideal para</span><span class="coffee-type-value">Filtrados</span>
+        </button>
+      </div>
+      </details>
+      <div class="coffee-types-status" id="coffeeTypesStatus" role="status" hidden>
+        <span id="coffeeTypesStatusText"></span>
+        <button type="button" class="coffee-types-all" id="coffeeTypesAll">Ver todos los cafés</button>
+      </div>
+    </div>
+
+    <!-- Grilla de cafés: siempre visible. Un clic en una bolsa revela el
+         detalle de ese café en el popup #productStage (vive fuera de esta
+         sección, ver justo debajo de </section>). -->
+    <div class="coffee-grid" id="coffeeGrid">
+      <div class="coffee-grid-track" id="coffeeGridTrack"></div>
+      <p class="coffee-grid-empty" id="coffeeGridEmpty" hidden>Por ahora no tenemos cafés de este tipo disponibles.</p>
+      <!-- Indicador del carrusel (solo movil y tablet): se navega deslizando; esto solo marca la posicion. -->
+      <p class="catalog-hint">Desliza para explorar los orígenes · Toca un café para ver su ficha</p>
+      <div class="coffee-grid-nav">
+        <span class="cg-count" aria-live="polite"><span id="cgNow">01</span> <span class="cg-sep">/</span> <span id="cgTotal">05</span></span>
+        <span class="cg-bar" aria-hidden="true"><i id="cgBar"></i></span>
+      </div>
+    </div>
+
+    <!-- ---------- DE GRANO A TAZA: NARRATIVA DEL TUESTE ---------- -->
+    <div class="roast-stage roast-after" id="roastStage">
       <!-- Titulo a la izquierda, curva de tostado a la derecha. -->
       <div class="roast-intro">
       <div class="section-head reveal">
@@ -241,20 +301,30 @@
         <li style="--phase:#3F1E10; --shade:.48"><span class="phase-bean"></span><span class="phase-name">Café tostado<br>(salida)</span></li>
       </ol>
 
-      <p class="roast-line reveal"><span>El Norte es Fauna</span><span class="roast-dot" aria-hidden="true">·</span><span>El Norte es Café</span><span class="roast-dot" aria-hidden="true">·</span><span>El Norte es Árido</span></p>
+      <!-- Lema en bucle: avanza lento hacia la izquierda y se desvanece en los bordes.
+           Dos grupos identicos; al recorrer -50% el segundo ocupa el lugar del primero. -->
+      <div class="roast-line reveal">
+        <p class="rl-sr">El Norte es Fauna · El Norte es Café · El Norte es Árido</p>
+        <div class="rl-track" aria-hidden="true">
+          <div class="rl-set"><span>El Norte es Fauna</span><span class="roast-dot">·</span><span>El Norte es Café</span><span class="roast-dot">·</span><span>El Norte es Árido</span><span class="roast-dot">·</span><span>El Norte es Fauna</span><span class="roast-dot">·</span><span>El Norte es Café</span><span class="roast-dot">·</span><span>El Norte es Árido</span><span class="roast-dot">·</span></div>
+          <div class="rl-set"><span>El Norte es Fauna</span><span class="roast-dot">·</span><span>El Norte es Café</span><span class="roast-dot">·</span><span>El Norte es Árido</span><span class="roast-dot">·</span><span>El Norte es Fauna</span><span class="roast-dot">·</span><span>El Norte es Café</span><span class="roast-dot">·</span><span>El Norte es Árido</span><span class="roast-dot">·</span></div>
+        </div>
+      </div>
 
+      <!-- Pasos del tueste: roast-carousel.js los muestra como carrusel. Para poner una foto,
+           escribe su ruta en data-foto, por ejemplo data-foto="assets/tueste/tostadora.jpg". -->
       <div class="roast-grid">
-        <div class="roast-step reveal">
+        <div class="roast-step reveal" data-foto="">
           <span class="roast-num">01</span>
           <h3>La tostadora</h3>
           <p class="desc">Nuestra "Panchita" es una Yoshan SD-3K que baila a ritmo de saya con cada batch. Importada en Chile por nuestros partners de Café Brachi.</p>
         </div>
-        <div class="roast-step reveal">
+        <div class="roast-step reveal" data-foto="">
           <span class="roast-num">02</span>
           <h3>El perfil</h3>
           <p class="desc">Cada grano, una curva distinta: un perfil creado según las características organolépticas del café, su densidad, humedad, tamaño y resultado en taza.</p>
         </div>
-        <div class="roast-step reveal">
+        <div class="roast-step reveal" data-foto="">
           <span class="roast-num">03</span>
           <h3>Los lotes</h3>
           <p class="desc">Tostamos todas las semanas para que siempre puedas contar con café fresco y aproveches así todos los beneficios del grano y su máximo sabor.</p>
@@ -262,51 +332,6 @@
       </div>
     </div>
 
-    <!-- Los tres tipos de café. Cada tarjeta es un filtro de la grilla de abajo:
-         el tipo de cada café sale del dato "Tipo" de COFFEES (roast-experience.js). -->
-    <div class="coffee-types reveal" id="coffeeTypes">
-      <div class="coffee-types-head">
-        <h2>Nuestros cafés</h2>
-        <p>Catalogamos nuestros cafés en función de su complejidad aromática, calidad de procesos y exclusividad del grano. Por lo que segmentamos nuestros granos en 3 tipos.</p>
-      </div>
-      <div class="coffee-types-grid" role="group" aria-label="Filtrar cafés por tipo">
-        <button type="button" class="coffee-type" data-tipo="1" aria-pressed="false">
-          <span class="coffee-type-num">01</span><span class="coffee-type-name">Cafés Tipo 1</span>
-          <span class="coffee-type-label">Orígenes</span><span class="coffee-type-value">Brasil, Perú, Bolivia, Honduras, Colombia</span>
-          <span class="coffee-type-label">Proceso</span><span class="coffee-type-value">Lavado</span>
-          <span class="coffee-type-label">Ideal para</span><span class="coffee-type-value">Espresso, bebidas con leche</span>
-        </button>
-        <button type="button" class="coffee-type" data-tipo="2" aria-pressed="false">
-          <span class="coffee-type-num">02</span><span class="coffee-type-name">Cafés Tipo 2</span>
-          <span class="coffee-type-label">Orígenes</span><span class="coffee-type-value">Perú, Colombia, México, Bolivia</span>
-          <span class="coffee-type-label">Proceso</span><span class="coffee-type-value">Natural o Lavado con fermentación controlada</span>
-          <span class="coffee-type-label">Ideal para</span><span class="coffee-type-value">Espresso y Filtrado</span>
-        </button>
-        <button type="button" class="coffee-type" data-tipo="3" aria-pressed="false">
-          <span class="coffee-type-num">03</span><span class="coffee-type-name">Cafés Tipo 3</span>
-          <span class="coffee-type-note">Cafés excepcionales o con procesos experimentales.</span>
-          <span class="coffee-type-label">Orígenes</span><span class="coffee-type-value">Colombia, Perú</span>
-          <span class="coffee-type-label">Ideal para</span><span class="coffee-type-value">Filtrados</span>
-        </button>
-      </div>
-      <div class="coffee-types-status" id="coffeeTypesStatus" hidden>
-        <span id="coffeeTypesStatusText"></span>
-        <button type="button" class="coffee-types-all" id="coffeeTypesAll">Ver todos los cafés</button>
-      </div>
-    </div>
-
-    <!-- Grilla de cafés: siempre visible. Un clic en una bolsa revela el
-         detalle de ese café en el popup #productStage (vive fuera de esta
-         sección, ver justo debajo de </section>). -->
-    <div class="coffee-grid" id="coffeeGrid">
-      <div class="coffee-grid-track" id="coffeeGridTrack"></div>
-      <p class="coffee-grid-empty" id="coffeeGridEmpty" hidden>Por ahora no tenemos cafés de este tipo disponibles.</p>
-      <!-- Indicador del carrusel (solo movil y tablet): se navega deslizando; esto solo marca la posicion. -->
-      <div class="coffee-grid-nav">
-        <span class="cg-count" aria-live="polite"><span id="cgNow">01</span> <span class="cg-sep">/</span> <span id="cgTotal">05</span></span>
-        <span class="cg-bar" aria-hidden="true"><i id="cgBar"></i></span>
-      </div>
-    </div>
   </div>
 </section>
 
@@ -326,6 +351,7 @@
 
   <!-- Caja de imagen: aloja la escena con parallax+granos (cafés con render) o la
        bolsa suelta + granos sueltos (cafés sin render) — solo una a la vez. -->
+  <div class="product-scroll" id="productScroll">
   <div class="prod-media">
     <div class="prod-scene" id="prodScene" aria-hidden="true" hidden></div>
     <div class="prod-art">
@@ -353,11 +379,16 @@
 
     <dl class="prod-facts" id="prodFacts"></dl>
 
+  </div>
+  </div>
+  <!-- Barra de compra fija al pie de la ficha: formato + WhatsApp siempre a la vista. -->
+  <div class="prod-purchase">
+    <span class="purchase-caption">Elige tu formato</span>
     <!-- Formato: las tres presentaciones reales en las que se vende el café. -->
     <div class="prod-sizes" role="group" aria-label="Formato">
-      <button type="button" class="prod-size is-current" data-size="125 g">125 g</button>
-      <button type="button" class="prod-size" data-size="250 g">250 g</button>
-      <button type="button" class="prod-size" data-size="1.0 kg">1.0 kg</button>
+      <button type="button" class="prod-size is-current" data-size="125 g" aria-pressed="true">125 g</button>
+      <button type="button" class="prod-size" data-size="250 g" aria-pressed="false">250 g</button>
+      <button type="button" class="prod-size" data-size="1.0 kg" aria-pressed="false">1.0 kg</button>
     </div>
 
     <a class="prod-whatsapp" id="prodWhatsapp" href="https://wa.me/56972497925"
@@ -372,17 +403,18 @@
 </div>
 
 <!-- ============================================================================
-     EDICIÓN ESPECIAL — bloque promocional (formato "banner de tienda": dos
-     tarjetas chicas arriba, una ancha abajo). Sin fotos ni copy reales todavía:
-     cada .promo-media es un marcador de posición y cada título va entre
-     corchetes, la misma convención de "dato pendiente" que ya usa el resto del
-     sitio. Para completarlo:
-       1) Reemplaza el fondo de .promo-media por una foto real (agrega
-          background-image:url('assets/...') en el style de cada <a>, o dale
-          una clase con la ruta en el CSS).
-       2) Cambia los títulos/subtítulo por el texto real de la promoción.
-       3) Si el botón de la tarjeta ancha debe llevar a otro sitio que no sea
-          la grilla de cafés, cambia su href.
+     EDICIÓN ESPECIAL — bloque promocional: texto + botón a la izquierda y, a la
+     derecha, dos columnas de fotos que se desplazan sin fin (la izquierda sube,
+     la derecha baja) y se desvanecen en los bordes. Todo con CSS, sin JS.
+     Sin fotos ni copy reales todavía: los títulos van entre corchetes y cada
+     .esp-tile es un espacio reservado. Para completarlo:
+       1) Pon las fotos en assets/especial/ y cambia cada
+          <div class="esp-tile ..."><span>Foto N</span></div> por
+          <div class="esp-tile ..."><img src="assets/especial/foto-N.jpg" alt="..."></div>
+          (las del segundo grupo de cada columna son copia exacta de las primeras:
+          así el bucle no tiene salto; esas copias llevan alt="").
+       2) Cambia el título y el texto por el de la edición especial.
+       3) Si el botón debe llevar a otro sitio que no sea el catálogo, cambia su href.
      ============================================================================ -->
 <section id="especial">
   <canvas class="sand-layer" id="sandEspecial" aria-hidden="true"></canvas>
@@ -390,33 +422,48 @@
        detrás de las tarjetas, no la protagonista de la sección. -->
   <canvas class="shore-layer" id="shoreEspecialCanvas" aria-hidden="true"></canvas>
   <div class="container">
-    <div class="section-head reveal">
-      <div class="eyebrow">Edición especial</div>
-      <h2>[TÍTULO DE LA SECCIÓN — PENDIENTE]</h2>
-    </div>
-    <div class="promo-grid">
-      <a class="promo-card reveal" href="#tueste">
-        <div class="promo-media" aria-hidden="true">
-          <span class="promo-placeholder-label">Imagen pendiente</span>
+    <div class="esp-promo">
+      <div class="esp-copy reveal">
+        <div class="eyebrow">Edición especial</div>
+        <h2>[TÍTULO DE LA EDICIÓN ESPECIAL — PENDIENTE]</h2>
+        <p>[DESCRIPCIÓN, DISPONIBILIDAD Y FORMATOS — PENDIENTE]</p>
+        <a class="btn btn-accent esp-cta" href="#coffeeTypes">Ver cafés <span aria-hidden="true">→</span></a>
+      </div>
+      <!-- Galeria en bucle: decorativa, el contenido real esta en el texto. -->
+      <div class="esp-gallery" role="img" aria-label="Fotos de la edición especial (pendientes)">
+        <div class="esp-col esp-up">
+          <div class="esp-track">
+          <div class="esp-set">
+            <div class="esp-tile esp-r45"><span>Foto 1</span></div>
+            <div class="esp-tile esp-r11"><span>Foto 2</span></div>
+            <div class="esp-tile esp-r34"><span>Foto 3</span></div>
+            <div class="esp-tile esp-r43"><span>Foto 4</span></div>
+          </div>
+          <div class="esp-set" aria-hidden="true">
+            <div class="esp-tile esp-r45"><span>Foto 1</span></div>
+            <div class="esp-tile esp-r11"><span>Foto 2</span></div>
+            <div class="esp-tile esp-r34"><span>Foto 3</span></div>
+            <div class="esp-tile esp-r43"><span>Foto 4</span></div>
+          </div>
+          </div>
         </div>
-        <h3 class="promo-title">[TÍTULO PROMO 1 — PENDIENTE]</h3>
-      </a>
-      <a class="promo-card reveal" href="#tueste">
-        <div class="promo-media" aria-hidden="true">
-          <span class="promo-placeholder-label">Imagen pendiente</span>
+        <div class="esp-col esp-down">
+          <div class="esp-track">
+          <div class="esp-set">
+            <div class="esp-tile esp-r11"><span>Foto 5</span></div>
+            <div class="esp-tile esp-r34"><span>Foto 6</span></div>
+            <div class="esp-tile esp-r43"><span>Foto 7</span></div>
+            <div class="esp-tile esp-r45"><span>Foto 8</span></div>
+          </div>
+          <div class="esp-set" aria-hidden="true">
+            <div class="esp-tile esp-r11"><span>Foto 5</span></div>
+            <div class="esp-tile esp-r34"><span>Foto 6</span></div>
+            <div class="esp-tile esp-r43"><span>Foto 7</span></div>
+            <div class="esp-tile esp-r45"><span>Foto 8</span></div>
+          </div>
+          </div>
         </div>
-        <h3 class="promo-title">[TÍTULO PROMO 2 — PENDIENTE]</h3>
-      </a>
-      <a class="promo-card promo-card-wide reveal" href="#tueste">
-        <div class="promo-media" aria-hidden="true">
-          <span class="promo-placeholder-label">Imagen pendiente</span>
-        </div>
-        <div class="promo-copy">
-          <h3 class="promo-title">[TÍTULO EDICIÓN ESPECIAL — PENDIENTE]</h3>
-          <p class="promo-sub">[DISPONIBILIDAD / FORMATOS — PENDIENTE]</p>
-          <span class="btn btn-ghost promo-btn">Ver cafés</span>
-        </div>
-      </a>
+      </div>
     </div>
   </div>
 </section>
@@ -496,15 +543,17 @@
   </div>
 </footer>
 
-<script src="main.js?v=202610020300"></script>
+<script src="main.js?v=202610070100"></script>
 
 <script src="sand-effect.js?v=202609152140"></script>
 <script src="desert-scene.js?v=202609111700"></script>
-<script src="desert-life.js?v=202610010330"></script>
+<script src="desert-life.js?v=202610080100"></script>
+<script src="cosmic-sky.js?v=202610080100"></script>
 <script src="shore.js?v=202609160900"></script>
-<script src="roast-experience.js?v=202610030115"></script>
+<script src="roast-experience.js?v=202610070100"></script>
 <script src="constellations.js?v=202610012200"></script>
-<script src="roast-curve.js?v=202610030300"></script>
+<script src="roast-carousel.js?v=202610080400"></script>
+<script src="roast-curve.js?v=202610080900"></script>
 
 </body>
 </html>

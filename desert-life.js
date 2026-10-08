@@ -1,10 +1,9 @@
 /* Vida del desierto: lo que se mueve SOLO, sin depender del scroll.
-     - Cielo: estrellas fugaces cada pocos segundos y destellos que titilan.
      - Cactus de caricatura: dos asomados tras el boton del hero y los del primer plano
        del desierto. Respiran, saltan, bailan y tiemblan como gelatina.
      - Primer plano (assets/peru): rafagas con polvo que cruza el suelo y la silueta de un
        zorro que sale de la duna, mira al cursor y se esconde si te acercas.
-   desert-scene.js sigue a cargo del armado por scroll; esto vive encima y no lo toca. */
+   desert-scene.js sigue a cargo del armado por scroll y cosmic-sky.js del cielo estrellado. */
 (function(){
   var desert = document.getElementById('desert');
   var stage  = document.getElementById('skyStage');
@@ -14,72 +13,6 @@
   var dpr = Math.min(window.devicePixelRatio || 1, 2);
   function rand(a, b){ return a + Math.random() * (b - a); }
   function clamp(v, a, b){ return v < a ? a : v > b ? b : v; }
-
-  // ============================================================== cielo
-  var skyFx = document.getElementById('skyFx');
-  var stageVisible = true;
-
-  function sembrarDestellos(){
-    if(!skyFx) return;
-    var vh = window.innerHeight;
-    var n = window.innerWidth < 760 ? 8 : 16;
-    for(var i = 0; i < n; i++){
-      var s = document.createElement('span');
-      s.className = 'twinkle';
-      // A los lados, no detras del titular: un destello sobre la letra distrae.
-      var lado = Math.random() < 0.5 ? rand(3, 24) : rand(76, 97);
-      s.style.left = lado + '%';
-      s.style.top = Math.round(rand(0.06, 0.95) * vh) + 'px';
-      s.style.setProperty('--s', Math.round(rand(14, 28)) + 'px');
-      s.style.setProperty('--t', rand(2.6, 5.2).toFixed(2) + 's');
-      s.style.setProperty('--delay', rand(0, 5).toFixed(2) + 's');
-      skyFx.appendChild(s);
-    }
-  }
-
-  function estrellaFugaz(){
-    if(!skyFx) return;
-    var r = desert.getBoundingClientRect();
-    var vh = window.innerHeight;
-    var visTop = Math.max(0, -r.top);
-    // Solo en cielo abierto: la mitad alta de lo que se ve, y nunca a la altura de las
-    // mesetas, que en el tramo final ocupan el ultimo tercio de la escena.
-    var y = visTop + rand(0.04, 0.42) * vh;
-    if(y > r.height - vh * 0.9) return;
-    var s = document.createElement('span');
-    s.className = 'shooting-star';
-    var largo = rand(170, 300);
-    s.style.left = rand(30, 95) + '%';
-    s.style.top = Math.round(y) + 'px';
-    s.style.setProperty('--len', Math.round(largo) + 'px');
-    s.style.setProperty('--ang', Math.round(rand(200, 228)) + 'deg');
-    s.style.setProperty('--dist', -Math.round(rand(420, 700)) + 'px');
-    s.style.setProperty('--dur', rand(1.1, 1.7).toFixed(2) + 's');
-    s.addEventListener('animationend', function(){ s.remove(); });
-    skyFx.appendChild(s);
-  }
-
-  var fugazTimer = null;
-  function programarFugaz(espera){
-    window.clearTimeout(fugazTimer);
-    fugazTimer = window.setTimeout(function(){
-      if(stageVisible && !document.hidden){
-        estrellaFugaz();
-        // De vez en cuando, dos seguidas: la lluvia de estrellas tambien sorprende.
-        if(Math.random() < 0.22) window.setTimeout(estrellaFugaz, rand(250, 600));
-      }
-      programarFugaz(rand(2600, 6500));
-    }, espera);
-  }
-
-  if(!reduced){
-    sembrarDestellos();
-    programarFugaz(1400);
-  }
-  if('IntersectionObserver' in window){
-    new IntersectionObserver(function(e){ stageVisible = e[0].isIntersecting; }).observe(stage);
-  }
-
 
   // ============================================================== personajes
   // Cactus de caricatura. Cada uno es un juego de resortes:

@@ -72,12 +72,23 @@
     }
     function setDot(len) { var q = path.getPointAtLength(len); dot.setAttribute('transform', 'translate(' + q.x + ' ' + q.y + ')'); }
     function toggle(nodes, on) { nodes.forEach(function (n) { n.classList.toggle('on', on); }); }
+    // Granos de la fila de fases (7, en el mismo orden que los hitos): cada uno se
+    // enciende y da un pulso en el instante en que el punto revela su hito.
+    var fila = document.querySelector('.roast-phases');
+    var granos = fila ? [].slice.call(fila.children) : [];
+    if (granos.length === HITOS.length) fila.classList.add('is-synced'); else granos = [];
+    function grano(i, on, pulso) {
+      var g = granos[i]; if (!g) return;
+      g.classList.toggle('is-on', on);
+      if (pulso) { g.classList.remove('is-pulse'); void g.offsetWidth; g.classList.add('is-pulse'); }
+      else if (!on) g.classList.remove('is-pulse');
+    }
     var endo = [].slice.call(root.querySelectorAll('[data-zone="endo"]')),
         exo = [].slice.call(root.querySelectorAll('[data-zone="exo"]'));
 
     function reset() {
       path.style.strokeDasharray = L; path.style.strokeDashoffset = L; setDot(0); dot.style.opacity = 0;
-      HITOS.forEach(function (h) { toggle([h.g, h.li], false); });
+      HITOS.forEach(function (h, i) { h.on = false; toggle([h.g, h.li], false); grano(i, false, false); });
       toggle(endo, false); toggle(exo, false);
       svg.style.opacity = 1; list.style.opacity = 1;
     }
@@ -89,20 +100,23 @@
         var t = (now - t0) / 1000 * k, len = lenAt(t), ph = Math.sin(now / 260);
         path.style.strokeDashoffset = L - len; setDot(len);
         halo.setAttribute('r', 13 + 2.5 * ph); halo.setAttribute('opacity', 0.16 + 0.06 * ph);
-        HITOS.forEach(function (h) { if (h.len <= len + 0.5) toggle([h.g, h.li], true); });
+        HITOS.forEach(function (h, i) {
+          if (!h.on && h.len <= len + 0.5) { h.on = true; toggle([h.g, h.li], true); grano(i, true, true); }
+        });
         if (len >= HITOS[EXO_INDEX].len - 0.5) toggle(exo, true);
         // Al llegar se apaga el punto: tapaba el ultimo hito.
         if (t < total) { raf = requestAnimationFrame(tick); return; }
         // Bucle: quieta un momento, se desvanece y arranca de nuevo.
         esperar(function () {
           svg.style.opacity = 0; list.style.opacity = 0;
+          HITOS.forEach(function (h, i) { grano(i, false, false); });
           esperar(function () { if (visible) play(); }, FUNDIDO);
         }, PAUSA);
       })(t0);
     }
     function showFinal() {
       path.style.strokeDashoffset = 0; setDot(L); dot.style.opacity = 1;
-      HITOS.forEach(function (h) { toggle([h.g, h.li], true); });
+      HITOS.forEach(function (h, i) { h.on = true; toggle([h.g, h.li], true); grano(i, true, false); });
       toggle(endo, true); toggle(exo, true);
     }
 

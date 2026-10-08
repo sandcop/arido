@@ -41,6 +41,16 @@
     lastScrollY = currentScrollY;
   }, { passive:true });
 
+  // Tipos de cafe: desplegados en escritorio, plegables bajo 900px (el catalogo de bolsas
+  // queda arriba, a la vista, y los tipos se abren si se quieren filtrar).
+  var tipos = document.querySelector('.type-disclosure');
+  if(tipos){
+    var angosto = window.matchMedia('(max-width: 900px)');
+    var fijar = function(){ tipos.open = !angosto.matches; };
+    fijar();
+    if(angosto.addEventListener) angosto.addEventListener('change', fijar); else angosto.addListener(fijar);
+  }
+
   // Reveal on scroll (with stagger for siblings)
   var revealEls = document.querySelectorAll('.reveal, .reveal-scale');
   var io = new IntersectionObserver(function(entries){

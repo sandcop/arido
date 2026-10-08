@@ -517,7 +517,7 @@
   elSizeBtns.forEach(function(btn){
     btn.addEventListener('click', function(){
       selectedSize = btn.getAttribute('data-size');
-      elSizeBtns.forEach(function(b){ b.classList.toggle('is-current', b === btn); });
+      elSizeBtns.forEach(function(b){ b.classList.toggle('is-current', b === btn); b.setAttribute('aria-pressed', String(b === btn)); });
       actualizarWhatsapp();
     });
   });
@@ -1384,7 +1384,7 @@
     // Cada café abre con el formato mas chico elegido por defecto.
     if(elSizeBtns.length){
       selectedSize = elSizeBtns[0].getAttribute('data-size');
-      elSizeBtns.forEach(function(b, k){ b.classList.toggle('is-current', k === 0); });
+      elSizeBtns.forEach(function(b, k){ b.classList.toggle('is-current', k === 0); b.setAttribute('aria-pressed', String(k === 0)); });
     }
     actualizarWhatsapp();
 
@@ -1414,6 +1414,7 @@
   var scrim = document.getElementById('quickviewScrim');
 
   function openDetail(i){
+    var sc = document.getElementById('productScroll'); if(sc) sc.scrollTop = 0;
     var cambiaDeCafe = showing && i !== current;
     current = i;
     if(cambiaDeCafe && !reduced){

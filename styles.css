@@ -511,27 +511,84 @@
   .phase-bean::before{ background:var(--phase); mix-blend-mode:color; }
   .phase-bean::after{ background:#000; opacity:var(--shade, 0); mix-blend-mode:multiply; }
 
+  /* Sincronia con la curva (roast-curve.js pone .is-synced): los granos esperan apagados
+     y se encienden con un pulso cuando el punto del grafico llega a su hito. Sin JS, o
+     con movimiento reducido, se ven todos encendidos como siempre. */
+  .roast-phases.is-synced .phase-bean,
+  .roast-phases.is-synced .phase-name{ transition:opacity .45s ease, color .45s ease; }
+  .roast-phases.is-synced li:not(.is-on) .phase-bean{ opacity:.28; }
+  .roast-phases.is-synced li:not(.is-on) .phase-name{ opacity:.45; }
+  .roast-phases.is-synced li.is-on .phase-name{ color:var(--accent-deep); }
+  .roast-phases li.is-pulse .phase-bean{ animation:beanPulse .7s cubic-bezier(.3,1.6,.5,1); }
+  /* Anillo que se expande desde el grano. */
+  .roast-phases li::before{
+    content:''; position:absolute; top:17px; left:50%;
+    width:44px; height:44px; margin:-22px 0 0 -22px;
+    border:2px solid var(--accent); border-radius:50%;
+    opacity:0; pointer-events:none;
+  }
+  .roast-phases li.is-pulse::before{ animation:beanRing .8s ease-out; }
+  @keyframes beanPulse{
+    0%  { transform:scale(1); }
+    35% { transform:scale(1.28) rotate(-6deg); }
+    100%{ transform:scale(1) rotate(0); }
+  }
+  @keyframes beanRing{
+    0%  { opacity:.75; transform:scale(.55); }
+    100%{ opacity:0;   transform:scale(1.6); }
+  }
+  @media (max-width: 760px){
+    .roast-phases li::before{ top:11px; width:30px; height:30px; margin:-15px 0 0 -15px; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .roast-phases li.is-pulse .phase-bean, .roast-phases li.is-pulse::before{ animation:none; }
+  }
+
   .roast-phases .phase-name{
     font-size:0.68rem; letter-spacing:0.14em; text-transform:uppercase;
     font-weight:700; color:var(--ink-dim);
     line-height:1.35;
   }
+  /* Lema en bucle infinito: una cinta que avanza lento hacia la izquierda, centrada,
+     y se desvanece hacia los dos bordes. */
   .roast-line{
+    position:relative;
+    max-width:980px; margin:0 auto 52px;
+    overflow:hidden;
     font-family:var(--serif); font-style:italic;
-    font-size:clamp(1.2rem, 2.4vw, 1.7rem);
+    font-size:clamp(1.25rem, 2.4vw, 1.7rem);
     color:var(--ink);
-    /* Una sola linea horizontal, frases separadas por un punto; en pantallas angostas
-       las frases bajan enteras, nunca partidas. */
-    display:flex; flex-wrap:wrap; justify-content:center; align-items:baseline;
-    gap:0.2em 0.7em;
-    text-align:center;
-    margin:0 0 52px;
+    -webkit-mask-image:linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent);
+            mask-image:linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent);
   }
-  .roast-line span{ white-space:nowrap; }
+  .rl-sr{
+    position:absolute; width:1px; height:1px; overflow:hidden;
+    clip:rect(0 0 0 0); clip-path:inset(50%); white-space:nowrap;
+  }
+  .rl-track{
+    display:flex; width:max-content;
+    animation:rlMarquee 38s linear infinite;
+    will-change:transform;
+  }
+  .rl-set{ display:flex; align-items:baseline; flex-shrink:0; }
+  /* Cada pieza lleva su margen a la derecha (no gap) para que los dos grupos midan igual. */
+  .rl-set span{ white-space:nowrap; margin-right:0.7em; }
   .roast-line .roast-dot{ color:var(--accent); font-style:normal; }
+  @keyframes rlMarquee{
+    from{ transform:translate3d(0, 0, 0); }
+    to  { transform:translate3d(-50%, 0, 0); }
+  }
   @media (max-width: 560px){
-    /* En una sola linea tambien en movil: partida, el punto quedaba colgando al final. */
-    .roast-line{ font-size:3.5vw; gap:0 0.45em; flex-wrap:nowrap; }
+    .roast-line{
+      font-size:1.2rem;
+      -webkit-mask-image:linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+              mask-image:linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+    }
+    .rl-track{ animation-duration:28s; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .rl-track{ animation:none; justify-content:center; width:auto; }
+    .rl-set + .rl-set, .rl-set span:nth-child(n+6){ display:none; }
   }
 
   /* --- grilla de cafés ---
@@ -1077,20 +1134,15 @@
      on both axes — otherwise a scroll extreme slides the solid part of the mask out of
      view and the stars simply vanish. The top is always clipped by the scene and the
      bottom always dissolves, so no edge is ever visible. */
-  .d-stars{
-    left:0; right:0; top:-700px;
-    /* Tied to the stage height now that the sky spans the hero as well: a fixed band
-       would run out partway down and the stars would stop halfway. */
-    height:calc(100% + 700px);
-    background-image:url('assets/desierto/SVG/estrellas.svg');
-    background-size:640px auto;
-    background-repeat:repeat;
-    -webkit-mask-image:linear-gradient(to bottom, #000 0%, #000 58%, transparent 86%);
-    mask-image:linear-gradient(to bottom, #000 0%, #000 58%, transparent 86%);
-    /* Dimmer than it was: the field used to sit behind the glass panels of one section,
-       and at full strength across an open hero it speckles the copy. */
-    opacity:0.72;
+  /* Cielo cosmico (cosmic-sky.js): un lienzo del alto de la ventana que el JS mantiene a
+     la vista mientras se recorre el cielo. Va sobre el degradado y bajo la luna. */
+  .cosmic-sky{
+    position:absolute; left:0; top:0;
+    width:100%; height:100vh;
+    pointer-events:none;
+    will-change:transform;
   }
+
   .d-sun{
     /* Anchored to the TOP of the stage, not the ground line: it has to be up in the hero
        when the page loads. From there the largest lag of any layer walks it down through
@@ -1314,42 +1366,6 @@
   }
 
   /* ---------- VIDA DEL DESIERTO (desert-life.js) ---------- */
-  /* Cielo: estrellas fugaces y destellos. */
-  .sky-fx{ position:absolute; inset:0; pointer-events:none; }
-  .shooting-star{
-    position:absolute;
-    width:var(--len, 160px); height:3px;
-    border-radius:3px;
-    /* La cabeza va en el extremo izquierdo: el rotate de ~210deg la pone delante. */
-    background:linear-gradient(to left, rgba(255,250,235,0) 0%, rgba(255,226,180,0.75) 65%, #FFFDF6 100%);
-    transform-origin:100% 50%;
-    transform:rotate(var(--ang, 210deg)) translateX(0) scaleX(0.2);
-    opacity:0;
-    filter:drop-shadow(0 0 6px rgba(255,226,180,1)) drop-shadow(0 0 14px rgba(255,190,120,0.6));
-    animation:shootingStar var(--dur, 1.1s) cubic-bezier(.3,.1,.6,1) forwards;
-  }
-  @keyframes shootingStar{
-    0%   { opacity:0; transform:rotate(var(--ang)) translateX(0) scaleX(0.2); }
-    12%  { opacity:1; }
-    70%  { opacity:1; transform:rotate(var(--ang)) translateX(var(--dist, -420px)) scaleX(1); }
-    100% { opacity:0; transform:rotate(var(--ang)) translateX(calc(var(--dist, -420px) * 1.25)) scaleX(0.6); }
-  }
-  .twinkle{
-    position:absolute;
-    width:var(--s, 14px); height:var(--s, 14px);
-    margin:calc(var(--s, 14px) / -2) 0 0 calc(var(--s, 14px) / -2);
-    background:
-      radial-gradient(circle, #fff 0 12%, rgba(255,240,215,0) 13%),
-      linear-gradient(to right, rgba(255,245,225,0) 0%, rgba(255,245,225,0.95) 50%, rgba(255,245,225,0) 100%) center / 100% 2px no-repeat,
-      linear-gradient(to bottom, rgba(255,245,225,0) 0%, rgba(255,245,225,0.95) 50%, rgba(255,245,225,0) 100%) center / 2px 100% no-repeat;
-    opacity:0;
-    animation:twinkle var(--t, 3.6s) ease-in-out var(--delay, 0s) infinite;
-  }
-  @keyframes twinkle{
-    0%, 100% { opacity:0;    transform:scale(0.3) rotate(0deg); }
-    45%      { opacity:0.95; transform:scale(1) rotate(45deg); }
-    60%      { opacity:0.7;  transform:scale(0.85) rotate(60deg); }
-  }
   /* La luna respira: un halo que crece y se apaga muy despacio. */
   .d-sun{ animation:moonGlow 7s ease-in-out infinite; }
   @keyframes moonGlow{
@@ -1795,7 +1811,6 @@
     .d-near{ height:85px; }
     /* Glow band shortened to sit against the lower mesas here. */
     .d-sky{ background-size:100% 560px, 100% 100%; }
-    .d-stars{ background-size:420px auto; }
     .d-sun{ right:8%; top:clamp(104px, 15vh, 150px); width:96px; height:96px; }
     /* Bases pushed well below the ground line (and clipped there): the near dunes are only
        58px on narrow screens, so there is far less crest to hide a rising foot behind. */
@@ -1860,3 +1875,505 @@
   @media (prefers-reduced-motion: reduce){
     .sand-layer{ opacity:0.75; }
   }
+
+  /* ==========================================================================
+     NUESTROS CAFÉS + FICHA DE PRODUCTO (version de tienda)
+     El catalogo va primero en "El tueste"; tipos y bolsas en tarjetas suaves, y la
+     ficha con la informacion desplazable y una barra de compra fija al pie.
+     ========================================================================== */
+  :root{ --whatsapp:#176c47; --shop-cream:#fffaf2; }
+
+  .coffee-types{ margin-top:0; }
+  .coffee-types-head{ margin-bottom:26px; }
+  .coffee-types-head p{ line-height:1.65; }
+  .catalog-tools{
+    display:flex; justify-content:space-between; align-items:center; gap:16px;
+    margin-bottom:22px; font-size:.82rem;
+  }
+  .catalog-tools > span{ color:#675b4f; }
+  .catalog-tools a{ color:var(--whatsapp); font-weight:800; text-decoration:underline; text-underline-offset:4px; }
+  .type-disclosure > summary{ display:none; }
+
+  .coffee-types-grid{ gap:16px; }
+  .coffee-type{
+    padding:20px;
+    border:1px solid #d6c7b5; border-radius:16px;
+    background:#fffbf480;
+    transition:background .2s, border-color .2s, opacity .5s ease;
+  }
+  .coffee-type:hover, .coffee-type[aria-pressed="true"]{ background:var(--shop-cream); border-color:#7e4a28; }
+  .coffee-type::before{ display:none; }
+  .coffee-type-num{ margin-bottom:8px; }
+  .coffee-type-name{ margin-bottom:14px; }
+  .coffee-type-value{ font-size:.85rem; margin-bottom:10px; }
+
+  .coffee-grid{ margin-top:28px; }
+  .coffee-card{ border-radius:14px; }
+  .coffee-card-thumb{ background:#ffffff80; border-radius:14px; }
+  .coffee-card-more{ opacity:1; transform:none; }
+  .catalog-hint{ display:none; }
+
+  /* El tueste, despues del catalogo, separado por un filete. */
+  .roast-after{ margin-top:72px; padding-top:56px; border-top:1px solid #d6c7b5; }
+
+  /* --- Ficha: contenido desplazable + barra de compra fija --- */
+  .product-stage{ padding:0; gap:0; overflow:hidden; max-height:calc(100dvh - 40px); }
+  .product-scroll{
+    overflow-y:auto; overscroll-behavior:contain; min-height:0;
+    padding:24px;
+  }
+  .product-scroll .prod-copy{ padding-top:24px; }
+  .prod-purchase{
+    flex:0 0 auto;
+    padding:14px 24px 20px;
+    background:var(--shop-cream); border-top:1px solid #e6ddd1;
+  }
+  .purchase-caption{ display:block; font-size:.72rem; color:#675b4f; margin-bottom:8px; }
+  .prod-purchase .prod-sizes{ margin:0 0 12px; }
+  .prod-size{ min-height:44px; }
+  .prod-purchase .prod-whatsapp{
+    width:100%; min-height:50px; margin:0;
+    background:var(--whatsapp); color:#fff; box-shadow:none; font-size:.86rem;
+  }
+  .prod-purchase .prod-whatsapp svg{ color:#fff; }
+  .prod-purchase .prod-whatsapp:hover{ box-shadow:0 12px 24px rgba(23,108,71,0.28); }
+  .prod-back{ width:44px; height:44px; top:10px; right:10px; }
+
+  @media (min-width: 1000px){
+    .product-stage{ width:min(1000px, calc(100vw - 64px)); }
+    .product-scroll{ display:grid; grid-template-columns:1fr 1fr; align-items:start; gap:28px; }
+    .product-scroll .prod-media{ position:sticky; top:0; aspect-ratio:4 / 5; }
+    .product-scroll .prod-copy{ padding-top:0; }
+    .prod-purchase{ display:flex; align-items:center; gap:16px; }
+    .prod-purchase .purchase-caption{ margin:0; }
+    .prod-purchase .prod-sizes{ margin:0; flex-shrink:0; }
+    .prod-purchase .prod-whatsapp{ width:auto; margin-left:auto; padding-inline:26px; }
+  }
+
+  @media (max-width: 900px){
+    .type-disclosure{ border-block:1px solid #d6c7b5; }
+    .type-disclosure > summary{
+      display:flex; justify-content:space-between;
+      padding:16px 0; font-size:.85rem; font-weight:700; cursor:pointer; list-style:none;
+    }
+    .type-disclosure > summary::-webkit-details-marker{ display:none; }
+    .type-disclosure > summary span{ transition:transform .2s; }
+    .type-disclosure[open] > summary span{ transform:rotate(45deg); }
+    .coffee-types-grid{ grid-template-columns:repeat(3, minmax(0, 1fr)); gap:8px; padding-bottom:16px; }
+    .coffee-type{ padding:12px 10px; }
+    .coffee-type-name{ font-size:1.3rem; }
+    .coffee-type-note, .coffee-type-value{ font-size:.75rem; line-height:1.5; overflow-wrap:anywhere; }
+    .coffee-type-label{ font-size:.58rem; letter-spacing:.08em; }
+    .catalog-hint{ display:block; font-size:.72rem; color:#675b4f; margin-top:14px; }
+    .coffee-grid-nav{ margin-top:12px; }
+  }
+
+  @media (max-width: 760px){
+    .coffee-types-head h2{ font-size:2.65rem; }
+    .coffee-types-head p{ font-size:.86rem; }
+    .catalog-tools{ align-items:flex-start; font-size:.73rem; gap:12px; margin-bottom:16px; }
+    .catalog-tools a{ flex-shrink:0; }
+    .coffee-grid{ margin-top:20px; }
+    .roast-after{ margin-top:40px; padding-top:32px; }
+
+    .product-stage{ width:calc(100% - 16px); max-height:calc(100dvh - 16px); border-radius:18px; }
+    .product-scroll{ padding:16px; }
+    .product-scroll .prod-copy{ padding-top:18px; }
+    .prod-purchase{ padding:10px 16px max(14px, env(safe-area-inset-bottom)); }
+    .prod-purchase .prod-sizes{ gap:8px; margin-bottom:10px; }
+    .prod-purchase .prod-size{ flex:1; }
+    .prod-purchase .prod-whatsapp{ font-size:.77rem; padding-inline:12px; }
+  }
+
+  /* ==========================================================================
+     CARRUSEL DEL TUESTE (roast-carousel.js)
+     La tostadora / El perfil / Los lotes: tarjeta activa con texto y foto, y a los
+     lados tarjetas angostas unidas a ella por una muesca. Sin JS queda la grilla.
+     ========================================================================== */
+  .roast-grid.is-enhanced{ display:none; }
+  .roast-carousel{
+    position:relative;
+    display:flex; flex-direction:column; align-items:center;
+    padding:8px 0 4px;
+    outline:none;
+    user-select:none; -webkit-user-select:none;
+  }
+  .roast-carousel:focus-visible .rc-card.is-active{ box-shadow:0 0 0 3px var(--accent-light), 0 10px 30px rgba(95,70,40,0.12); }
+  .rc-panel{
+    position:relative; width:100%;
+    overflow:hidden;
+    touch-action:pan-y;
+    cursor:grab;
+  }
+  .rc-panel.is-dragging{ cursor:grabbing; }
+
+  .rc-card{
+    position:absolute; left:50%; top:50%;
+    border-radius:32px;
+    background:var(--card);
+    box-shadow:0 10px 30px rgba(95,70,40,0.10), 0 4px 12px rgba(95,70,40,0.06);
+    will-change:transform;
+    transition:transform .7s cubic-bezier(.22,1,.36,1), width .7s cubic-bezier(.22,1,.36,1),
+               height .7s cubic-bezier(.22,1,.36,1), opacity .45s ease;
+    z-index:2;
+  }
+  .rc-card.is-left, .rc-card.is-right{ cursor:pointer; z-index:3; }
+  .rc-card.is-away{ pointer-events:none; z-index:1; }
+  .rc-card.no-anim, .rc-card.no-anim *{ transition:none !important; }
+
+  /* Muesca: el mismo blanco de la tarjeta lateral asoma hacia la central. */
+  .rc-notch{
+    position:absolute; top:0; bottom:0; margin:auto 0;
+    width:22px; height:42px;
+    color:var(--card);
+    pointer-events:none; z-index:4;
+    opacity:0; transition:opacity .3s ease;
+  }
+  .rc-notch svg{ display:block; width:100%; height:100%; fill:currentColor; overflow:visible; }
+  .rc-notch--der{ left:calc(100% - 1px); }
+  .rc-notch--izq{ right:calc(100% - 1px); }
+  .rc-card.is-left .rc-notch--der, .rc-card.is-right .rc-notch--izq{ opacity:1; }
+
+  .rc-clip{ position:relative; width:100%; height:100%; overflow:hidden; border-radius:inherit; }
+
+  /* Vista angosta: solo la foto (o su espacio) y el numero del paso. */
+  .rc-thumb{
+    position:absolute; inset:0; padding:8px;
+    transition:opacity .22s ease-out;
+  }
+  .rc-card.is-active .rc-thumb{ opacity:0; pointer-events:none; }
+  .rc-thumb .rc-photo{ border-radius:24px; }
+  .rc-thumb-num{
+    position:absolute; left:0; right:0; bottom:22px;
+    text-align:center;
+    font-family:var(--serif); font-size:1.35rem; color:var(--accent-deep);
+  }
+
+  /* Vista abierta: mide siempre lo de la tarjeta activa y se desliza dentro y fuera. */
+  .rc-content-wrap{
+    position:absolute; left:50%; top:50%;
+    width:var(--rc-aw); height:var(--rc-ah);
+    transform:translate(-50%, -50%);
+  }
+  .rc-content{
+    width:100%; height:100%;
+    display:flex; gap:24px; padding:28px;
+    opacity:0; transform:translateX(var(--rc-shift, 0));
+    transition:transform .7s cubic-bezier(.22,1,.36,1), opacity .45s ease;
+    pointer-events:none;
+  }
+  .rc-card.is-active .rc-content{ opacity:1; transform:none; pointer-events:auto; }
+
+  .rc-text{
+    flex:1; min-width:0;
+    display:flex; flex-direction:column; justify-content:space-between; gap:14px;
+    padding:4px 0;
+  }
+  .rc-text h3{ font-size:clamp(1.9rem, 3vw, 2.6rem); letter-spacing:-0.02em; }
+  .rc-quote{
+    font-family:var(--serif); font-size:1.18rem; line-height:1.5;
+    color:#3d342c;
+    margin:auto 0;
+  }
+  .rc-pills{ display:flex; flex-direction:column; align-items:flex-start; }
+  .rc-pill{
+    display:inline-flex; align-items:center;
+    padding:5px 11px; border-radius:5px;
+    background:#f3e7d6;
+    font-size:.74rem; font-weight:700; white-space:nowrap;
+  }
+  .rc-pill--num{ color:var(--accent-deep); letter-spacing:.04em; }
+  .rc-pill--tag{ color:#675b4f; font-weight:600; }
+  .rc-pill-link{ display:block; margin:-1px 0 -1px 14px; height:6px; width:14px; fill:#f3e7d6; position:relative; z-index:1; }
+
+  .rc-media{
+    position:relative; flex:0 0 clamp(180px, 44%, 330px);
+    border-radius:22px; overflow:hidden;
+  }
+  .rc-photo{
+    position:relative; width:100%; height:100%;
+    border-radius:inherit; overflow:hidden;
+    background:#ead9c2;
+  }
+  .rc-photo img{ width:100%; height:100%; object-fit:cover; }
+  /* Espacio reservado mientras no hay foto. */
+  .rc-photo.is-empty{
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px;
+    background:
+      repeating-linear-gradient(135deg, rgba(168,70,15,0.05) 0 12px, transparent 12px 24px),
+      linear-gradient(160deg, #f1e2cc, #e2c8a6);
+    border:1.5px dashed rgba(168,70,15,0.32);
+    color:var(--accent-deep);
+  }
+  .rc-photo.is-empty svg{ width:36px; height:36px; fill:none; stroke:currentColor; stroke-width:1.4; stroke-linejoin:round; opacity:.7; }
+  .rc-thumb .rc-photo.is-empty svg{ width:24px; height:24px; }
+  .rc-photo.is-empty span{ font-size:.72rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; opacity:.75; }
+
+  /* Pestañas: un punto por paso; la activa se alarga y se llena hasta el siguiente. */
+  .rc-tabs{ display:flex; align-items:center; gap:6px; margin-top:-6px; }
+  .rc-tab{
+    position:relative; width:8px; height:8px; padding:0; border:0;
+    border-radius:3px; overflow:hidden;
+    background:#e2d2bd; cursor:pointer;
+    transition:width .3s ease-out, background .2s;
+  }
+  .rc-tab:hover{ background:#d2bc9f; }
+  .rc-tab.is-current{ width:80px; }
+  .rc-tab i{
+    position:absolute; inset:0;
+    border-radius:3px; background:var(--accent);
+    transform:scaleX(0); transform-origin:0 50%;
+  }
+  .rc-tab:not(.is-current) i{ display:none; }
+  .rc-tab:focus-visible{ outline:2px solid var(--accent); outline-offset:3px; }
+
+  @media (max-width: 1000px){
+    .rc-content{ padding:22px; gap:18px; }
+    .rc-quote{ font-size:1.05rem; }
+  }
+  /* Tarjeta angosta (la clase la pone el JS segun el ancho disponible): texto arriba,
+     foto abajo, todo centrado. */
+  .is-stacked .rc-card{ border-radius:28px; }
+  .is-stacked .rc-thumb .rc-photo{ border-radius:20px; }
+  .is-stacked .rc-content{ flex-direction:column; padding:18px; gap:14px; text-align:center; }
+  .is-stacked .rc-text{ flex:0 0 auto; align-items:center; gap:12px; }
+  .is-stacked .rc-text h3{ font-size:1.7rem; }
+  .is-stacked .rc-quote{ font-size:.98rem; margin:0; }
+  .is-stacked .rc-pills{ align-items:center; }
+  .is-stacked .rc-pill-link{ margin-left:0; }
+  .is-stacked .rc-media{ flex:1 1 auto; min-height:150px; border-radius:18px; }
+  @media (prefers-reduced-motion: reduce){
+    .rc-card, .rc-content, .rc-thumb, .rc-tab{ transition:none !important; }
+  }
+
+  /* ==========================================================================
+     EDICIÓN ESPECIAL — promo con galeria en bucle
+     Texto a la izquierda; a la derecha dos columnas de fotos, una sube y otra baja
+     sin fin. Cada columna lleva su grupo de fotos dos veces: al recorrer -50% el
+     segundo grupo queda exactamente donde empezo el primero, sin salto. El margen
+     va en cada foto (no `gap`) para que las dos mitades midan lo mismo.
+     ========================================================================== */
+  .esp-promo{
+    display:grid;
+    grid-template-columns:minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap:clamp(32px, 5vw, 72px);
+    align-items:center;
+  }
+  .esp-copy h2{
+    font-size:clamp(2.4rem, 4.6vw, 4rem);
+    margin:14px 0 18px;
+    text-shadow:0 1px 12px rgba(255,255,255,0.55);
+  }
+  .esp-copy p{
+    max-width:460px;
+    color:#4a3f35; font-size:1.02rem; line-height:1.7;
+    margin-bottom:28px;
+  }
+  .esp-cta{ gap:10px; }
+  .esp-cta span{ transition:transform .2s ease; }
+  .esp-cta:hover span{ transform:translateX(4px); }
+
+  .esp-gallery{
+    --esp-gap:14px;
+    position:relative;
+    display:grid; grid-template-columns:1fr 1fr; gap:var(--esp-gap);
+    height:clamp(460px, 44vw, 620px);
+    overflow:hidden;
+    /* Desvanecido en los cuatro bordes: arriba/abajo por donde entran y salen las
+       fotos, y a los lados para que se funda con la arena. */
+    -webkit-mask-image:
+      linear-gradient(to bottom, transparent, #000 16%, #000 84%, transparent),
+      linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+    -webkit-mask-composite:source-in;
+            mask-image:
+      linear-gradient(to bottom, transparent, #000 16%, #000 84%, transparent),
+      linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+            mask-composite:intersect;
+  }
+  .esp-col{ position:relative; min-height:0; }
+  .esp-track{ will-change:transform; }
+  .esp-set{ display:flex; flex-direction:column; }   /* sin esto el margen de la ultima foto se escapa del grupo y el bucle salta */
+  .esp-up .esp-track{ animation:espUp 34s linear infinite; }
+  .esp-down .esp-track{ animation:espUp 40s linear infinite reverse; }
+  .esp-gallery:hover .esp-track{ animation-play-state:paused; }
+  @keyframes espUp{
+    from{ transform:translate3d(0, 0, 0); }
+    to  { transform:translate3d(0, -50%, 0); }
+  }
+
+  .esp-tile{
+    position:relative;
+    margin-bottom:var(--esp-gap);
+    border-radius:16px; overflow:hidden;
+    display:flex; align-items:center; justify-content:center;
+    background:
+      repeating-linear-gradient(135deg, rgba(168,70,15,0.06) 0 12px, transparent 12px 24px),
+      linear-gradient(160deg, #f3e4cd, #dcc09a);
+    border:1.5px dashed rgba(168,70,15,0.3);
+  }
+  .esp-tile:has(img){ border:0; background:#d9c4a3; }
+  .esp-tile img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+  .esp-tile span{
+    font-size:.7rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--accent-deep); opacity:.7;
+  }
+  .esp-r45{ aspect-ratio:4 / 5; }
+  .esp-r11{ aspect-ratio:1 / 1; }
+  .esp-r34{ aspect-ratio:3 / 4; }
+  .esp-r43{ aspect-ratio:4 / 3; }
+
+  @media (max-width: 900px){
+    .esp-promo{ grid-template-columns:1fr; gap:36px; }
+    .esp-gallery{ height:440px; --esp-gap:10px; }
+    .esp-tile{ border-radius:12px; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .esp-track{ animation:none !important; }
+  }
+
+  /* ==========================================================================
+     NUESTRO ORIGEN — manifiesto sobre el cielo
+     Sin paneles de vidrio: la tipografia va directo sobre el degradado, con una
+     sombra suave para leerse donde el cielo se aclara. Una sola columna central
+     angosta, para dejar libres los costados donde viven las constelaciones.
+     ========================================================================== */
+  #nosotros .ori-head{ max-width:780px; margin:0 auto; text-align:center; }
+  #nosotros .ori-head h2{
+    font-size:clamp(2.6rem, 6vw, 5rem);
+    line-height:1.0; letter-spacing:-0.02em;
+    color:#FDFBF4;
+    text-shadow:0 2px 30px rgba(40,6,50,0.35);
+  }
+  #nosotros .ori-head h2 em{
+    display:block;
+    font-style:italic; color:var(--accent-light);
+  }
+  .ori-lead{
+    max-width:560px; margin:26px auto 0;
+    font-family:var(--serif); font-size:clamp(1.15rem, 1.6vw, 1.4rem); line-height:1.5;
+    color:rgba(255,248,240,0.9);
+  }
+
+  #nosotros .ori-body{
+    display:block;
+    max-width:820px; margin:clamp(64px, 8vw, 104px) auto 0;
+  }
+
+  /* --- recorrido: tres estrellas unidas por una linea --- */
+  .ori-path{
+    position:relative;
+    display:grid; grid-template-columns:repeat(3, 1fr); gap:28px;
+    list-style:none; padding:0; margin:0;
+    text-align:center;
+  }
+  .ori-path::before{
+    content:''; position:absolute;
+    top:11px; left:16.66%; right:16.66%; height:1px;
+    background:linear-gradient(90deg, rgba(255,240,220,0.15), rgba(255,240,220,0.6), rgba(255,240,220,0.15));
+  }
+  .ori-path li{ position:relative; display:flex; flex-direction:column; align-items:center; }
+  .ori-star{
+    width:22px; height:22px; fill:#FFF6E6;
+    filter:drop-shadow(0 0 8px rgba(255,214,160,0.9));
+    margin-bottom:18px;
+    animation:oriTwinkle 3.6s ease-in-out infinite;
+  }
+  .ori-path li:nth-child(2) .ori-star{ animation-delay:-1.2s; }
+  .ori-path li:nth-child(3) .ori-star{ animation-delay:-2.4s; }
+  @keyframes oriTwinkle{
+    0%, 100%{ transform:scale(1) rotate(0deg); opacity:1; }
+    50%     { transform:scale(.78) rotate(45deg); opacity:.75; }
+  }
+  .ori-who{
+    font-family:var(--serif); font-style:italic;
+    font-size:1.6rem; line-height:1.1;
+    color:var(--accent-light);
+    margin-bottom:10px;
+  }
+  .ori-path p{
+    max-width:230px;
+    font-family:var(--serif); font-size:1.12rem; line-height:1.5;
+    color:rgba(255,248,240,0.9);
+  }
+  .ori-path strong, .ori-lead strong, .ori-values strong{ color:var(--accent-light); font-weight:600; }
+  .ori-path strong{ font-style:italic; font-size:1.2em; }
+
+  /* Valores: una linea corrida separada por puntos, sin caja. */
+  .ori-values{
+    display:flex; flex-wrap:wrap; justify-content:center; gap:8px 0;
+    max-width:720px; margin:22px auto 0; padding:0; list-style:none;
+    font-size:.88rem; color:rgba(255,248,240,0.82);
+  }
+  .ori-values li{ white-space:nowrap; }
+  .ori-values li + li::before{ content:'·'; margin:0 12px; color:var(--accent-light); }
+
+  .ori-sky{
+    max-width:560px; margin:clamp(48px, 6vw, 72px) auto 0;
+    text-align:center;
+    font-size:1rem; line-height:1.7;
+    color:rgba(255,248,240,0.86);
+  }
+
+
+  /* --- datos: una linea con filetes, sin tarjetas --- */
+  .ori-facts{
+    display:grid; grid-template-columns:repeat(3, 1fr);
+    margin:clamp(48px, 6vw, 72px) 0 0;
+    border-top:1px solid rgba(255,240,220,0.28);
+    border-bottom:1px solid rgba(255,240,220,0.28);
+  }
+  .ori-fact{
+    padding:26px 18px 24px;
+    text-align:center;
+  }
+  .ori-fact + .ori-fact{ border-left:1px solid rgba(255,240,220,0.28); }
+  .ori-fact dt{
+    font-family:var(--serif);
+    font-size:clamp(2.6rem, 4vw, 3.4rem); line-height:1;
+    color:var(--accent-light);
+  }
+  .ori-fact:nth-child(2) dt{ color:var(--blue-light); }
+  .ori-fact dt.ori-fact-word{
+    font-size:clamp(1.7rem, 2.6vw, 2.2rem); font-style:italic;
+    color:#FDFBF4;
+    height:clamp(2.6rem, 4vw, 3.4rem);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+  }
+  .ori-fact-word small{
+    font-family:var(--sans); font-style:normal; font-size:.62rem; font-weight:700;
+    letter-spacing:.2em; text-transform:uppercase; color:var(--accent-light);
+    margin-bottom:6px;
+  }
+  .ori-fact dd{
+    margin:12px 0 0;
+    font-size:.82rem; line-height:1.5;
+    color:rgba(255,248,240,0.8);
+  }
+  #nosotros .ori-head, #nosotros .ori-body{ text-shadow:0 1px 14px rgba(40,6,50,0.28); }
+
+  /* En pantallas tactiles no hay cursor: la franja de constelaciones ya trae su
+     propia indicacion ("Toca una constelacion..."). */
+
+
+  @media (max-width: 760px){
+    .ori-path{ grid-template-columns:1fr; gap:34px; }
+    /* En columna la linea no puede cruzar el texto: un tramo corto entre cada paso. */
+    .ori-path::before{ display:none; }
+    .ori-path li:not(:last-child)::after{
+      content:''; position:absolute; left:50%; bottom:-28px;
+      width:1px; height:22px;
+      background:linear-gradient(180deg, rgba(255,240,220,0.5), rgba(255,240,220,0.1));
+    }
+    .ori-star{ margin-bottom:12px; }
+    .ori-path p{ max-width:280px; }
+    .ori-fact{ padding:18px 4px 16px; }
+    .ori-fact dt{ font-size:2.2rem; }
+    .ori-fact dt.ori-fact-word{ font-size:1.25rem; height:2.2rem; }
+    .ori-fact-word small{ font-size:.5rem; margin-bottom:3px; }
+    .ori-path p{ max-width:300px; }
+    .ori-values{ font-size:.8rem; }
+    .ori-values li + li::before{ margin:0 8px; }
+    .ori-fact dd{ font-size:.68rem; margin-top:8px; }
+    .ori-fact dd br{ display:none; }
+  }
+  @media (prefers-reduced-motion: reduce){ .ori-star{ animation:none; } }
