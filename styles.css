@@ -498,7 +498,8 @@
     flex-shrink:0;
     background-image:url('assets/grano.webp');
     background-size:contain; background-repeat:no-repeat; background-position:center;
-    filter:drop-shadow(0 3px 5px rgba(0,0,0,0.18));
+    /* --lift aclara el render (es un grano tostado) para los tonos crudos: verde y amarillo. */
+    filter:brightness(var(--lift, 1)) saturate(var(--sat, 1)) drop-shadow(0 3px 5px rgba(0,0,0,0.18));
   }
   .phase-bean::before,
   .phase-bean::after{
@@ -2377,3 +2378,75 @@
     .ori-fact dd br{ display:none; }
   }
   @media (prefers-reduced-motion: reduce){ .ori-star{ animation:none; } }
+
+  /* ==========================================================================
+     CAMBIOS (documento "cambios pagina web")
+     ========================================================================== */
+  /* --- Desierto: vicuna grande en primer plano, rocas de la derecha sin cactus --- */
+  .cast-espejo img{ transform:scaleX(-1); }
+  .cast-vicuna{
+    left:16%;
+    bottom:clamp(30px, 3.6vw, 52px);
+    height:clamp(150px, 15vw, 230px); aspect-ratio:342 / 401;
+    z-index:4;
+  }
+  .vic-sil{
+    position:absolute; inset:0;
+    background:#670d46;
+    -webkit-mask:var(--img) 0 0 / 100% 100% no-repeat;
+            mask:var(--img) 0 0 / 100% 100% no-repeat;
+  }
+
+  /* --- Nuestros cafés: bolsas arriba, tipos y video debajo --- */
+  .coffee-types-filter{ margin-top:56px; }
+  .coffee-types-intro{
+    max-width:640px; margin-bottom:22px;
+    color:var(--ink-dim); font-size:1rem; line-height:1.65;
+  }
+  .types-video{
+    display:flex; align-items:center; gap:18px;
+    margin-top:18px; padding:14px 22px 14px 14px;
+    border:1px solid #d6c7b5; border-radius:16px;
+    background:#fffbf480;
+    color:var(--ink); text-decoration:none;
+    transition:background .2s, border-color .2s;
+  }
+  .types-video:hover{ background:var(--shop-cream); border-color:#7e4a28; }
+  .types-video-thumb{
+    flex-shrink:0;
+    display:grid; place-items:center;
+    width:54px; height:72px; border-radius:10px;
+    background:linear-gradient(160deg, var(--accent-light), var(--accent-deep));
+    color:#fff;
+  }
+  .types-video-thumb svg{ width:24px; height:24px; fill:currentColor; transition:transform .2s; }
+  .types-video:hover .types-video-thumb svg{ transform:scale(1.15); }
+  .types-video-copy{ display:flex; flex-direction:column; gap:4px; }
+  .types-video-title{ font-family:var(--serif); font-size:1.3rem; line-height:1.2; }
+  .types-video-link{ font-size:.82rem; font-weight:700; color:var(--accent-deep); }
+
+  /* --- Boton flotante de WhatsApp --- */
+  .wa-float{
+    position:fixed; right:22px; bottom:22px; z-index:95;
+    display:inline-flex; align-items:center; gap:10px;
+    height:56px; padding:0 22px 0 16px; border-radius:100px;
+    background:var(--whatsapp); color:#fff;
+    font-weight:800; font-size:.92rem; text-decoration:none;
+    box-shadow:0 10px 28px rgba(23,108,71,0.35), 0 2px 6px rgba(0,0,0,0.15);
+    transition:transform .2s ease, box-shadow .2s ease;
+  }
+  .wa-float svg{ width:26px; height:26px; flex-shrink:0; }
+  .wa-float:hover{ transform:translateY(-3px); box-shadow:0 14px 32px rgba(23,108,71,0.45), 0 2px 6px rgba(0,0,0,0.15); }
+  .wa-float:focus-visible{ outline:3px solid var(--accent-light); outline-offset:3px; }
+  body.menu-open .wa-float{ opacity:0; pointer-events:none; }
+
+  @media (max-width: 760px){
+    .cast-vicuna{ left:14%; bottom:18px; height:104px; }
+    .coffee-types-filter{ margin-top:40px; }
+    .coffee-types-intro{ font-size:.86rem; }
+    .types-video{ padding:12px 16px 12px 12px; gap:14px; }
+    .types-video-thumb{ width:44px; height:58px; }
+    .types-video-title{ font-size:1.08rem; }
+    .wa-float{ right:16px; bottom:16px; width:56px; padding:0; justify-content:center; }
+    .wa-float-label{ display:none; }
+  }

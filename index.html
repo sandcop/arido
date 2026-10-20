@@ -24,7 +24,7 @@
 
 <!-- ?v= fuerza a recargar css y js al publicar: sin el, el navegador
      reutiliza la copia en cache y se sigue viendo la version anterior. -->
-<link rel="stylesheet" href="styles.css?v=202610080900">
+<link rel="stylesheet" href="styles.css?v=202610190230">
 </head>
 <body>
 <a class="skip-link" href="#main">Saltar al contenido</a>
@@ -75,10 +75,8 @@
       <i class="sil sil-movil-no" style="--img:url('assets/siluetas/jardin.png');       --ar:394/360; --x:18%;   --y:.230; --h:.085; --c:#e9915f"></i>
       <i class="sil" style="--img:url('assets/siluetas/cactus-alto.png');  --ar:270/360; --x:34.5%; --y:.237; --h:.115; --c:#e9905f"></i>
       <i class="sil sil-movil-no" style="--img:url('assets/siluetas/cactus-flor.png');  --ar:273/360; --x:37.4%; --y:.237; --h:.085; --c:#e9905f"></i>
-      <!-- Mascotas como sombras recortadas sobre las mesetas (alturas de cresta medidas en el SVG). -->
+      <!-- Sobre las mesetas solo la vizcacha; la vicuna baja al primer plano (ver .cast-vicuna). -->
       <i class="sil sil-fauna" style="--img:url('assets/siluetas/vizcacha.png'); --ar:345/384; --x:45.6%; --y:.150; --h:.095; --c:#f09c66"></i>
-      <i class="sil sil-fauna" style="--img:url('assets/siluetas/zorro.png');    --ar:394/311; --x:65%;   --y:.040; --h:.10;  --c:#f9aa6e"></i>
-      <i class="sil sil-fauna" style="--img:url('assets/siluetas/vicuna.png');   --ar:229/484; --x:86.6%; --y:.005; --h:.17;  --c:#fcae70"></i>
       <i class="sil" style="--img:url('assets/siluetas/cactus-rocas.png'); --ar:337/360; --x:92.6%; --y:.005; --h:.10;  --c:#fcae70"></i>
     </div>
     <div class="desert-layer d-mid"   data-parallax="0.09"  data-in="0.08" data-span="0.72"></div>
@@ -94,19 +92,18 @@
     <div class="desert-layer d-c1 desert-cactus" data-parallax="-0.07" data-in="0.46" data-span="0.50"></div>
     <div class="desert-layer d-c3 desert-cactus" data-parallax="-0.05" data-in="0.50" data-span="0.50"></div>
 
-    <!-- Primer plano ilustrado (assets/peru): brota cuando las dunas terminan de subir,
-         se mece con el viento y el zorro juega a esconderse. Lo anima desert-life.js.
+    <!-- Primer plano (assets/peru): rocas, la vicuna y el zorro en silueta, y el viento
+         de arena. Brota cuando las dunas terminan de subir y el zorro juega a esconderse. Lo anima desert-life.js.
          Cada .cast lleva la entrada (CSS) y su .toon el vaiven (JS), para que las dos
          transformaciones no se pisen. El zorro es una silueta completa del color del suelo:
          al esconderse se hunde en la duna y desaparece sin dejar corte. -->
     <div class="desert-cast" id="desertCast">
       <canvas class="desert-dust" id="desertDust"></canvas>
-      <div class="cast cast-alto"   style="--d:.30s"><div class="toon" data-sway="1.1" data-hop="1"><img src="assets/peru/cactus-alto.webp"  alt="" loading="lazy" decoding="async"></div></div>
-      <div class="cast cast-jardin" style="--d:.45s"><div class="toon" data-sway="0.8" data-dance="1"><img src="assets/peru/jardin.webp"       alt="" loading="lazy" decoding="async"></div></div>
-      <div class="cast cast-flor"   style="--d:.15s"><div class="toon" data-sway="1" data-dance="1"><img src="assets/peru/cactus-flor.webp"  alt="" loading="lazy" decoding="async"></div></div>
       <div class="cast cast-roca"   style="--d:0s"><img src="assets/peru/roca.webp"           alt="" loading="lazy" decoding="async"></div>
+      <!-- Vicuna: silueta grande del color del suelo, como el zorro (sin cactus verdes). -->
+      <div class="cast cast-vicuna" style="--d:.2s"><i class="vic-sil" style="--img:url('assets/siluetas/vicuna-perfil.png')"></i></div>
       <div class="cast-fox" id="foxBox"><i class="fox-sil" style="--img:url('assets/siluetas/zorro-culpeo.png')"></i></div>
-      <div class="cast cast-rocas"  style="--d:.08s"><img src="assets/peru/rocas-cactus.webp" alt="" loading="lazy" decoding="async"></div>
+      <div class="cast cast-rocas cast-espejo" style="--d:.08s"><img src="assets/peru/roca.webp" alt="" loading="lazy" decoding="async"></div>
     </div>
   </div>
 
@@ -114,7 +111,7 @@
     <div class="hero-inner">
       <span class="hero-kicker">Antofagasta, Chile</span>
       <h1><span class="hero-l1">Árido es Norte</span><br><em class="hero-l2">y el Norte es Fauna y Café.</em></h1>
-      <p class="hero-sub">En el desierto más <strong>árido</strong> del mundo la vida florece a través de su indómita fauna.<br><br>Y se despiertan sus sentidos con nuestros granos de café que representan el fuego interior del norte grande chileno.</p>
+      <p class="hero-sub">En el desierto más <strong>árido</strong> del mundo la vida florece a través de su indómita fauna.<br><br>Nuestros sentidos despiertan con el aroma y el sabor de los granos de café que tostamos con el fuego interior del norte grande chileno.</p>
       <span class="cta-wrap" id="ctaWrap">
         <!-- Dos cactus sentados detras del boton, asomados por el borde de arriba. -->
         <span class="cta-toon cta-toon-l" aria-hidden="true"><span class="toon" data-hop="1"><img src="assets/peru/cactus-alto.webp" alt="" decoding="async"></span></span>
@@ -155,15 +152,15 @@
       <ol class="ori-path reveal">
         <li>
           <svg class="ori-star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0 L14.6 9.4 L24 12 L14.6 14.6 L12 24 L9.4 14.6 L0 12 L9.4 9.4 Z"/></svg>
-          <p>La mirada vigilante de la <strong>vizcacha</strong> asegura la calidad de la materia prima que usamos,</p>
+          <p>La mirada sigilosa de la <strong>vizcacha</strong> vigila la calidad de la materia prima,</p>
         </li>
         <li>
           <svg class="ori-star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0 L14.6 9.4 L24 12 L14.6 14.6 L12 24 L9.4 14.6 L0 12 L9.4 9.4 Z"/></svg>
-          <p>el <strong>chungungo</strong> travieso tuesta con alegría cada grano</p>
+          <p>el <strong>chungungo</strong> travieso tuesta con sagacidad cada grano</p>
         </li>
         <li>
           <svg class="ori-star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0 L14.6 9.4 L24 12 L14.6 14.6 L12 24 L9.4 14.6 L0 12 L9.4 9.4 Z"/></svg>
-          <p>y la selectiva <strong>parina</strong> prueba con recelo y cuidado cada café.</p>
+          <p>y la <strong>parina</strong> prueba con recelo y cuidado cada lote para asegurar el mejor sabor.</p>
         </li>
       </ol>
 
@@ -203,14 +200,33 @@
 
   <div class="container">
 
-    <!-- Los tres tipos de café. Cada tarjeta es un filtro de la grilla de abajo:
-         el tipo de cada café sale del dato "Tipo" de COFFEES (roast-experience.js). -->
+    <!-- Nuestros cafés: primero las bolsas (lo que se compra) y despues los tres tipos,
+         que filtran la grilla, con el video que los explica. -->
     <div class="coffee-types reveal" id="coffeeTypes">
       <div class="coffee-types-head">
         <h2>Nuestros cafés</h2>
-        <p>Catalogamos nuestros cafés en función de su complejidad aromática, calidad de procesos y exclusividad del grano. Por lo que segmentamos nuestros granos en 3 tipos.</p>
       </div>
       <div class="catalog-tools"><span>Elige un origen y conoce sus notas</span><a href="https://wa.me/56972497925?text=Hola%2C%20%C2%BFqu%C3%A9%20caf%C3%A9%20me%20recomiendan%3F" target="_blank" rel="noopener">Ayúdame a elegir ↗</a></div>
+    </div>
+
+    <!-- Grilla de cafés: siempre visible. Un clic en una bolsa revela el
+         detalle de ese café en el popup #productStage (vive fuera de esta
+         sección, ver justo debajo de </section>). -->
+    <div class="coffee-grid" id="coffeeGrid">
+      <div class="coffee-grid-track" id="coffeeGridTrack"></div>
+      <p class="coffee-grid-empty" id="coffeeGridEmpty" hidden>Por ahora no tenemos cafés de este tipo disponibles.</p>
+      <!-- Indicador del carrusel (solo movil y tablet): se navega deslizando; esto solo marca la posicion. -->
+      <p class="catalog-hint">Desliza para explorar los orígenes · Toca un café para ver su ficha</p>
+      <div class="coffee-grid-nav">
+        <span class="cg-count" aria-live="polite"><span id="cgNow">01</span> <span class="cg-sep">/</span> <span id="cgTotal">05</span></span>
+        <span class="cg-bar" aria-hidden="true"><i id="cgBar"></i></span>
+      </div>
+    </div>
+
+    <!-- Los tres tipos de café. Cada tarjeta es un filtro de la grilla de arriba:
+         el tipo de cada café sale del dato "Tipo" de COFFEES (roast-experience.js). -->
+    <div class="coffee-types coffee-types-filter reveal">
+      <p class="coffee-types-intro">Catalogamos nuestros cafés en función de su complejidad aromática, calidad de procesos y exclusividad del grano. Por lo que segmentamos nuestros granos en 3 tipos.</p>
       <details class="type-disclosure" open>
         <summary>Explorar por tipo de café <span aria-hidden="true">+</span></summary>
       <div class="coffee-types-grid" role="group" aria-label="Filtrar cafés por tipo">
@@ -238,20 +254,18 @@
         <span id="coffeeTypesStatusText"></span>
         <button type="button" class="coffee-types-all" id="coffeeTypesAll">Ver todos los cafés</button>
       </div>
-    </div>
 
-    <!-- Grilla de cafés: siempre visible. Un clic en una bolsa revela el
-         detalle de ese café en el popup #productStage (vive fuera de esta
-         sección, ver justo debajo de </section>). -->
-    <div class="coffee-grid" id="coffeeGrid">
-      <div class="coffee-grid-track" id="coffeeGridTrack"></div>
-      <p class="coffee-grid-empty" id="coffeeGridEmpty" hidden>Por ahora no tenemos cafés de este tipo disponibles.</p>
-      <!-- Indicador del carrusel (solo movil y tablet): se navega deslizando; esto solo marca la posicion. -->
-      <p class="catalog-hint">Desliza para explorar los orígenes · Toca un café para ver su ficha</p>
-      <div class="coffee-grid-nav">
-        <span class="cg-count" aria-live="polite"><span id="cgNow">01</span> <span class="cg-sep">/</span> <span id="cgTotal">05</span></span>
-        <span class="cg-bar" aria-hidden="true"><i id="cgBar"></i></span>
-      </div>
+      <!-- Video que explica los tipos. Mientras no exista el enlace del reel, lleva al
+           perfil de Instagram: cambia el href por el link del video cuando este listo. -->
+      <a class="types-video" href="https://www.instagram.com/cafearido/" target="_blank" rel="noopener">
+        <span class="types-video-thumb" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z"/></svg>
+        </span>
+        <span class="types-video-copy">
+          <span class="types-video-title">¿Qué es un café tipo 1, tipo 2 y tipo 3?</span>
+          <span class="types-video-link">Mira el video en Instagram ↗</span>
+        </span>
+      </a>
     </div>
 
     <!-- ---------- DE GRANO A TAZA: NARRATIVA DEL TUESTE ---------- -->
@@ -292,13 +306,13 @@
       <!-- Secuencia del tueste. El color de cada grano avanza de verde a tostado;
            es toda la narrativa que hace falta, sin párrafos de relleno. -->
       <ol class="roast-phases reveal" aria-label="Fases del tueste">
-        <li style="--phase:#93A860; --shade:0"><span class="phase-bean"></span><span class="phase-name">Grano verde<br>(entrada)</span></li>
-        <li style="--phase:#B3A866; --shade:0"><span class="phase-bean"></span><span class="phase-name">Turning Point</span></li>
-        <li style="--phase:#CBA95F; --shade:.04"><span class="phase-bean"></span><span class="phase-name">Secado</span></li>
-        <li style="--phase:#C07A31; --shade:.14"><span class="phase-bean"></span><span class="phase-name">Reacción de Maillard</span></li>
-        <li style="--phase:#9A4F1D; --shade:.26"><span class="phase-bean"></span><span class="phase-name">Primer crack</span></li>
-        <li style="--phase:#6B3A1C; --shade:.38"><span class="phase-bean"></span><span class="phase-name">Desarrollo</span></li>
-        <li style="--phase:#3F1E10; --shade:.48"><span class="phase-bean"></span><span class="phase-name">Café tostado<br>(salida)</span></li>
+        <li style="--phase:#A9AC8E; --shade:0; --lift:2.4; --sat:0.55"><span class="phase-bean"></span><span class="phase-name">Grano verde<br>(entrada)</span></li>
+        <li style="--phase:#BDB385; --shade:0; --lift:2.3; --sat:0.62"><span class="phase-bean"></span><span class="phase-name">Turning Point</span></li>
+        <li style="--phase:#D2B680; --shade:0; --lift:2.2; --sat:0.6"><span class="phase-bean"></span><span class="phase-name">Secado</span></li>
+        <li style="--phase:#A36F47; --shade:0; --lift:1.18; --sat:0.85"><span class="phase-bean"></span><span class="phase-name">Reacción de Maillard</span></li>
+        <li style="--phase:#7A4A2C; --shade:0.06; --lift:0.98; --sat:0.95"><span class="phase-bean"></span><span class="phase-name">Primer crack</span></li>
+        <li style="--phase:#62391F; --shade:0.14; --lift:0.88; --sat:1"><span class="phase-bean"></span><span class="phase-name">Desarrollo</span></li>
+        <li style="--phase:#4A2A18; --shade:0.24; --lift:0.8; --sat:1"><span class="phase-bean"></span><span class="phase-name">Café tostado<br>(salida)</span></li>
       </ol>
 
       <!-- Lema en bucle: avanza lento hacia la izquierda y se desvanece en los bordes.
@@ -475,6 +489,13 @@
      contacto (WhatsApp, email, Instagram) — los enlaces del nav y del propio
      footer no cambian, siguen apuntando a "#contacto". -->
 </main>
+
+<!-- WhatsApp siempre a mano: boton flotante abajo a la derecha. Queda bajo el menu y la
+     ficha de producto (z-index menor), que traen su propio boton. -->
+<a class="wa-float" href="https://wa.me/56972497925" target="_blank" rel="noopener" aria-label="Escríbenos por WhatsApp">
+  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm0 18.15h-.01a8.2 8.2 0 0 1-4.18-1.15l-.3-.18-3.11.82.83-3.04-.2-.31a8.17 8.17 0 0 1-1.26-4.38c0-4.54 3.7-8.23 8.24-8.23a8.2 8.2 0 0 1 8.23 8.24c0 4.54-3.7 8.23-8.24 8.23Zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.16.25-.64.8-.79.97-.14.16-.29.19-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.01-.38.11-.51.11-.11.25-.29.37-.43.13-.15.17-.25.25-.41.08-.17.04-.31-.02-.44-.06-.12-.56-1.35-.76-1.84-.2-.48-.4-.42-.56-.43h-.47c-.17 0-.43.06-.66.31-.23.25-.86.85-.86 2.07 0 1.22.89 2.4 1.01 2.56.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.48-.07 1.47-.6 1.67-1.18.21-.58.21-1.08.15-1.18-.06-.11-.23-.17-.48-.29Z"/></svg>
+  <span class="wa-float-label">Escríbenos</span>
+</a>
 
 <footer id="contacto">
   <div class="container">
