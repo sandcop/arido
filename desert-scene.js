@@ -39,7 +39,7 @@
   var TRAVEL = 1180;
   // Lo que asoma un cactus al subir. Corto a proposito: su base va por debajo de la linea
   // de suelo y la duna le tapa el pie, asi que lo unico que tiene que hacer es despuntar.
-  var CACTUS_RISE = 90;
+  var CACTUS_RISE = 150;   // era 90: los cactus son ahora casi el doble de altos
   // The sky layers take no fixed figure: their drift is a FRACTION of how far the stage
   // itself scrolls, so data-parallax reads directly as "how much of the scroll this layer
   // keeps". 0.80 means the moon holds 80% of the scroll and slips up the screen at the

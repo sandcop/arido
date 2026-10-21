@@ -23,15 +23,15 @@
   var seaBase = 0;           // the sea never drains away entirely; swash rises off this
   var wetY = null;           // highest point each column has been wetted to
   var wetT = null;           // when that happened, for the drying fade
-  var smoothY = null;        // wetY/wetT despues de rellenar huecos entre columnas (ver draw)
-  var smoothT = null;
+  var rawA = null, rawTop = null;   // mojado de cada columna (0-1) y hasta donde subio
+  var smA = null, smTop = null;     // lo mismo tras suavizarlo entre columnas (ver draw)
   var DRY_MS = 9000;
 
   function resetWet(){
     wetY = new Float32Array(COLS);
     wetT = new Float64Array(COLS);
-    smoothY = new Float32Array(COLS);
-    smoothT = new Float64Array(COLS);
+    rawA = new Float32Array(COLS); rawTop = new Float32Array(COLS);
+    smA = new Float32Array(COLS); smTop = new Float32Array(COLS);
     for(var i = 0; i < COLS; i++){ wetY[i] = H; wetT[i] = -1e9; }
   }
 
@@ -148,32 +148,63 @@
     // wet sand: darkened where the water has been, drying off column by column.
     // Columns high up the beach are only reached by the rare big wave, so they carry an
     // older timestamp and dry out first — the tide line recedes on its own.
-    // El borde de cada ola es irregular (edgeOffset), asi que una ola chica moja una
-    // columna pero no siempre llega igual de alto a la de al lado: sin este repaso,
-    // esa vecina se quedaba con su marca vieja ya seca y aparecia como un hueco sin
-    // sombra en medio de la mancha mojada. Se rellena copiando, de cada columna, el
-    // wetT/wetY mas reciente entre ella y sus dos vecinas a cada lado.
+    // Antes cada columna se pintaba como un rectangulo propio (con la altura y la
+    // opacidad que le tocaban) y, al repasar huecos, grupos de columnas quedaban con
+    // EXACTAMENTE el mismo valor: la mancha salia en bloques de bordes verticales rectos,
+    // que ademas se ven a traves del agua semitransparente. Ahora el mojado y su altura se
+    // suavizan entre columnas vecinas y la mancha se dibuja como un solo contorno curvo,
+    // con la opacidad repartida en un degradado horizontal.
+    var any = false;
     for(i = 0; i < COLS; i++){
-      var bestT = wetT[i], bestY = wetY[i];
-      for(var d = -2; d <= 2; d++){
-        var j = i + d;
-        if(j < 0 || j >= COLS || wetT[j] <= bestT) continue;
-        bestT = wetT[j]; bestY = wetY[j];
-      }
-      smoothT[i] = bestT; smoothY[i] = bestY;
+      var age = now - wetT[i];
+      if(age > DRY_MS){ rawA[i] = 0; rawTop[i] = H; continue; }
+      rawA[i] = 1 - clamp01(age / DRY_MS);
+      rawTop[i] = wetY[i];
+      any = true;
     }
-    for(i = 0; i < COLS; i++){
-      var age = now - smoothT[i];
-      if(age > DRY_MS) continue;
-      var wetness = 1 - clamp01(age / DRY_MS);
-      var top = smoothY[i];
-      // Integer, non-overlapping bounds. Letting adjacent columns overlap even a single
-      // pixel doubles the alpha along every seam and stripes the whole band vertically —
-      // and the semi-transparent water above shows those stripes straight through.
-      var x0 = Math.round(i * colW);
-      var x1 = Math.round((i + 1) * colW);
-      ctx.fillStyle = 'rgba(92,62,26,' + (0.34 * wetness).toFixed(3) + ')';
-      ctx.fillRect(x0, top, x1 - x0, H - top);
+    if(any){
+      // Promedio ponderado con nucleo triangular. La altura solo la deciden las columnas
+      // mojadas (peso = su mojado), asi un borde seco no la arrastra hacia abajo; la
+      // opacidad es el promedio simple, que baja sola hacia el borde de la mancha.
+      var R = 7, d, j, kk, sk, sa, sw, st;
+      for(i = 0; i < COLS; i++){
+        sk = 0; sa = 0; sw = 0; st = 0;
+        for(d = -R; d <= R; d++){
+          j = i + d;
+          if(j < 0 || j >= COLS) continue;
+          kk = R + 1 - (d < 0 ? -d : d);
+          sk += kk; sa += kk * rawA[j];
+          sw += kk * rawA[j]; st += kk * rawA[j] * rawTop[j];
+        }
+        smA[i] = sa / sk;
+        smTop[i] = sw > 1e-4 ? Math.min(H, st / sw) : H;
+      }
+      var wg = ctx.createLinearGradient(0, 0, W, 0);
+      for(i = 0; i < COLS; i++){
+        wg.addColorStop((i + 0.5) / COLS, 'rgba(92,62,26,' + (0.34 * smA[i]).toFixed(3) + ')');
+      }
+      ctx.fillStyle = wg;
+      // Tres pasadas, la de arriba mas alta y tenue: el limite de la mancha se difumina
+      // en vez de cortarse en seco. Sumadas dan exactamente la opacidad de arriba.
+      var pasadas = [[-10 * dpr, 0.25], [-5 * dpr, 0.3333], [0, 1]];
+      for(var q = 0; q < pasadas.length; q++){
+        ctx.globalAlpha = pasadas[q][1];
+        var off = pasadas[q][0];
+        ctx.beginPath();
+        ctx.moveTo(0, H);
+        var px = 0.5 * colW, py = smTop[0] + off;
+        ctx.lineTo(0, py);
+        for(i = 1; i < COLS; i++){
+          var cx = (i + 0.5) * colW, cy = smTop[i] + off;
+          ctx.quadraticCurveTo(px, py, (px + cx) / 2, (py + cy) / 2);
+          px = cx; py = cy;
+        }
+        ctx.lineTo(W, py);
+        ctx.lineTo(W, H);
+        ctx.closePath();
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
     }
 
     // the sheet of water itself

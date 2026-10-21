@@ -298,32 +298,111 @@
     line-height:1.75;
     color:rgba(255,246,235,0.85);
   }
+  /* Boton del hero: pildora del color de la luna (#ffcf8a) con transparencia, sobre el cielo.
+     Un filo de luz le da la vuelta al borde y, al pasar el cursor, se llena de luz lunar.
+     "Descubre" esta siempre a la vista; al pasar el cursor sube y desaparece, y desde abajo
+     entra "Nuestros cafés". Adaptado del boton de MuhammadHasann (Uiverse.io). */
   .hero-cta{
+    --moon:255 207 138;
+    --border_radius:9999px;
+    --transition:.3s ease-in-out;
     position:relative; z-index:1;
-    display:inline-flex; align-items:center; gap:12px;
-    padding:16px 34px;
-    border-radius:100px;
-    background:linear-gradient(135deg, var(--accent-light), var(--accent));
-    color:#141414;
-    font-family:var(--sans); font-weight:700;
-    font-size:0.9rem; letter-spacing:0.03em;
-    box-shadow:0 14px 34px rgba(0,0,0,0.3);
-    transition:transform 0.3s ease, box-shadow 0.3s ease;
+    display:inline-flex; align-items:center; justify-content:center;
+    padding:1.05rem 2.5rem;
+    border:0; border-radius:var(--border_radius); background:transparent;
+    color:#fff8ea; cursor:pointer; text-decoration:none;
+    font-family:var(--sans); font-size:.78rem; font-weight:800;
+    letter-spacing:.14em; text-transform:uppercase; line-height:1;
+    text-shadow:0 1px 10px rgb(40 8 60 / .45);
+    transform-origin:center;
+    transform:scale(calc(1 + (var(--active, 0) * 0.1)));
+    transition:transform var(--transition), color var(--transition), text-shadow var(--transition);
   }
-  .hero-cta:hover{ transform:translateY(-2px); box-shadow:0 18px 40px rgba(228,97,30,0.42); }
-  .hero-cta .arrow{ transition:transform 0.3s ease; }
-  .hero-cta:hover .arrow{ transform:translateX(5px); }
+  .hero-cta::before{
+    content:''; position:absolute; top:50%; left:50%; transform:translate(-50%, -50%);
+    width:100%; height:100%;
+    background-color:rgb(var(--moon) / calc(.30 + var(--active, 0) * .42));
+    -webkit-backdrop-filter:blur(8px) saturate(130%); backdrop-filter:blur(8px) saturate(130%);
+    border-radius:var(--border_radius);
+    box-shadow:inset 0 0.5px rgb(255 244 222 / .85), inset 0 -10px 18px -10px rgb(255 190 120 / .35),
+      0 10px 24px -10px rgb(30 4 50 / calc(.75 - var(--active, 0) * .35)),
+      0 0 0 calc(var(--active, 0) * 0.375rem) rgb(var(--moon) / .38);
+    transition:all var(--transition);
+    z-index:0;
+  }
+  .hero-cta::after{
+    content:''; position:absolute; top:50%; left:50%; transform:translate(-50%, -50%);
+    width:100%; height:100%;
+    background-image:
+      radial-gradient(at 50% 120%, rgb(255 244 220 / .75) 0px, transparent 62%),
+      radial-gradient(at 18% 100%, rgb(255 226 170 / .55) 0px, transparent 50%);
+    opacity:var(--active, 0); border-radius:var(--border_radius);
+    transition:opacity var(--transition);
+    z-index:2;
+  }
+  .hero-cta:is(:hover, :focus-visible){
+    --active:1;
+    /* El fondo se aclara con la luz: el texto pasa al morado del cielo para seguir leyendose. */
+    color:#2b0f3a; text-shadow:none;
+  }
+  .hero-cta:active{ transform:scale(1); }
+  .hero-cta:focus-visible{ outline:none; }
+
+  /* Filo de luz: una barra que gira detras de la pildora, recortada a un anillo de 1px
+     (con la pildora translucida, sin este recorte se veria girar por dentro). */
+  .cta-border{
+    --size_border:calc(100% + 2px);
+    overflow:hidden; position:absolute; top:50%; left:50%; transform:translate(-50%, -50%);
+    width:var(--size_border); height:var(--size_border);
+    padding:1px; box-sizing:border-box;
+    background-color:transparent; border-radius:var(--border_radius);
+    -webkit-mask:linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor;
+            mask:linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+            mask-composite:exclude;
+    z-index:1;
+  }
+  .cta-border::before{
+    content:''; position:absolute; top:30%; left:50%;
+    transform-origin:left; transform:rotate(0deg);
+    width:100%; height:2rem; background-color:#fff0d2;
+    mask:linear-gradient(transparent 0%, white 120%);
+    -webkit-mask:linear-gradient(transparent 0%, white 120%);
+    animation:ctaSpin 2s linear infinite;
+  }
+  @keyframes ctaSpin{ to{ transform:rotate(360deg); } }
+
+  /* El texto: las dos palabras comparten celda, asi el boton mide siempre lo mismo (lo
+     que ocupa "Nuestros cafés") y no se ensancha al cambiar. */
+  .cta-roll{
+    position:relative; z-index:10;
+    display:inline-grid; overflow:hidden; text-align:center;
+    line-height:1.7; padding-block:.1em;
+  }
+  .cta-roll > span{
+    grid-area:1 / 1; display:block; white-space:nowrap;
+    transition:transform .5s cubic-bezier(.7, 0, .2, 1);
+  }
+  .cta-roll-b{ transform:translateY(110%); }
+  .hero-cta:is(:hover, :focus-visible) .cta-roll-a{ transform:translateY(-110%); }
+  .hero-cta:is(:hover, :focus-visible) .cta-roll-b{ transform:translateY(0); }
+  /* Sin cursor (tactil) no hay hover: se lee la frase completa, sin animar. */
+  @media (hover: none){
+    .cta-roll{ display:inline-flex; gap:.45em; overflow:visible; }
+    .cta-roll > span{ grid-area:auto; transform:none !important; transition:none; }
+  }
 
   /* El boton con sus dos cactus sentados detras, asomados por el borde de arriba. */
   .cta-wrap{
     display:inline-block; position:relative;
     /* Mas aire que antes: los cactus asoman ~60px sobre el boton y saltan. */
-    margin-top:clamp(64px, 8.5vh, 92px);
+    margin-top:clamp(76px, 12vh, 128px);   /* era clamp(64px, 8.5vh, 92px): el boton baja ~30px (menos en pantallas bajas) */
   }
   .cta-toon{
     position:absolute; z-index:0;
-    /* La base queda escondida tras el boton: solo asoma de la cintura para arriba. */
-    bottom:calc(100% - 16px);
+    /* Se sientan justo sobre el borde del boton: ahora es translucido y, metida detras, la
+       base de cada cactus se transparentaria. */
+    bottom:calc(100% - 1px);
     pointer-events:none;
     /* Recorta por su borde de abajo, que queda tapado por el boton: asi pueden esconderse
        bajandose sin asomar por debajo del boton, y saltar hacia arriba sin recorte. */
@@ -358,8 +437,8 @@
   /* El CTA termina con un latido corto, para que el ojo aterrice en el. */
   .hero-cta{ animation:ctaPulse 2.8s ease-in-out 2.6s 2; }
   @keyframes ctaPulse{
-    0%, 100% { box-shadow:0 14px 34px rgba(0,0,0,0.3), 0 0 0 0 rgba(244,162,97,0.55); }
-    50%      { box-shadow:0 14px 34px rgba(0,0,0,0.3), 0 0 0 14px rgba(244,162,97,0); }
+    0%, 100% { box-shadow:0 0 0 0 rgb(255 207 138 / 0.5); }
+    50%      { box-shadow:0 0 0 16px rgb(255 207 138 / 0); }
   }
 
   /* ---------- EL TUESTE ---------- */
@@ -1190,8 +1269,11 @@
   /* Mid-distance cacti (#97294e, #aa3946) stand on the middle ridge, tucked behind the
      near dunes. Foreground cacti (#670d46) share the dunes' exact colour, so the part
      below the crest melts into it and only the silhouette above shows. */
-  .d-c5{ left:14%;  bottom:118px; width:30px; height:82px;  background-image:url('assets/desierto/SVG/cactus5.svg'); }
-  .d-c4{ left:73%;  bottom:120px; width:34px; height:112px; background-image:url('assets/desierto/SVG/cactus4.svg'); }
+  /* Tamano: antes 30/34/82/81/75 px de ancho (el mas alto asomaba ~150px sobre la duna);
+     ahora crecen con la ventana y llegan a ser casi el doble de grandes y de altos. La
+     altura sale de aspect-ratio (proporcion de cada dibujo): no hay `height` que limite. */
+  .d-c5{ left:14%;  bottom:118px; width:clamp(30px, 3.2vw, 52px);  aspect-ratio:28.28 / 73.25;  height:auto; background-image:url('assets/desierto/SVG/cactus5.svg'); }
+  .d-c4{ left:73%;  bottom:120px; width:clamp(34px, 3.6vw, 60px);  aspect-ratio:31.09 / 107.58; height:auto; background-image:url('assets/desierto/SVG/cactus4.svg'); }
   /* Foreground trio, sized well past the mid-distance pair to sell the depth gap. Widths
      follow each file's own aspect so nothing is squashed. They share the dunes' colour,
      so whatever falls below the crest merges into it and only the silhouette reads.
@@ -1212,9 +1294,12 @@
      Techo de `bottom`: el pie tiene que seguir por debajo de la cresta en el pico del
      parallax (lag x TRAVEL = 94/83/59px), y con margen, porque el perfil de la duna es
      irregular y baja unos 25px en los valles. Los pies quedan en 90/91/83px. */
-  .d-c2{ left:2%;   bottom:-4px; width:82px; height:300px; background-image:url('assets/desierto/SVG/cactus2.svg'); }
-  .d-c1{ left:66%;  bottom:8px;  width:81px; height:225px; background-image:url('assets/desierto/SVG/cactus1.svg'); }
-  .d-c3{ left:87%;  bottom:24px; width:75px; height:235px; background-image:url('assets/desierto/SVG/cactus3.svg'); }
+  /* Los de primer plano van sin bajar `bottom` (los pies siguen escondidos tras la duna): al
+     crecer solo ganan altura visible. Se apartan un poco del zorro y de las rocas, que son
+     del mismo morado y, pegados, se fundirian en una sola mancha. */
+  .d-c2{ left:2%;   bottom:-4px; width:clamp(96px, 9.7vw, 170px); aspect-ratio:58.68 / 203.06; height:auto; background-image:url('assets/desierto/SVG/cactus2.svg'); }
+  .d-c1{ left:62%;  bottom:8px;  width:clamp(86px, 9vw, 150px);   aspect-ratio:41.29 / 106.94; height:auto; background-image:url('assets/desierto/SVG/cactus1.svg'); }
+  .d-c3{ left:88%;  bottom:24px; width:clamp(78px, 8.2vw, 138px); aspect-ratio:27.8 / 81.91;   height:auto; background-image:url('assets/desierto/SVG/cactus3.svg'); }
 
   /* ---------- SILUETAS SOBRE LAS MESETAS ---------- */
   /* Cactus y animales recortados contra el cielo, del color exacto de la cresta en la que
@@ -1288,8 +1373,8 @@
   /* Arte real: crece desde las estrellas y queda brillando; las estrellas se apagan
      un poco para que la ilustracion mande. */
   .const-art{
-    position:absolute; left:50%; top:46%;
-    width:155%; height:auto;
+    position:absolute; left:50%; top:calc(var(--at) * 100%);
+    width:calc(var(--aw) * 100%); height:auto;
     transform:translate(-50%, -50%) scale(0.82);
     opacity:0; pointer-events:none;
     filter:drop-shadow(0 0 6px rgba(255,226,180,0.55)) drop-shadow(0 0 18px rgba(255,190,120,0.35));
@@ -1304,7 +1389,7 @@
   }
   /* En las franjas de movil el arte no pasa del ancho de su constelacion: en los bordes
      de la pantalla abriria scroll horizontal. */
-  .const-band .const-art{ width:100%; top:34%; }
+  .const-band .const-art{ width:100%; top:50%; }
 
   /* Nombre y valor: cartelito de vidrio bajo la constelacion. */
   .const-tip{
@@ -1628,6 +1713,10 @@
     transition:opacity 0.8s cubic-bezier(.2,.8,.2,1), transform 0.8s cubic-bezier(.2,.8,.2,1);
   }
   .reveal.is-visible{ opacity:1; transform:none; }
+  /* Sin animaciones si el dispositivo lo pide: todo visible y quieto. */
+  @media (prefers-reduced-motion: reduce){
+    .reveal, .reveal-scale{ opacity:1; transform:none; transition:none; }
+  }
   .reveal-scale{ opacity:0; transform:scale(0.92); transition:opacity 0.8s ease, transform 0.8s cubic-bezier(.2,.8,.2,1); }
   .reveal-scale.is-visible{ opacity:1; transform:none; }
 
@@ -1815,9 +1904,9 @@
     .d-sun{ right:8%; top:clamp(104px, 15vh, 150px); width:96px; height:96px; }
     /* Bases pushed well below the ground line (and clipped there): the near dunes are only
        58px on narrow screens, so there is far less crest to hide a rising foot behind. */
-    .d-c2{ left:2%;  bottom:-45px; width:61px; height:225px; }
-    .d-c1{ left:64%; bottom:-20px; width:57px; height:210px; }
-    .d-c4{ left:80%; bottom:78px;  width:23px; height:75px; }
+    .d-c2{ left:-2%; bottom:-45px; width:96px; height:auto; }
+    .d-c1{ left:46%; bottom:-20px; width:82px; height:auto; }
+    .d-c4{ left:83%; bottom:78px;  width:36px; height:auto; }
     .d-c3, .d-c5{ display:none; }
 
     /* Siluetas: mas chicas y menos, que en 390px se amontonaban y se salian de su meseta. */
@@ -2165,14 +2254,12 @@
     margin:14px 0 18px;
     text-shadow:0 1px 12px rgba(255,255,255,0.55);
   }
+  .esp-copy p:last-child{ margin-bottom:0; }
   .esp-copy p{
     max-width:460px;
     color:#4a3f35; font-size:1.02rem; line-height:1.7;
     margin-bottom:28px;
   }
-  .esp-cta{ gap:10px; }
-  .esp-cta span{ transition:transform .2s ease; }
-  .esp-cta:hover span{ transform:translateX(4px); }
 
   .esp-gallery{
     --esp-gap:14px;
@@ -2441,7 +2528,7 @@
   body.menu-open .wa-float{ opacity:0; pointer-events:none; }
 
   @media (max-width: 760px){
-    .cast-vicuna{ left:14%; bottom:18px; height:104px; }
+    .cast-vicuna{ left:22%; bottom:18px; height:104px; }
     .coffee-types-filter{ margin-top:40px; }
     .coffee-types-intro{ font-size:.86rem; }
     .types-video{ padding:12px 16px 12px 12px; gap:14px; }
@@ -2450,3 +2537,368 @@
     .wa-float{ right:16px; bottom:16px; width:56px; padding:0; justify-content:center; }
     .wa-float-label{ display:none; }
   }
+
+  /* ==========================================================================
+     CONSTELACIONES: el arte ya no pisa el nombre
+     La ilustracion sobresale por debajo del cuadro de estrellas (sobre todo la vicuña, que es mas alta que ancha). .const-gap reserva ese hueco con un padding en %
+     —que se mide sobre el ANCHO de la constelacion, asi vale en cualquier tamano— y el
+     cartelito con el nombre queda debajo. Ancho y altura del arte salen de --aw/--at
+     (como se coloca), y --ar (su proporcion) la pone constellations.js.
+     ========================================================================== */
+  /* El arte mide, como mucho, el ancho de su constelacion: el `img{ max-width:100% }` general
+     lo recorta aunque se pida mas, asi que --aw vale 1 en todos los casos. */
+  .const{ --aw:1; --at:.46; }
+  .const-band .const{ --aw:1; --at:.5; }
+  .const-sky{ position:relative; display:block; }
+  .const-gap{
+    display:block; height:0;
+    /* Bajo del arte menos bajo de las estrellas (el cuadro mide .76 de su ancho). */
+    padding-top:calc(max(0, var(--at) * .76 + var(--aw) / (2 * var(--ar, 1)) - .76) * 100%);
+  }
+  .const-tip{ margin-top:6px; }
+  .const-band .const-tip{ margin-top:0; }
+
+  /* ==========================================================================
+     BOTONES (CTA) — un solo sistema
+     Antes: pildoras con degradado naranja, flecha de texto y sombra de color; cada
+     boton con su propia receta. Ahora: color plano, tipografia en mayuscula espaciada,
+     el mismo alto y un icono en disco que se desplaza al pasar el cursor. Tres
+     variantes: sobre el cielo (crema), sobre claro (oscuro) y el naranja de marca; mas
+     la de contorno para acciones secundarias.
+     ========================================================================== */
+  :root{ --ink-deep:#1d1119; --cream:#FFF4E2; }
+
+  .cta-ico{
+    --d:34px;
+    display:grid; place-items:center; flex-shrink:0;
+    width:var(--d); height:var(--d); border-radius:50%;
+    background:var(--ico-bg, var(--ink-deep)); color:var(--ico-fg, #fff);
+    transition:transform .4s cubic-bezier(.3,1.5,.5,1), background .25s ease;
+  }
+  .cta-ico svg{
+    width:16px; height:16px; fill:none; stroke:currentColor;
+    stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round;
+    transition:transform .3s ease;
+  }
+  .btn:hover .cta-ico{ transform:scale(1.08); }
+  .btn:hover .cta-ico svg{ transform:translateX(2px); }
+
+  .btn{
+    min-height:50px; padding:0 28px; gap:14px;
+    font-family:var(--sans); font-size:.74rem; font-weight:800;
+    letter-spacing:.14em; text-transform:uppercase; line-height:1;
+  }
+  .btn:has(.cta-ico){ padding:0 8px 0 28px; }
+  .btn-accent{
+    background:var(--accent); color:#1a0d07;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.35);
+  }
+  .btn-accent:hover{
+    background:#F0702B; transform:translateY(-2px);
+    box-shadow:0 14px 26px -10px rgba(228,97,30,.7), inset 0 1px 0 rgba(255,255,255,.35);
+  }
+  .nav-cta{ min-height:42px; padding:0 22px; font-size:.7rem; }
+  .btn-ghost{ border-color:rgba(29,17,25,.3); color:var(--ink); }
+  .btn-ghost:hover{ background:var(--ink-deep); border-color:var(--ink-deep); color:var(--cream); }
+
+  /* Sobre la arena clara (Edicion especial): oscuro. */
+  .esp-cta{ background:var(--ink-deep); color:var(--cream); box-shadow:none; --ico-bg:var(--accent); --ico-fg:#fff; }
+  .esp-cta:hover{ background:#2d1a27; box-shadow:0 16px 30px -12px rgba(29,17,25,.65); }
+
+  /* Secundarios de contorno: "Ayudame a elegir" y "Ver todos los cafes". */
+  .catalog-tools a.btn-line, .btn-line{
+    display:inline-flex; align-items:center; gap:10px;
+    min-height:44px; padding:0 22px 0 16px; border-radius:100px;
+    border:1px solid rgba(23,108,71,.5); background:transparent; color:var(--whatsapp);
+    font-family:var(--sans); font-size:.7rem; font-weight:800;
+    letter-spacing:.14em; text-transform:uppercase; text-decoration:none; white-space:nowrap;
+    transition:background .25s ease, color .25s ease, border-color .25s ease, transform .25s ease;
+  }
+  .btn-line svg{ width:18px; height:18px; flex-shrink:0; fill:currentColor; }
+  .btn-line:hover{ background:var(--whatsapp); border-color:var(--whatsapp); color:#fff; transform:translateY(-1px); }
+
+  .coffee-types-all{
+    padding:0 18px; min-height:38px; border:1px solid rgba(29,17,25,.3); border-radius:100px;
+    background:transparent; color:var(--ink);
+    font-size:.68rem; font-weight:800; letter-spacing:.14em;
+    transition:background .25s ease, color .25s ease, border-color .25s ease;
+  }
+  .coffee-types-all:hover{ background:var(--ink-deep); border-color:var(--ink-deep); color:var(--cream); }
+
+  /* Ficha de producto: el boton de WhatsApp, en verde plano. */
+  .prod-whatsapp, .prod-purchase .prod-whatsapp{
+    min-height:52px; gap:12px; border-radius:100px;
+    background:var(--whatsapp); color:#fff; box-shadow:none;
+    font-size:.72rem; font-weight:800; letter-spacing:.12em; text-transform:uppercase; line-height:1;
+  }
+  .prod-whatsapp svg, .prod-purchase .prod-whatsapp svg{ color:#fff; width:20px; height:20px; }
+  .prod-whatsapp:hover, .prod-purchase .prod-whatsapp:hover{
+    background:#1e8556; transform:translateY(-2px);
+    box-shadow:0 16px 28px -12px rgba(23,108,71,.75);
+  }
+
+  /* Enlace del video de los tipos y boton flotante. */
+  .types-video-link{
+    display:inline-flex; align-items:center; gap:8px;
+    font-size:.68rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase;
+  }
+  .types-video-link svg{
+    width:13px; height:13px; fill:none; stroke:currentColor;
+    stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; transition:transform .25s ease;
+  }
+  .types-video:hover .types-video-link svg{ transform:translate(2px, -2px); }
+  .wa-float{ height:54px; font-size:.7rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; }
+
+  .btn:focus-visible, .btn-line:focus-visible, .coffee-types-all:focus-visible,
+  .prod-whatsapp:focus-visible{ outline:2px solid currentColor; outline-offset:4px; }
+
+  @media (max-width: 760px){
+    .hero-cta{ padding:.95rem 1.9rem; font-size:.7rem; letter-spacing:.1em; }
+    .prod-whatsapp, .prod-purchase .prod-whatsapp{ font-size:.66rem; letter-spacing:.1em; padding-inline:12px; }
+    .catalog-tools a.btn-line, .btn-line{ min-height:40px; padding:0 16px 0 12px; font-size:.64rem; letter-spacing:.12em; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .cta-border::before{ animation:none; }
+    .cta-roll > span{ transition:none; }
+  }
+
+  /* ==========================================================================
+     FILTRO POR TIPO (Nuestros cafés)
+     Una barra discreta sobre las bolsas: chips para filtrar y un desplegable con la
+     explicacion de cada tipo y el video. Reemplaza el bloque grande de tarjetas.
+     ========================================================================== */
+  .type-filter{ position:relative; z-index:5; margin:0 0 6px; }
+  .type-filter-bar{
+    position:relative;
+    display:flex; flex-wrap:wrap; align-items:center; gap:10px 16px;
+    padding:12px 0;
+    border-block:1px solid #e1d3c0;
+  }
+  .type-filter-label{
+    font-size:.64rem; font-weight:800; letter-spacing:.16em; text-transform:uppercase;
+    color:#8a7a6a;
+  }
+  .type-chips{ display:flex; flex-wrap:wrap; gap:6px; }
+  .type-chip{
+    height:32px; padding:0 15px; border-radius:100px;
+    border:1px solid #d6c7b5; background:transparent; color:var(--ink);
+    font-family:var(--sans); font-size:.78rem; font-weight:600; cursor:pointer;
+    transition:background .2s, border-color .2s, color .2s;
+  }
+  .type-chip:hover{ border-color:#7e4a28; }
+  .type-chip[aria-pressed="true"]{ background:var(--ink-deep); border-color:var(--ink-deep); color:var(--cream); }
+  /* La cruz avisa de que volver a tocar el chip quita el filtro. */
+  .type-chip[aria-pressed="true"]::after{ content:"×"; margin-left:8px; font-size:1.05em; line-height:1; opacity:.7; }
+  .type-chip:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+
+  .type-info{ margin-left:auto; }
+  .type-info > summary{
+    display:inline-flex; align-items:center; gap:6px;
+    list-style:none; cursor:pointer;
+    font-size:.8rem; color:#675b4f;
+    text-decoration:underline; text-decoration-color:#cbb9a3; text-underline-offset:4px;
+  }
+  .type-info > summary::-webkit-details-marker{ display:none; }
+  .type-info > summary:hover{ color:var(--ink); }
+  .type-info > summary svg{
+    width:14px; height:14px; fill:none; stroke:currentColor; stroke-width:2;
+    stroke-linecap:round; stroke-linejoin:round; transition:transform .25s ease;
+  }
+  .type-info[open] > summary svg{ transform:rotate(180deg); }
+  .type-info > summary:focus-visible{ outline:2px solid var(--accent); outline-offset:3px; border-radius:4px; }
+
+  /* El panel se despliega sobre las bolsas, como un menu, sin empujar la pagina. */
+  .type-info-panel{
+    position:absolute; left:0; right:0; top:calc(100% + 8px);
+    padding:24px 26px 20px;
+    background:var(--shop-cream); border:1px solid #e1d3c0; border-radius:16px;
+    box-shadow:0 22px 44px -18px rgba(60,35,15,.35);
+    animation:typeInfoIn .25s ease;
+  }
+  @keyframes typeInfoIn{ from{ opacity:0; transform:translateY(-6px); } }
+  .type-info-intro{ max-width:640px; margin:0 0 18px; color:var(--ink-dim); font-size:.9rem; line-height:1.6; }
+  .type-info-grid{ display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:24px; margin:0; }
+  .type-info-grid > div{ padding-top:12px; border-top:1px solid #e1d3c0; }
+  .type-info-grid dt{ font-family:var(--serif); font-size:1.3rem; margin-bottom:8px; }
+  .type-info-grid dd{ margin:0 0 8px; font-size:.84rem; line-height:1.45; }
+  .type-info-grid dd span{
+    display:block; font-size:.6rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase;
+    color:#8a7a6a; margin-bottom:2px;
+  }
+  .type-info-grid .type-info-note{ font-family:var(--serif); font-style:italic; color:var(--ink-dim); }
+  .type-info-video{
+    display:inline-flex; align-items:center; gap:8px; margin-top:12px;
+    font-size:.8rem; font-weight:700; color:var(--accent-deep); text-decoration:none;
+  }
+  .type-info-video svg{ width:14px; height:14px; fill:currentColor; }
+  .type-info-video:hover{ text-decoration:underline; text-underline-offset:4px; }
+
+  /* El estado ("Mostrando 3 cafes Tipo 1") lo leen los lectores de pantalla; a la vista
+     ya lo dice el chip marcado. */
+  .type-filter-status{
+    position:absolute; width:1px; height:1px; overflow:hidden;
+    clip:rect(0 0 0 0); clip-path:inset(50%); white-space:nowrap;
+  }
+
+  @media (max-width: 760px){
+    .type-filter-label{ display:none; }
+    .type-chip{ height:30px; padding:0 12px; font-size:.74rem; }
+    .type-info{ margin-left:0; width:100%; }
+    .type-info-panel{ padding:18px 16px 16px; max-height:70vh; overflow:auto; }
+    .type-info-grid{ grid-template-columns:1fr; gap:14px; }
+  }
+
+  /* ==========================================================================
+     MENU MOVIL (estilo "Theodore", Codrops)
+     Cielo del hero de fondo, filas infinitas en diagonal con la fauna brillando, enlaces
+     grandes en serif con una palabra chica al costado, y una curva que barre la pantalla
+     al abrir y cerrar (#menuOverlay).
+     ========================================================================== */
+  .mobile-menu{
+    position:fixed; inset:0; z-index:150;
+    display:block; overflow:hidden;
+    background:linear-gradient(to bottom, #3b0a60 0%, #460c6e 30%, #7a2190 72%, #a8378f 100%);
+    transform:none; transition:none;
+    visibility:hidden; opacity:0; pointer-events:none;
+  }
+  .mobile-menu.open{ visibility:visible; opacity:1; pointer-events:auto; transform:none; transition:none; }
+  .mobile-menu a{ font-size:inherit; color:inherit; font-family:inherit; }
+
+  .menu-overlay{
+    position:fixed; inset:0; width:100%; height:100%; z-index:200;
+    pointer-events:none;
+  }
+
+  /* --- fondo: estrellas, luna y filas de fauna --- */
+  .mm-bg{ position:absolute; inset:0; pointer-events:none; }
+  .mm-stars, .mm-stars::after{
+    position:absolute; inset:-10%;
+    background-image:
+      radial-gradient(1.4px 1.4px at 12% 18%, #fff 50%, transparent 51%),
+      radial-gradient(1px 1px at 33% 72%, #e0f2fe 50%, transparent 51%),
+      radial-gradient(1.6px 1.6px at 58% 9%, #fff 50%, transparent 51%),
+      radial-gradient(1px 1px at 76% 44%, #fbcfe8 50%, transparent 51%),
+      radial-gradient(1.2px 1.2px at 91% 83%, #fff 50%, transparent 51%),
+      radial-gradient(1px 1px at 46% 38%, #fdf4ff 50%, transparent 51%),
+      radial-gradient(1.3px 1.3px at 22% 56%, #bae6fd 50%, transparent 51%),
+      radial-gradient(1px 1px at 68% 93%, #fff 50%, transparent 51%);
+    background-size:220px 220px;
+  }
+  .mm-stars::after{ content:''; inset:0; background-size:150px 150px; background-position:40px 70px; animation:mmTwinkle 4.5s ease-in-out infinite; }
+  .mm-stars{ animation:mmTwinkle 6s ease-in-out -2s infinite; }
+  @keyframes mmTwinkle{ 0%, 100%{ opacity:1; } 50%{ opacity:.45; } }
+  .mm-moon{
+    position:absolute; right:-14vw; top:8vh;
+    width:46vw; height:46vw; border-radius:50%;
+    background:url('assets/desierto/SVG/luna.svg') center / contain no-repeat;
+    opacity:.85; filter:drop-shadow(0 0 30px rgba(255,207,138,.35));
+  }
+  .mm-tiles{
+    position:absolute; left:50%; top:52%;
+    display:flex; flex-direction:column; gap:3.5vh;
+    transform:translate(-50%, -50%) rotate(-16deg);
+    opacity:.32;
+  }
+  .mm-line{ display:flex; width:max-content; animation:mmRun 30s linear infinite; }
+  .mm-line:nth-child(2){ animation-duration:38s; animation-direction:reverse; }
+  .mm-line:nth-child(3){ animation-duration:46s; }
+  @keyframes mmRun{ from{ transform:translateX(0); } to{ transform:translateX(-50%); } }
+  .mm-tile{
+    flex:none; display:grid; place-items:center;
+    width:20vh; height:20vh; margin:0 2vh;
+    border-radius:50%;
+    border:1px solid rgba(255,236,205,.28);
+    background:radial-gradient(circle at 50% 40%, rgba(255,226,180,.10), transparent 70%);
+  }
+  .mm-tile--wide{ width:44vh; border-radius:999px; }
+  .mm-tile img{
+    max-width:72%; max-height:72%; width:auto; height:auto;
+    filter:drop-shadow(0 0 6px rgba(255,226,180,.6));
+  }
+  /* Velo para que el texto se lea sobre las filas. */
+  .mm-bg::after{
+    content:''; position:absolute; inset:0;
+    background:radial-gradient(120% 70% at 50% 45%, rgba(40,6,60,.55), rgba(40,6,60,.15) 70%, transparent);
+  }
+
+  /* --- contenido --- */
+  .mm-inner{
+    position:relative; z-index:1; height:100%;
+    display:flex; flex-direction:column;
+    padding:max(18px, env(safe-area-inset-top)) 22px max(22px, env(safe-area-inset-bottom));
+  }
+  .mm-top{ display:flex; align-items:center; justify-content:space-between; }
+  .mm-logo{ display:inline-flex; align-items:center; gap:10px; }
+  .mm-logo-icon{ height:34px; width:auto; }
+  .mm-logo-word{ height:16px; width:auto; }
+  .mm-close{
+    width:46px; height:46px; border-radius:50%;
+    display:grid; place-items:center;
+    border:1px solid rgba(255,236,205,.45); background:rgba(255,255,255,.06); color:#FDFBF4;
+    cursor:pointer;
+  }
+  .mm-close svg{ width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; }
+  .mm-close:focus-visible{ outline:2px solid #ffcf8a; outline-offset:3px; }
+
+  .mm-links{
+    flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center;
+    gap:2.2vh;
+  }
+  .mm-item{
+    display:flex; align-items:baseline; gap:10px;
+    color:#FDFBF4; text-decoration:none; line-height:1;
+  }
+  .mm-item:nth-child(odd){ margin-left:-14vw; }
+  .mm-item:nth-child(even){ margin-right:-14vw; }
+  .mm-big{
+    font-family:var(--serif); font-style:italic; font-weight:400;
+    font-size:clamp(2.8rem, 15vw, 4.6rem); letter-spacing:-.02em;
+    color:#FDFBF4; transition:color .3s ease;
+  }
+  .mm-tiny{
+    font-family:var(--sans); font-size:.72rem; font-weight:800;
+    letter-spacing:.18em; text-transform:uppercase; color:#ffcf8a;
+  }
+  .mm-item:hover .mm-big, .mm-item:focus-visible .mm-big{ color:#ffcf8a; }
+  .mm-item:focus-visible{ outline:none; }
+
+  .mm-actions{ display:flex; flex-direction:column; gap:10px; }
+  .mm-cta{ width:100%; }
+  .mm-wa{
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    min-height:50px; border-radius:100px;
+    background:var(--whatsapp); color:#fff; text-decoration:none;
+    font-family:var(--sans); font-size:.72rem; font-weight:800; letter-spacing:.12em; text-transform:uppercase;
+  }
+  .mm-wa svg{ width:20px; height:20px; fill:currentColor; }
+  .mm-social{
+    display:flex; align-items:center; justify-content:center; gap:12px;
+    margin-top:18px;
+  }
+  .mm-social-label{
+    font-size:.64rem; font-weight:800; letter-spacing:.18em; text-transform:uppercase;
+    color:rgba(255,246,235,.7); margin-right:4px;
+  }
+  .mm-social a{
+    width:44px; height:44px; border-radius:50%;
+    display:grid; place-items:center;
+    border:1px solid rgba(255,236,205,.35); color:#FDFBF4;
+    transition:background .25s, color .25s, border-color .25s;
+  }
+  .mm-social a:hover{ background:#ffcf8a; border-color:#ffcf8a; color:#2b0f3a; }
+  .mm-social svg{ width:18px; height:18px; }
+  .mm-social a[aria-label="WhatsApp"] svg{ fill:currentColor; }
+
+  /* Entrada escalonada una vez que la curva descubre el menu. */
+  .mm-anim{ opacity:0; transform:translateY(34px); }
+  .mobile-menu.is-shown .mm-anim{
+    opacity:1; transform:none;
+    transition:opacity .7s cubic-bezier(.2,.8,.2,1), transform .8s cubic-bezier(.2,.8,.2,1);
+    transition-delay:calc(var(--i) * 70ms + 120ms);
+  }
+  @media (prefers-reduced-motion: reduce){
+    .mm-line, .mm-stars, .mm-stars::after{ animation:none; }
+    .mm-anim, .mobile-menu.is-shown .mm-anim{ opacity:1; transform:none; transition:none; }
+  }
+  @media (min-width: 761px){ .mobile-menu, .menu-overlay{ display:none; } }

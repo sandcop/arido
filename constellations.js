@@ -11,13 +11,13 @@
   // indices de estrellas. donde/slot = lugar en escritorio; m = lugar en movil, disperso
   // (l/r en % del ancho, t en px, rot = giro del dibujo).
   var FAUNA = [
-    { id:'zorro', arte:'assets/fauna/zorro.webp', nombre:'Zorro Chilla', valor:'Resiliencia', donde:'hero', slot:{ l:'4%', t:'22%' }, m:{ l:2, t:0, rot:-8 },
+    { id:'zorro', arte:'assets/fauna/zorro.webp', ar:1.201, nombre:'Zorro Chilla', valor:'Resiliencia', donde:'hero', slot:{ l:'4%', t:'22%' }, m:{ l:2, t:0, rot:-8 },
       s:[[24,20,2],[36,16,3],[30,8,1],[40,6,1],[40,28,2],[60,34,1],[72,48,2],[86,46,1],[96,58,2],[38,44,1],[40,64,1],[66,64,1]],
       l:[[0,1],[1,2],[1,3],[1,4],[4,5],[5,6],[6,7],[7,8],[4,9],[9,10],[6,11]] },
-    { id:'vizcacha', arte:'assets/fauna/vizcacha.webp', nombre:'Vizcacha', valor:'Serenidad', donde:'hero', slot:{ l:'8%', t:'60%' }, m:{ l:36, t:96, rot:6 },
+    { id:'vizcacha', arte:'assets/fauna/vizcacha.webp', ar:1.238, nombre:'Vizcacha', valor:'Serenidad', donde:'hero', slot:{ l:'8%', t:'60%' }, m:{ l:36, t:96, rot:6 },
       s:[[24,22,1],[34,18,3],[30,4,1],[38,6,1],[50,26,1],[66,36,2],[60,58,1],[36,52,1],[84,40,1],[94,24,2]],
       l:[[0,1],[1,2],[1,3],[1,4],[4,5],[5,6],[6,7],[7,1],[5,8],[8,9]] },
-    { id:'vicuna', arte:'assets/fauna/vicuna.webp', nombre:'Vicuña', valor:'Pureza', donde:'hero', slot:{ r:'5%', t:'52%' }, m:{ r:3, t:14, rot:-4 },
+    { id:'vicuna', arte:'assets/fauna/vicuna.webp', ar:0.946, nombre:'Vicuña', valor:'Pureza', donde:'hero', slot:{ r:'5%', t:'52%' }, m:{ r:3, t:14, rot:-4 },
       s:[[6,10,1],[14,6,3],[18,1,1],[24,30,1],[66,28,2],[73,33,1],[26,44,1],[26,70,1],[62,44,1],[64,70,1]],
       l:[[0,1],[1,2],[1,3],[3,4],[4,5],[3,6],[6,7],[6,8],[8,4],[8,9]] },
     { id:'parina', nombre:'Parina', valor:'Equilibrio', donde:'nos', slot:{ l:'0', t:'20px' }, m:{ l:4, t:0, rot:5 },
@@ -26,10 +26,10 @@
     { id:'gaviotin', nombre:'Gaviotín Chico', valor:'Libertad', donde:'nos', slot:{ r:'0', t:'0px' }, m:{ r:2, t:70, rot:-10 },
       s:[[4,20,2],[28,30,1],[46,34,3],[56,32,1],[40,40,1],[26,52,1],[34,56,1],[52,22,1],[78,6,2]],
       l:[[0,1],[1,4],[2,3],[2,4],[4,5],[4,6],[2,7],[7,8]] },
-    { id:'chungungo', arte:'assets/fauna/chungungo.webp', nombre:'Chungungo', valor:'Alegría', donde:'nos', slot:{ l:'0', t:'640px' }, m:{ l:10, t:250, rot:-6 },
+    { id:'chungungo', arte:'assets/fauna/chungungo.webp', ar:2.27, nombre:'Chungungo', valor:'Alegría', donde:'nos', slot:{ l:'0', t:'640px' }, m:{ l:10, t:250, rot:-6 },
       s:[[6,32,1],[14,30,3],[30,26,1],[32,14,2],[52,28,1],[70,32,1],[82,22,2],[96,36,1]],
       l:[[0,1],[1,2],[2,3],[2,4],[4,5],[5,6],[5,7]] },
-    { id:'ballena', arte:'assets/fauna/ballena.webp', nombre:'Ballena Fin', valor:'Trascendencia', donde:'nos', slot:{ r:'0', t:'740px' }, m:{ r:0, t:330, rot:4 },
+    { id:'ballena', arte:'assets/fauna/ballena.webp', ar:2.68, nombre:'Ballena Fin', valor:'Trascendencia', donde:'nos', slot:{ r:'0', t:'740px' }, m:{ r:0, t:330, rot:4 },
       s:[[4,34,2],[18,42,1],[26,28,1],[60,26,1],[64,18,2],[68,26,1],[50,44,1],[84,32,1],[96,22,3],[96,42,1]],
       l:[[0,2],[2,3],[3,4],[4,5],[5,7],[0,1],[1,6],[6,7],[7,8],[7,9]] }
   ];
@@ -66,15 +66,27 @@
       c.style.setProperty('--td', (-rand(0, 5)).toFixed(2) + 's');
       svg.appendChild(c);
     });
-    b.appendChild(svg);
+    // Estrellas y arte van juntos en su propio cuadro (.const-sky): el arte se coloca
+    // respecto de ese cuadro y no de todo el boton, y el cartelito queda debajo de lo que
+    // ocupe el arte (ver .const-gap), no encima.
+    var sky = document.createElement('span');
+    sky.className = 'const-sky';
+    sky.appendChild(svg);
+    b.appendChild(sky);
     // Arte real de la mascota (assets/fauna, del "El norte es fauna"): aparece sobre las
     // estrellas al activar la constelacion. Parina y gaviotin aun no tienen ilustracion.
     if(f.arte){
       var art = document.createElement('img');
       art.className = 'const-art';
       art.src = f.arte; art.alt = ''; art.loading = 'lazy'; art.decoding = 'async';
-      b.appendChild(art);
+      sky.appendChild(art);
       b.classList.add('has-art');
+      // Hueco bajo las estrellas para lo que sobresale el arte (lo calcula el CSS con --ar).
+      b.style.setProperty('--ar', f.ar);
+      var gap = document.createElement('span');
+      gap.className = 'const-gap';
+      gap.setAttribute('aria-hidden', 'true');
+      b.appendChild(gap);
     }
     var tip = document.createElement('span');
     tip.className = 'const-tip';

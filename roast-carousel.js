@@ -47,6 +47,7 @@
   root.appendChild(panel);
   root.appendChild(tabs);
   grid.parentNode.insertBefore(root, grid.nextSibling);
+  if(window.observarReveal) window.observarReveal(root);
   grid.classList.add('is-enhanced');   // la grilla se oculta: el carrusel la reemplaza
 
   var barras = [];

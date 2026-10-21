@@ -98,7 +98,12 @@
         surface: [[0.00,0.940],[0.12,0.910],[0.20,0.875],[0.29,0.846],[0.38,0.832],
                   [0.55,0.828],[0.72,0.826],[0.82,0.838],[0.92,0.872],[1.00,0.905]],
         bag: { x0:0.400, x1:0.685, y:0.832 },
-        flat: [0.30, 0.82]
+        flat: [0.30, 0.82],
+        // Vertido (ver Peru). El borde superior de la bolsa sube hacia la derecha por la
+        // perspectiva: medido sobre el render en (800px, 100px) y (1140px, 80px) de 1672x941.
+        // Los granos que rebotan quedan en la roca, a un lado del pie de la bolsa.
+        pour: { x0:0.4785, y0:0.1063, x1:0.6818, y1:0.0855, borde:true },
+        spill: { izq:[0.380, 0.412], der:[0.745, 0.782], disperso:true }
       }
     },
     {
@@ -126,7 +131,10 @@
         surface: [[0.00,0.915],[0.12,0.890],[0.22,0.865],[0.32,0.850],[0.42,0.844],
                   [0.60,0.841],[0.74,0.844],[0.85,0.862],[0.94,0.892],[1.00,0.915]],
         bag: { x0:0.420, x1:0.685, y:0.844 },
-        flat: [0.31, 0.82]
+        flat: [0.31, 0.82],
+        // Borde superior medido en (815px, 97px) y (1115px, 78px) de 1672x941.
+        pour: { x0:0.4874, y0:0.1035, x1:0.6669, y1:0.0833, borde:true },
+        spill: { izq:[0.382, 0.414], der:[0.745, 0.782], disperso:true }
       }
     },
     {
@@ -166,7 +174,10 @@
                   [1.00,0.800]],
         bag: { x0:0.502, x1:0.745, y:0.802 },
         // Arranca en 0.15: por la izquierda de ahi ya es vegetacion desenfocada, no piedra.
-        flat: [0.15, 0.93]
+        flat: [0.15, 0.93],
+        // Borde superior medido en (800px, 245px) y (1120px, 224px) de 1536x1024.
+        pour: { x0:0.5208, y0:0.2393, x1:0.7292, y1:0.2188, borde:true },
+        spill: { izq:[0.425, 0.460], der:[0.805, 0.842], disperso:true }
       }
     },
     {
@@ -194,7 +205,10 @@
         surface: [[0.00,0.825],[0.10,0.798],[0.20,0.778],[0.32,0.766],[0.46,0.759],
                   [0.58,0.756],[0.72,0.760],[0.84,0.776],[0.94,0.802],[1.00,0.825]],
         bag: { x0:0.535, x1:0.805, y:0.758 },
-        flat: [0.26, 0.85]
+        flat: [0.26, 0.85],
+        // Borde superior medido en (885px, 167px) y (1150px, 145px) de 1672x941.
+        pour: { x0:0.5293, y0:0.1775, x1:0.6878, y1:0.1541, borde:true },
+        spill: { izq:[0.438, 0.472], der:[0.765, 0.802], disperso:true }
       }
     }
   ];
@@ -418,8 +432,8 @@
     return null;
   }
 
-  var typeBtns   = [].slice.call(document.querySelectorAll('.coffee-type[data-tipo]'));
-  var typesGrid  = document.querySelector('.coffee-types-grid');
+  var typeBtns   = [].slice.call(document.querySelectorAll('.type-chip[data-tipo]'));
+  var typesGrid  = document.querySelector('.type-chips');
   var typeStatus = document.getElementById('coffeeTypesStatus');
   var typeStatusText = document.getElementById('coffeeTypesStatusText');
   var typeAll    = document.getElementById('coffeeTypesAll');
@@ -438,6 +452,7 @@
       b.setAttribute('aria-pressed', b.getAttribute('data-tipo') === tipo ? 'true' : 'false');
     });
     if(typesGrid) typesGrid.classList.toggle('has-filter', !!tipo);
+    if(typeAll) typeAll.setAttribute('aria-pressed', tipo ? 'false' : 'true');
     if(gridEmpty) gridEmpty.hidden = visibles > 0;
     if(typeStatus){
       typeStatus.hidden = !tipo;
@@ -873,12 +888,24 @@
     }
 
     // ---------------------------------------------------------------- vertido
-    // Solo en escenas con `pour` (Peru). Los granos no llueven por todo el cielo: caen en
-    // un chorro angosto sobre la boca de la bolsa y desaparecen dentro. Un 15% rebota en
-    // el cafe que ya entro, sale despedido hacia un lado y queda suelto junto al paquete.
+    // En todas las escenas (`pour` en los datos de cada cafe). Los granos no llueven por
+    // todo el cielo: caen en un chorro angosto sobre la boca de la bolsa y desaparecen
+    // dentro. Un 15% rebota en el cafe que ya entro, sale despedido hacia un lado y queda
+    // suelto junto al paquete.
     function boca(){
       var m = mCache, p = geo.pour;
-      return { x0: m.x0 + p.x0 * m.rw, x1: m.x0 + p.x1 * m.rw, y: m.y0 + p.y * m.rh };
+      var ya = p.y0 != null ? p.y0 : p.y, yb = p.y1 != null ? p.y1 : p.y;
+      return { x0: m.x0 + p.x0 * m.rw, x1: m.x0 + p.x1 * m.rw,
+               ya: m.y0 + ya * m.rh, yb: m.y0 + yb * m.rh };
+    }
+    // Altura del borde de la bolsa sobre la columna x. El borde sube hacia un lado por la
+    // perspectiva, asi que el grano entra por el punto exacto donde pasa, no por una
+    // cota media: con una sola altura, en un extremo se hundia antes de llegar al borde
+    // y en el otro seguia cayendo por delante del paquete.
+    function bocaY(bo, x){
+      var t = (x - bo.x0) / ((bo.x1 - bo.x0) || 1);
+      t = t < 0 ? 0 : t > 1 ? 1 : t;
+      return bo.ya + (bo.yb - bo.ya) * t;
     }
     function gauss(){ return (Math.random() + Math.random() + Math.random() - 1.5) / 1.5; }
     function nuevoVertido(orden, derrama){
@@ -887,10 +914,27 @@
       // El chorro arranca fino, engrosa y vuelve a afinarse: la espera sigue una curva
       // suave en vez de un reparto uniforme.
       var f = orden / TOTAL;
+      // Lado por el que se escapa, fijado al nacer. En las escenas con `borde` (todas menos
+      // Peru) el grano que rebota llega por una esquina de la boca: la caida hasta la roca
+      // es larga, y saliendo desde el centro cruzaba entero por delante de la etiqueta.
+      var lado = Math.random() < 0.55 ? 0 : 1e6;
+      var x = centro + gauss() * ancho * 0.14;
+      if(derrama && geo.pour.borde){
+        var dentro = ancho * (0.05 + Math.random() * 0.12);
+        x = lado === 0 ? bo.x0 + dentro : bo.x1 - dentro;
+      }
+      // Con la bolsa muy arriba en la foto (Bolivia, Brasil, Costa Rica) la caida mide
+      // apenas dos o tres granos y, a la velocidad de Peru (unos once), el grano
+      // atravesaba el cuadro de golpe. Se frena en proporcion, con un piso para que
+      // siga leyendose como caida y no como flotar.
+      var frena = geo.pour.borde
+        ? Math.max(0.4, Math.min(1, bocaY(bo, centro) / (11 * GRANO)))
+        : 1;
       var b = {
-        x: centro + gauss() * ancho * 0.14,
+        x: x,
+        lado: lado,
         y: -GRANO * (1 + Math.random() * 2),
-        vy: (2.2 + Math.random() * 1.2) * dpr,
+        vy: (2.2 + Math.random() * 1.2) * dpr * frena,
         vx: gauss() * 0.12 * dpr,
         rot: Math.random() * Math.PI * 2,
         sFactor: sFactor,
@@ -904,11 +948,22 @@
     }
     // Donde puede quedar un grano derramado: justo a la izquierda de la bolsa (entre el
     // zorro y el paquete) o sobre la roca a su derecha. Nunca encima de la cara del zorro.
+    // Los sitios salen de `spill` en los datos de cada escena (en fraccion de imagen);
+    // los de Peru quedan como respaldo. El de la izquierda cae en el extremo `izq[0]` y el
+    // de la derecha en `der[1]`; `jitter` los reparte un poco, que si no se apilan todos
+    // en el mismo pixel.
     function lugarDerrame(x){
-      var m = mCache, izq = [0.708, 0.726], der = [0.945, 0.99];
-      var u = (x - m.x0) / m.rw;
-      var t = u < 0.835 ? izq : der;
-      u = Math.max(t[0], Math.min(t[1], u + (Math.random() - 0.5) * 0.01));
+      var m = mCache, sp = geo.spill || {};
+      var izq = sp.izq || [0.708, 0.726], der = sp.der || [0.945, 0.99];
+      var u;
+      if(sp.disperso){
+        // Dentro del tramo, no en un punto: con todos en el mismo sitio se apilaban unos
+        // sobre otros y se leian como un solo grano.
+        var t = x < W * 0.5 ? izq : der;
+        u = t[0] + Math.random() * (t[1] - t[0]);
+      } else {
+        u = (x < W * 0.5 ? izq[0] : der[1]) + (Math.random() - 0.5) * (sp.jitter || 0);
+      }
       return m.x0 + u * m.rw;
     }
     function dibujarDentroDeBoca(b){
@@ -918,7 +973,11 @@
       ctx.save();
       ctx.beginPath();
       ctx.rect(0, 0, W, H);
-      ctx.rect(bo.x0, bo.y, bo.x1 - bo.x0, H - bo.y);
+      ctx.moveTo(bo.x0, bo.ya);
+      ctx.lineTo(bo.x1, bo.yb);
+      ctx.lineTo(bo.x1, H);
+      ctx.lineTo(bo.x0, H);
+      ctx.closePath();
       ctx.clip('evenodd');
       dibujar(b);
       ctx.restore();
@@ -1086,24 +1145,24 @@
         if(trans < b.espera) continue;
         avanzar(b, k, dpr);
         if(geo.pour){
-          var bo = boca();
-          if(!b.salto && b.y >= bo.y - GRANO * 0.25){
+          var bo = boca(), yBoca = bocaY(bo, b.x);
+          if(!b.salto && b.y >= yBoca - GRANO * 0.25){
             if(b.derrama){
               // Rebota en el cafe que ya entro y sale despedido hacia un lado.
               b.salto = true;
-              b.y = bo.y - GRANO * 0.25;
+              b.y = yBoca - GRANO * 0.25;
               b.vy = -(1.4 + Math.random() * 0.8) * dpr;
               // Apunta a su lugar junto a la bolsa: se calcula el tiempo de vuelo hasta el
               // pie (subida + caida) y con eso la velocidad lateral justa, asi aterriza
               // ahi mismo en vez de salir disparado y teletransportarse al posarse.
-              var destino = lugarDerrame(Math.random() < 0.55 ? 0 : 1e6);
+              var destino = lugarDerrame(b.lado);
               var g = FISICA.G * dpr, d = reposo(destino) - b.y;
               var vuelo = (-b.vy + Math.sqrt(b.vy * b.vy + 2 * g * Math.max(d, 1))) / g;
               b.vx = (destino - b.x) / vuelo;
               b.destino = destino;
               b.vr = (Math.random() - 0.5) * 0.18;
               b.vf *= 1.6;
-            } else if(b.y >= bo.y + GRANO * 0.6){
+            } else if(b.y >= yBoca + GRANO * 0.6){
               // Ya entro del todo: deja de existir para la escena.
               b.posado = true; b.oculto = true; b.imgU = null;
               continue;
@@ -1139,7 +1198,7 @@
         for(var i = 0; i < granos.length; i++){
           if(geo.pour){
             if(!granos[i].derrama){ granos[i].posado = true; granos[i].oculto = true; granos[i].imgU = null; continue; }
-            granos[i].x = lugarDerrame(Math.random() < 0.5 ? 0 : 1e6);
+            granos[i].x = lugarDerrame(granos[i].lado);
             posar(granos[i], false);
             continue;
           }

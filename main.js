@@ -1,25 +1,106 @@
 (function(){
   document.getElementById('year').textContent = new Date().getFullYear();
 
-  // Mobile menu
+  // Menu movil. Al abrir, una curva (#menuOverlay, un path SVG) sube desde abajo y cubre la
+  // pantalla; detras aparece el menu y la curva sigue de largo hacia arriba descubriendolo.
+  // Al cerrar, lo mismo de arriba hacia abajo. Sin animaciones si el dispositivo lo pide.
   var burger = document.getElementById('burgerBtn');
   var closeBtn = document.getElementById('closeMenuBtn');
   var menu = document.getElementById('mobileMenu');
-  function setMenu(open){
-    menu.classList.toggle('open', open);
-    document.body.classList.toggle('menu-open', open);
-    burger.setAttribute('aria-expanded', open ? 'true' : 'false');
-    if(open) closeBtn.focus(); else burger.focus({ preventScroll:true });
+  var overlayPath = document.querySelector('#menuOverlay path');
+  var menuReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var menuOpen = false, menuBusy = false;
+  var P = {
+    abajo:     'M 0 100 V 100 Q 50 100 100 100 V 100 z',
+    subeCurva: 'M 0 100 V 50 Q 50 0 100 50 V 100 z',
+    llenoB:    'M 0 100 V 0 Q 50 0 100 0 V 100 z',
+    llenoT:    'M 0 0 V 100 Q 50 100 100 100 V 0 z',
+    sigue:     'M 0 0 V 50 Q 50 0 100 50 V 0 z',
+    arriba:    'M 0 0 V 0 Q 50 0 100 0 V 0 z',
+    bajaCurva: 'M 0 0 V 50 Q 50 100 100 50 V 0 z',
+    sale:      'M 0 100 V 50 Q 50 100 100 50 V 100 z'
+  };
+  function nums(d){ return d.match(/-?\d+(\.\d+)?/g).map(Number); }
+  function dibujar(n){
+    overlayPath.setAttribute('d', 'M ' + n[0] + ' ' + n[1] + ' V ' + n[2] + ' Q ' + n[3] + ' ' + n[4] + ' ' + n[5] + ' ' + n[6] + ' V ' + n[7] + ' z');
+  }
+  var easeIn = function(t){ return t * t * t; };
+  var easeOut = function(t){ return 1 - Math.pow(1 - t, 3); };
+  // Recorre una lista de tramos [desde, hasta, ms, curva] y luego llama a `fin`.
+  function morph(tramos, fin){
+    if(!tramos.length){ if(fin) fin(); return; }
+    var t = tramos[0], a = nums(t[0]), b = nums(t[1]), t0 = null;
+    requestAnimationFrame(function paso(ts){
+      if(t0 === null) t0 = ts;
+      var k = Math.min(1, (ts - t0) / t[2]), e = t[3](k);
+      dibujar(a.map(function(v, i){ return v + (b[i] - v) * e; }));
+      if(k < 1) requestAnimationFrame(paso); else morph(tramos.slice(1), fin);
+    });
+  }
+  function mostrarMenu(si){
+    menu.classList.toggle('open', si);
+    document.body.classList.toggle('menu-open', si);
+    burger.setAttribute('aria-expanded', si ? 'true' : 'false');
+  }
+  function abrir(){
+    if(menuOpen || menuBusy) return;
+    menuOpen = true;
+    if(menuReduced || !overlayPath){ mostrarMenu(true); menu.classList.add('is-shown'); closeBtn.focus(); return; }
+    menuBusy = true;
+    morph([[P.abajo, P.subeCurva, 280, easeIn], [P.subeCurva, P.llenoB, 220, easeOut]], function(){
+      mostrarMenu(true);
+      dibujar(nums(P.llenoT));
+      morph([[P.llenoT, P.sigue, 280, easeIn], [P.sigue, P.arriba, 220, easeOut]], function(){
+        menuBusy = false;
+      });
+      menu.classList.add('is-shown');
+      closeBtn.focus();
+    });
+  }
+  // `despues` corre con la pantalla tapada: ahi se salta a la seccion elegida.
+  function cerrar(despues, sinAnimar){
+    if(!menuOpen || menuBusy) return;
+    menuOpen = false;
+    if(sinAnimar || menuReduced || !overlayPath){
+      menu.classList.remove('is-shown'); mostrarMenu(false);
+      if(despues) despues(); else burger.focus({ preventScroll:true });
+      return;
+    }
+    menuBusy = true;
+    morph([[P.arriba, P.bajaCurva, 280, easeIn], [P.bajaCurva, P.llenoT, 220, easeOut]], function(){
+      menu.classList.remove('is-shown');
+      mostrarMenu(false);
+      if(despues) despues();
+      dibujar(nums(P.llenoB));
+      morph([[P.llenoB, P.sale, 280, easeIn], [P.sale, P.abajo, 220, easeOut]], function(){
+        menuBusy = false;
+        if(!despues) burger.focus({ preventScroll:true });
+      });
+    });
   }
   burger.setAttribute('aria-expanded', 'false');
-  burger.addEventListener('click', function(){ setMenu(true); });
-  closeBtn.addEventListener('click', function(){ setMenu(false); });
+  burger.addEventListener('click', abrir);
+  closeBtn.addEventListener('click', function(){ cerrar(); });
   menu.querySelectorAll('a').forEach(function(a){
-    a.addEventListener('click', function(){ setMenu(false); });
+    a.addEventListener('click', function(e){
+      var href = a.getAttribute('href') || '';
+      if(href.charAt(0) !== '#'){ cerrar(null, true); return; }   // externos: se van ya
+      var destino = document.querySelector(href);
+      if(!destino) return;
+      e.preventDefault();
+      cerrar(function(){
+        destino.scrollIntoView({ behavior:'instant', block:'start' });
+        if(history.pushState) history.pushState(null, '', href);
+      });
+    });
   });
   document.addEventListener('keydown', function(e){
-    if(e.key === 'Escape' && menu.classList.contains('open')) setMenu(false);
+    if(e.key === 'Escape' && menuOpen) cerrar();
   });
+  // Si la pantalla se ensancha con el menu abierto (girar el telefono), se cierra sin mas.
+  var anchoMenu = window.matchMedia('(min-width: 761px)');
+  var alAnchoMenu = function(){ if(anchoMenu.matches && menuOpen){ menuBusy = false; dibujar(nums(P.abajo)); cerrar(null, true); } };
+  if(anchoMenu.addEventListener) anchoMenu.addEventListener('change', alAnchoMenu); else anchoMenu.addListener(alAnchoMenu);
 
   // Nav sits low (aligned with the hero frame) at the top, then tucks up higher once scrolled.
   // It only hides once you've scrolled past the hero, sliding away (not fading);
@@ -41,32 +122,52 @@
     lastScrollY = currentScrollY;
   }, { passive:true });
 
-  // Tipos de cafe: desplegados en escritorio, plegables bajo 900px (el catalogo de bolsas
-  // queda arriba, a la vista, y los tipos se abren si se quieren filtrar).
-  var tipos = document.querySelector('.type-disclosure');
+  // "¿Qué es cada tipo?": desplegable del filtro de cafes. Cerrado por defecto; se cierra
+  // al tocar fuera o con Escape, como cualquier menu desplegable.
+  var tipos = document.querySelector('.type-info');
   if(tipos){
-    var angosto = window.matchMedia('(max-width: 900px)');
-    var fijar = function(){ tipos.open = !angosto.matches; };
-    fijar();
-    if(angosto.addEventListener) angosto.addEventListener('change', fijar); else angosto.addListener(fijar);
+    document.addEventListener('click', function(e){
+      if(tipos.open && !tipos.contains(e.target)) tipos.open = false;
+    });
+    document.addEventListener('keydown', function(e){
+      if(e.key === 'Escape' && tipos.open){ tipos.open = false; tipos.querySelector('summary').focus(); }
+    });
   }
 
-  // Reveal on scroll (with stagger for siblings)
+  // Aparecer al hacer scroll, de abajo hacia arriba, y volver a hacerlo cada vez que el
+  // elemento reentra: al bajar, al subir y al retroceder. Al salir por completo de la
+  // pantalla se esconde de nuevo (ya no se ve, asi que no hay parpadeo) y queda listo para
+  // la proxima entrada. Los hermanos que entran juntos salen en cascada.
   var revealEls = document.querySelectorAll('.reveal, .reveal-scale');
-  var io = new IntersectionObserver(function(entries){
-    entries.forEach(function(entry){
-      if(entry.isIntersecting){
+  var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var lote = 0;
+  var io = null;
+  if(reducedMotion || !('IntersectionObserver' in window)){
+    revealEls.forEach(function(el){ el.classList.add('is-visible'); });
+  } else {
+    io = new IntersectionObserver(function(entries){
+      lote++;
+      entries.forEach(function(entry){
         var el = entry.target;
-        var parent = el.parentElement;
-        var idx = parent._staggerCount || 0;
-        parent._staggerCount = idx + 1;
-        el.style.transitionDelay = (idx * 0.12) + 's';
-        el.classList.add('is-visible');
-        io.unobserve(el);
-      }
-    });
-  }, { threshold:0.15, rootMargin:'0px 0px -60px 0px' });
-  revealEls.forEach(function(el){ io.observe(el); });
+        if(entry.intersectionRatio >= 0.15){
+          if(el.classList.contains('is-visible')) return;
+          var parent = el.parentElement;
+          if(parent._lote !== lote){ parent._lote = lote; parent._n = 0; }
+          el.style.transitionDelay = (parent._n++ * 0.12) + 's';
+          el.classList.add('is-visible');
+        } else if(!entry.isIntersecting && el.classList.contains('is-visible')){
+          el.style.transitionDelay = '0s';
+          el.classList.remove('is-visible');
+        }
+      });
+    }, { threshold:[0, 0.15], rootMargin:'0px 0px -40px 0px' });
+    revealEls.forEach(function(el){ io.observe(el); });
+  }
+  // Para los elementos que se crean despues con JS (p. ej. el carrusel del tueste).
+  window.observarReveal = function(el){
+    el.classList.add('reveal');
+    if(io) io.observe(el); else el.classList.add('is-visible');
+  };
 
   // Counter animation
   var counters = document.querySelectorAll('[data-count]');
