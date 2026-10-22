@@ -34,6 +34,9 @@
       l:[[0,2],[2,3],[3,4],[4,5],[5,7],[0,1],[1,6],[6,7],[7,8],[7,9]] }
   ];
 
+  // Para menu-destellos.js: el menu movil dibuja estas mismas constelaciones como destellos.
+  window.AridoConstelaciones = { fauna:FAUNA, trazar:trazar };
+
   var hero = document.querySelector('.hero');
   var nosC = document.querySelector('#nosotros .container');
   var aboutGrid = document.querySelector('#nosotros .about-grid');
@@ -41,11 +44,8 @@
 
   function rand(a, b){ return a + Math.random() * (b - a); }
 
-  function crear(f){
-    var b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'const';
-    b.setAttribute('aria-label', f.nombre + ': ' + f.valor);
+  // El dibujo de un animal: sus lineas y estrellas en un svg de 100 x 76.
+  function trazar(f){
     var svg = document.createElementNS(NS, 'svg');
     svg.setAttribute('viewBox', '0 0 100 76');
     svg.setAttribute('aria-hidden', 'true');
@@ -66,6 +66,15 @@
       c.style.setProperty('--td', (-rand(0, 5)).toFixed(2) + 's');
       svg.appendChild(c);
     });
+    return svg;
+  }
+
+  function crear(f){
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'const';
+    b.setAttribute('aria-label', f.nombre + ': ' + f.valor);
+    var svg = trazar(f);
     // Estrellas y arte van juntos en su propio cuadro (.const-sky): el arte se coloca
     // respecto de ese cuadro y no de todo el boton, y el cartelito queda debajo de lo que
     // ocupe el arte (ver .const-gap), no encima.

@@ -17,6 +17,32 @@
    meters: valores de 0 a 5, o null si aún no están definidos. Con null se pintan los
    cinco puntos huecos y la etiqueta "por definir" — nunca un número inventado.
    Ejemplo cuando los tengas:  meters: { tueste: 3, acidez: 4, cuerpo: 3 }
+
+   scene.capsulas (opcional): escena del formato "Cápsulas" de la ficha. Solo se ofrece en los
+   cafes tipo 1 (dato "Tipo" de `facts`) que la traigan; al elegirlo, la ficha cambia de la
+   escena de la bolsa a esta, sin granos. Misma forma que `scene`: image (y bagImage si es una
+   capa transparente sobre el mismo fondo), size, focus, iw/ih (tamaño real de la imagen) y
+   bag { x0, x1 } (de que a que fraccion del ancho esta lo que debe quedar a la vista).
+   Sin `surface` (no caen granos). Las imagenes van en assets/<pais>/capsulas.webp.
+
+   estrellas (opcional): estrellas de favorito junto al nombre en la tarjeta, de 1 a 5.
+   Mientras no la definas se muestran de 3 a 5 estrellas de EJEMPLO, sorteadas en cada
+   visita (provisional, no es un dato real). Para fijar la de un cafe:  estrellas: 4
+
+   scene.cardBox (opcional): donde esta la bolsa dentro de la imagen de la escena, para la
+   foto de la tarjeta de la grilla. x0/x1 e y0/y1 son los bordes de la bolsa como fraccion
+   del ancho y del alto de la imagen, y ar su proporcion (ancho / alto). Con eso la tarjeta
+   acerca cada escena hasta que todas las bolsas midan lo mismo y las centra. Para una
+   escena nueva, mide la bolsa en la imagen y escribe esos cinco numeros. Sin scene, la
+   tarjeta muestra la bolsa suelta sobre un fondo arena.
+
+   meterAnim (opcional): animación DEFINITIVA de los puntos de cada medidor mientras su
+   valor siga "por definir". Mientras no la definas, se usa una animación de EJEMPLO que
+   se sortea sola (ver DOT_ANIMS más abajo): son provisionales y cambian en cada visita.
+   Para fijar la definitiva de un café, basta con ponerla aquí (cualquiera de las seis, o
+   una nueva con su clase .meter--<nombre> en styles.css). Lo que dejes sin poner sigue
+   con ejemplos:
+     meterAnim: { tueste: 'ola', acidez: 'pulso', cuerpo: 'rebote' }
 */
 (function(){
 
@@ -48,6 +74,15 @@
         // (.scene-bag) usa el mismo --scene-size/--scene-pos que el fondo y se recorta
         // y reposiciona exactamente igual en cualquier ancho, sin coordenadas propias.
         image: 'assets/peru/fondo.webp',
+        cardBox: { x0:0.721, x1:0.950, y0:0.321, y1:0.890, ar:1.777 },
+        // Formato "Cápsulas" (solo cafés tipo 1): al elegirlo, la ficha cambia a esta escena. Mismo
+        // fondo; las capsulas y el zorro son otra capa transparente, como la bolsa. `bag` es la
+        // huella de lo que hay que mantener a la vista (aqui x1 = borde derecho de las capsulas).
+        capsulas: {
+          image: 'assets/peru/fondo.webp', bagImage: 'assets/peru/capsulas.webp',
+          size: 'cover', focus: '0% 50%', iw: 1672, ih: 941,
+          bag: { x0:0.466, x1:0.965 }
+        },
         bagImage: 'assets/peru/bolsa-roca.webp',
         size: 'cover',
         focus: '0% 50%',
@@ -93,6 +128,12 @@
       backgroundImage: null,
       scene: {
         image: 'assets/bolivia/escena.webp',
+        cardBox: { x0:0.426, x1:0.731, y0:0.087, y1:0.859, ar:1.777 },
+        capsulas: {   // formato "Cápsulas": ver Perú
+          image: 'assets/bolivia/capsulas.webp',
+          size: 'cover', focus: '0% 50%', iw: 1672, ih: 941,
+          bag: { x0:0.300, x1:0.725 }
+        },
         size: 'cover',
         focus: '0% 50%',
         surface: [[0.00,0.940],[0.12,0.910],[0.20,0.875],[0.29,0.846],[0.38,0.832],
@@ -126,6 +167,12 @@
       backgroundImage: null,
       scene: {
         image: 'assets/brasil/escena.webp',
+        cardBox: { x0:0.429, x1:0.720, y0:0.081, y1:0.845, ar:1.777 },
+        capsulas: {   // formato "Cápsulas": ver Perú
+          image: 'assets/brasil/capsulas.webp',
+          size: 'cover', focus: '0% 50%', iw: 1672, ih: 941,
+          bag: { x0:0.296, x1:0.715 }
+        },
         size: 'cover',
         focus: '0% 50%',
         surface: [[0.00,0.915],[0.12,0.890],[0.22,0.865],[0.32,0.850],[0.42,0.844],
@@ -162,6 +209,12 @@
       backgroundImage: null,
       scene: {
         image: 'assets/colombia/escena.webp',
+        cardBox: { x0:0.482, x1:0.784, y0:0.217, y1:0.815, ar:1.5 },
+        capsulas: {   // formato "Cápsulas": ver Perú. Esta imagen mide 1536x1024.
+          image: 'assets/colombia/capsulas.webp',
+          size: 'cover', focus: '0% 50%', iw: 1536, ih: 1024,
+          bag: { x0:0.361, x1:0.788 }
+        },
         size: 'cover',
         focus: '0% 50%',
         // Trazadas sobre el render del 10-09 (1536x1024), que no lleva lienzo anadido.
@@ -200,6 +253,12 @@
       backgroundImage: null,
       scene: {
         image: 'assets/costa-rica/escena.webp',
+        cardBox: { x0:0.487, x1:0.737, y0:0.152, y1:0.810, ar:1.777 },
+        capsulas: {   // formato "Cápsulas": ver Perú
+          image: 'assets/costa-rica/capsulas.webp',
+          size: 'cover', focus: '0% 50%', iw: 1672, ih: 941,
+          bag: { x0:0.449, x1:0.793 }
+        },
         size: 'cover',
         focus: '0% 50%',
         surface: [[0.00,0.825],[0.10,0.798],[0.20,0.778],[0.32,0.766],[0.46,0.759],
@@ -299,9 +358,9 @@
 
   function buildGrid(){
     if(!gridTrack) return;
-    // Ficha editorial: numero, bolsa, origen y nombre a la vista; proceso y "ver ficha"
-    // aparecen al pasar el cursor. Origen y proceso salen de los datos de cada cafe: si
-    // estan pendientes, simplemente no se muestran.
+    // Tarjeta: foto de la escena del cafe arriba; nombre, origen y notas; tres datos con
+    // icono (tipo, proceso, cultivar) y un boton "Ver ficha". Todo sale de los datos de cada
+    // cafe: un dato pendiente se pinta "por definir", nunca uno inventado.
     function dato(c, etiqueta){
       for(var k = 0; k < (c.facts || []).length; k++){
         var f = c.facts[k];
@@ -309,17 +368,76 @@
       }
       return '';
     }
+    var SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">';
+    var ICONOS = {
+      tipo:     SVG + '<ellipse cx="12" cy="12" rx="5.2" ry="8.2" transform="rotate(35 12 12)"/><path d="M16 6.2c-2.6 2.8-.8 4.6-2 6.2-1.2 1.6-2.4 2.4-5.4 4.9"/></svg>',
+      proceso:  SVG + '<path d="M12 3.2c3.6 4.4 6 7.3 6 10.3a6 6 0 0 1-12 0c0-3 2.4-5.9 6-10.3z"/></svg>',
+      cultivar: SVG + '<path d="M5 19c-.5-8.5 4.5-13.5 14-14 .5 9-4.5 14-13 14.3"/><path d="M5 19c2.5-4.5 5.5-7.5 9-9.5"/></svg>',
+      taza:     SVG + '<path d="M4.5 9h11v4.2a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5V9z"/><path d="M15.5 10h1.4a2.3 2.3 0 0 1 0 4.6h-1.4"/><path d="M8 3.5v2.2M11 3.5v2.2M14 3.5v2.2"/></svg>'
+    };
+    // ESTRELLAS DE FAVORITO DE EJEMPLO (provisionales, hasta tener las reales): junto al nombre
+    // de cada cafe van de 3 a 5 estrellas, sorteadas en cada visita. Cuando exista el dato
+    // real, se fija con `estrellas` (1 a 5) en COFFEES y manda sobre el sorteo.
+    var ESTRELLA = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>';
+    function estrellasMarkup(c){
+      var n = c.estrellas || 3 + Math.floor(Math.random() * 3);   // 3, 4 o 5
+      var estrellas = '';
+      for(var k = 0; k < n; k++) estrellas += ESTRELLA;
+      return '<span class="coffee-card-stars" role="img" aria-label="Favorito: ' + n + ' de 5 estrellas">' + estrellas + '</span>';
+    }
+    // Encuadre de la foto: cada escena trae la bolsa a otra escala (en la de Peru es mucho mas
+    // chica), asi que se acerca hasta que la bolsa mida BOLSA_ALTO del alto de la foto y se
+    // centra. Nunca se aleja mas que `cover` (z >= 1), por eso BOLSA_ALTO es el alto de la
+    // bolsa mas grande de las escenas. Medidas en unidades del alto de la foto.
+    var FOTO_AR = 4 / 3;       // igual que aspect-ratio de .coffee-card-photo en el CSS
+    var BOLSA_ALTO = 0.77;
+    function encuadre(b){
+      var z = Math.max(1, BOLSA_ALTO / (b.y1 - b.y0));        // zoom sobre `cover`
+      var ancho = z * b.ar;                                    // ancho de la imagen
+      function pct(centro, tam, caja){                         // posicion CSS que lleva `centro` al medio
+        if(tam <= caja) return 0.5;
+        return Math.min(1, Math.max(0, (centro * tam - caja / 2) / (tam - caja)));
+      }
+      var px = pct((b.x0 + b.x1) / 2, ancho, FOTO_AR);
+      var py = pct((b.y0 + b.y1) / 2, z, 1);
+      return 'background-size:auto ' + (z * 100).toFixed(1) + '%;background-position:' +
+             (px * 100).toFixed(1) + '% ' + (py * 100).toFixed(1) + '%';
+    }
+    function fotoMarkup(c){
+      var s = c.scene;
+      if(!s || !s.image){
+        return '<span class="coffee-card-photo coffee-card-photo--bag">' + packMarkup(c, 'coffee-card-photo-bag') + '</span>';
+      }
+      // Con bagImage (Peru) la bolsa es una capa aparte del mismo lienzo: dos fondos con el
+      // mismo encuadre quedan alineados igual que en la ficha.
+      var fondos = (s.bagImage ? 'url(\'' + esc(s.bagImage) + '\'), ' : '') + 'url(\'' + esc(s.image) + '\')';
+      return '<span class="coffee-card-photo"><span class="coffee-card-photo-img" style="background-image:' + fondos + ';' +
+             (s.cardBox ? encuadre(s.cardBox) : 'background-position:60% 50%') + '"></span></span>';
+    }
+    function statMarkup(icono, etiqueta, valor){
+      return '<span class="coffee-card-stat">' + icono +
+        '<span class="coffee-card-stat-val' + (valor ? '' : ' is-pending') + '">' + (valor ? esc(valor) : 'Por definir') + '</span>' +
+        '<span class="coffee-card-stat-label">' + etiqueta + '</span></span>';
+    }
     gridTrack.innerHTML = COFFEES.map(function(c, i){
       var origen = dato(c, 'Región') || dato(c, 'Origen');
-      var proceso = dato(c, 'Proceso');
-      return '<button type="button" class="coffee-card" data-i="' + i + '" aria-pressed="false">' +
-        '<span class="coffee-card-num" aria-hidden="true">' + (i < 9 ? '0' : '') + (i + 1) + '</span>' +
-        '<span class="coffee-card-thumb">' + packMarkup(c, 'coffee-card-thumb-img') + '</span>' +
-        '<span class="coffee-card-meta">' +
+      var tipo = dato(c, 'Tipo');
+      var numTipo = tipo.match(/(\d+)\s*$/);   // "Café tipo 1" -> "1"
+      return '<button type="button" class="coffee-card" data-i="' + i + '" aria-pressed="false" style="--cc:' + esc(c.accent) + '">' +
+        fotoMarkup(c) +
+        '<span class="coffee-card-body">' +
+          '<span class="coffee-card-head">' +
+            '<span class="coffee-card-name' + (isPending(c.name) ? ' is-pending' : '') + '">' + esc(c.name) + '</span>' +
+            estrellasMarkup(c) +
+          '</span>' +
           (origen ? '<span class="coffee-card-origin">' + esc(origen) + '</span>' : '') +
-          '<span class="coffee-card-name' + (isPending(c.name) ? ' is-pending' : '') + '">' + esc(c.name) + '</span>' +
           '<span class="coffee-card-sub' + (isPending(c.subtitle) ? ' is-pending' : '') + '">' + esc(c.subtitle) + '</span>' +
-          '<span class="coffee-card-more">' + (proceso ? 'Proceso ' + esc(proceso).toLowerCase() + ' · ' : '') + 'Ver ficha <span aria-hidden="true">→</span></span>' +
+          '<span class="coffee-card-stats">' +
+            statMarkup(ICONOS.tipo, 'Tipo', numTipo ? numTipo[1] : tipo) +
+            statMarkup(ICONOS.proceso, 'Proceso', dato(c, 'Proceso')) +
+            statMarkup(ICONOS.cultivar, 'Cultivar', dato(c, 'Cultivar')) +
+          '</span>' +
+          '<span class="coffee-card-cta">' + ICONOS.taza + 'Ver ficha</span>' +
         '</span>' +
       '</button>';
     }).join('');
@@ -513,20 +631,56 @@
   var bgTurn   = 0;
 
   // ------------------------------------------------------ formato + WhatsApp
-  // Las dos presentaciones son las mismas para los cinco cafés (dato real, no
+  // Los formatos 125 g, 250 g y 1.0 kg son los mismos para los cinco cafés (dato real, no
   // por-café), así que el marcado ya viene escrito en el HTML: aquí solo se
   // cablea el clic y se arma el link de WhatsApp con el café y el tamaño
-  // elegidos.
+  // elegidos. "Cápsulas" es un cuarto botón que solo se muestra en los cafés tipo 1 que
+  // traen su escena de cápsulas (scene.capsulas): al elegirlo, la ficha cambia de imagen.
+  var FORMATO_CAPSULAS = 'Cápsulas';
   var elSizeBtns  = [].slice.call(stage.querySelectorAll('.prod-size'));
+  var elCapsBtn   = stage.querySelector('.prod-size--capsulas');
   var elWhatsapp  = document.getElementById('prodWhatsapp');
   var selectedSize = elSizeBtns.length ? elSizeBtns[0].getAttribute('data-size') : '';
+  var modoCapsulas = false;   // true mientras el formato elegido es "Cápsulas"
+
+  // Cápsulas solo para cafés tipo 1 (dato "Tipo" de sus facts) y con escena de cápsulas.
+  function tieneCapsulas(c){
+    var tipo = '';
+    for(var k = 0; k < (c.facts || []).length; k++){
+      if(c.facts[k].label === 'Tipo') tipo = String(c.facts[k].value);
+    }
+    var n = tipo.match(/(\d+)\s*$/);   // "Café tipo 1" -> "1"
+    return !!(n && n[1] === '1' && c.scene && c.scene.capsulas);
+  }
+  // La escena que se ve ahora: la de las cápsulas o la de la bolsa.
+  function escenaActual(c){
+    return (modoCapsulas && c.scene && c.scene.capsulas) ? c.scene.capsulas : c.scene;
+  }
 
   function actualizarWhatsapp(){
     if(!elWhatsapp) return;
     var c = COFFEES[current];
     var nombre = isPending(c.name) ? 'café' : c.name;
-    var texto = '¡Hola! Quiero consultar stock del café ' + nombre + ' (' + selectedSize + ').';
+    var texto = selectedSize === FORMATO_CAPSULAS
+      ? '¡Hola! Quiero consultar stock de las cápsulas del café ' + nombre + '.'
+      : '¡Hola! Quiero consultar stock del café ' + nombre + ' (' + selectedSize + ').';
     elWhatsapp.href = 'https://wa.me/56972497925?text=' + encodeURIComponent(texto);
+  }
+
+  // Cambio de imagen al entrar o salir de "Cápsulas": la escena actual se desvanece rápido
+  // (.scene-out) y, cuando ya no se ve, se arma la otra y entra con el fundido de siempre.
+  var escenaTimer = null;
+  function cambiarEscena(){
+    window.clearTimeout(escenaTimer);
+    function rehacer(){
+      buildScene(COFFEES[current]);
+      stage.classList.remove('scene-out');
+      playScene();
+    }
+    if(!sceneOn || reduced){ rehacer(); return; }
+    stage.classList.remove('scene-in');
+    stage.classList.add('scene-out');
+    escenaTimer = window.setTimeout(rehacer, 260);
   }
 
   elSizeBtns.forEach(function(btn){
@@ -534,15 +688,38 @@
       selectedSize = btn.getAttribute('data-size');
       elSizeBtns.forEach(function(b){ b.classList.toggle('is-current', b === btn); b.setAttribute('aria-pressed', String(b === btn)); });
       actualizarWhatsapp();
+      var caps = selectedSize === FORMATO_CAPSULAS;
+      if(caps !== modoCapsulas){ modoCapsulas = caps; cambiarEscena(); }
     });
   });
 
-  function meterMarkup(label, value){
+  // ANIMACIONES DE EJEMPLO (provisionales, hasta definir las definitivas).
+  // Mientras un dato esta "por definir", sus cinco puntos no se quedan quietos: cada medidor
+  // de cada cafe lleva una animacion propia (clases .meter--<nombre> en el CSS). El reparto
+  // de ejemplo se sortea en cada visita: se baraja la lista y el cafe `c`, medidor `m` toma
+  // la posicion (c + 2m) mod 6. Asi, para un mismo medidor los cafes 0-4 nunca repiten
+  // animacion y los tres medidores de una misma ficha tampoco. Son ambientales: ninguna
+  // deja puntos llenos, para no sugerir una puntuacion que no existe.
+  // La definitiva de un cafe se fija con `meterAnim` en COFFEES y manda sobre el ejemplo.
+  var DOT_ANIMS = ['ola', 'rebote', 'pulso', 'barrido', 'destello', 'alterno'];
+  var dotOrden = (function(){
+    var a = DOT_ANIMS.slice();
+    for(var i = a.length - 1; i > 0; i--){
+      var j = Math.floor(Math.random() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  })();
+  function dotAnim(cafe, medidor, clave){
+    var definitiva = COFFEES[cafe].meterAnim && COFFEES[cafe].meterAnim[clave];
+    return definitiva || dotOrden[(cafe + 2 * medidor) % dotOrden.length];
+  }
+
+  function meterMarkup(label, value, anim){
     var dots = '';
     for(var i = 1; i <= 5; i++){
-      dots += '<span class="dot' + (value != null && i <= value ? ' is-on' : '') + '"></span>';
+      dots += '<span class="dot' + (value != null && i <= value ? ' is-on' : '') + '" style="--k:' + (i - 1) + '"></span>';
     }
-    return '<div class="meter">' +
+    return '<div class="meter' + (value == null && anim ? ' meter--' + anim : '') + '">' +
       '<span class="meter-label">' + label + '</span>' +
       '<span class="meter-dots" role="img" aria-label="' + label + ': ' +
         (value == null ? 'por definir' : value + ' de 5') + '">' + dots + '</span>' +
@@ -1368,7 +1545,7 @@
 
   function aplicarEncuadre(){
     if(!sceneOn && !elScene) return;
-    var sc = COFFEES[current] && COFFEES[current].scene;
+    var sc = COFFEES[current] && escenaActual(COFFEES[current]);
     if(!sc) return;
     var enc = encuadre(sc);
     // --scene-pos pinta el fondo (mas lento). --bag-pos pinta la bolsa Y es lo que leen
@@ -1383,27 +1560,29 @@
   function reencuadrar(){ aplicarEncuadre(); }
 
   function buildScene(c){
+    var sc = escenaActual(c);   // la de la bolsa, o la de las cápsulas si ese formato esta elegido
     sceneOn = false;
     sceneBeans.stop();
-    if(!c.scene || !c.scene.image){
+    if(!sc || !sc.image){
       if(elScene){ elScene.hidden = true; elScene.innerHTML = ''; }
       stage.classList.remove('has-scene');
       return false;
     }
     elScene.innerHTML =
-      '<div class="scene-backdrop" style="background-image:url(\'' + c.scene.image + '\')"></div>' +
+      '<div class="scene-backdrop" style="background-image:url(\'' + sc.image + '\')"></div>' +
       // Capa de la bolsa: mismo lienzo que el fondo, así que hereda --scene-size/
       // --scene-pos y no necesita su propio calculo de encuadre.
-      (c.scene.bagImage ? '<div class="scene-bag" style="background-image:url(\'' + c.scene.bagImage + '\')"></div>' : '') +
-      (c.scene.surface ? '<canvas class="scene-beans"></canvas>' : '');
+      (sc.bagImage ? '<div class="scene-bag" style="background-image:url(\'' + sc.bagImage + '\')"></div>' : '') +
+      // Los granos solo caen en la escena de la bolsa: la de cápsulas no lleva `surface`.
+      (sc.surface ? '<canvas class="scene-beans"></canvas>' : '');
     // El encuadre va como variables en el CONTENEDOR, no como background-* sobre la capa
     // que las usa: escrito en linea sobre la propia capa ganaria a cualquier media query.
-    elScene.style.setProperty('--scene-size', c.scene.size || 'cover');
+    elScene.style.setProperty('--scene-size', sc.size || 'cover');
     aplicarEncuadre();
     elScene.hidden = false;
     stage.classList.add('has-scene');
     sceneOn = true;
-    sceneBeans.attach(c.scene);
+    sceneBeans.attach(sc);
     return true;
   }
 
@@ -1434,13 +1613,18 @@
       : '<li class="is-pending">[NOTAS DE CATA — PENDIENTE]</li>';
 
     elMeters.innerHTML =
-      meterMarkup('Tueste', c.meters.tueste) +
-      meterMarkup('Acidez', c.meters.acidez) +
-      meterMarkup('Cuerpo', c.meters.cuerpo);
+      meterMarkup('Tueste', c.meters.tueste, dotAnim(i, 0, 'tueste')) +
+      meterMarkup('Acidez', c.meters.acidez, dotAnim(i, 1, 'acidez')) +
+      meterMarkup('Cuerpo', c.meters.cuerpo, dotAnim(i, 2, 'cuerpo'));
 
     elFacts.innerHTML = factsMarkup(c.facts);
 
-    // Cada café abre con el formato mas chico elegido por defecto.
+    // Cada café abre con el formato mas chico elegido por defecto, y siempre con la escena
+    // de la bolsa (nunca la de cápsulas). "Cápsulas" solo aparece en los cafés tipo 1.
+    window.clearTimeout(escenaTimer);
+    stage.classList.remove('scene-out');
+    modoCapsulas = false;
+    if(elCapsBtn) elCapsBtn.hidden = !tieneCapsulas(c);
     if(elSizeBtns.length){
       selectedSize = elSizeBtns[0].getAttribute('data-size');
       elSizeBtns.forEach(function(b, k){ b.classList.toggle('is-current', k === 0); b.setAttribute('aria-pressed', String(k === 0)); });

@@ -24,7 +24,7 @@
 
 <!-- ?v= fuerza a recargar css y js al publicar: sin el, el navegador
      reutiliza la copia en cache y se sigue viendo la version anterior. -->
-<link rel="stylesheet" href="styles.css?v=202610201500">
+<link rel="stylesheet" href="styles.css?v=202610212100">
 </head>
 <body>
 <a class="skip-link" href="#main">Saltar al contenido</a>
@@ -47,16 +47,13 @@
 
 <!-- Menu movil (solo bajo 760px, donde aparece la hamburguesa). Se abre con una curva que
      barre la pantalla (#menuOverlay) y tiene de fondo el cielo del hero: estrellas, luna y
-     filas infinitas con la fauna brillando como constelaciones. Lo anima main.js. -->
+     destellos al azar de las constelaciones de la fauna (#mmSparks). La abre main.js y los
+     destellos los dibuja menu-destellos.js. -->
 <div class="mobile-menu" id="mobileMenu" role="dialog" aria-modal="true" aria-label="Menú">
   <div class="mm-bg" aria-hidden="true">
     <div class="mm-stars"></div>
     <div class="mm-moon"></div>
-    <div class="mm-tiles">
-      <div class="mm-line"><span class="mm-tile"><img src="assets/fauna/zorro.webp" alt="" loading="lazy" decoding="async"></span><span class="mm-tile mm-tile--wide"><img src="assets/fauna/vizcacha.webp" alt="" loading="lazy" decoding="async"></span><span class="mm-tile"><img src="assets/fauna/vicuna.webp" alt="" loading="lazy" decoding="async"></span><span class="mm-tile mm-tile--wide"><img src="assets/fauna/chungungo.webp" alt="" loading="lazy" decoding="async"></span><span class="mm-tile"><img src="assets/fauna/ballena.webp" alt="" loading="lazy" decoding="async"></span><span class="mm-tile"><img src="assets/fauna/zorro.webp" alt="" loading="lazy" decoding="async"></span><span class="mm-tile mm-tile--wide"><img src="assets/fauna/vizcacha.webp" alt="" loading="lazy" decoding="async"></span><span class="mm-tile"><img src="assets/fauna/vicuna.webp" alt="" loading="lazy" decoding="async"></span><span class="mm-tile mm-tile--wide"><img src="assets/fauna/chungungo.webp" alt="" loading="lazy" decoding="async"></span><span class="mm-tile"><img src="assets/fauna/ballena.webp" alt="" loading="lazy" decoding="async"></span></div>
-      <div class="mm-line"><span class="mm-tile mm-tile--wide"><img src="assets/fauna/chungungo.webp" alt="" loading="lazy" decoding="async"></span><span class="mm-tile"><img src="assets/fauna/vicuna.webp" alt="" loading="lazy" decoding="async"></span><span class="mm-tile mm-tile--wide"><img src="assets/fauna/ballena.webp" alt="" loading="lazy" decoding="async"></span><span class="mm-tile"><img src="assets/fauna/zorro.webp" alt="" loading="lazy" decoding="async"></span><span class="mm-tile"><img src="assets/fauna/vizcacha.webp" alt="" loading="lazy" decoding="async"></span><span class="mm-tile mm-tile--wide"><img src="assets/fauna/chungungo.webp" alt="" loading="lazy" decoding="async"></span><span class="mm-tile"><img src="assets/fauna/vicuna.webp" alt="" loading="lazy" decoding="async"></span><span class="mm-tile mm-tile--wide"><img src="assets/fauna/ballena.webp" alt="" loading="lazy" decoding="async"></span><span class="mm-tile"><img src="assets/fauna/zorro.webp" alt="" loading="lazy" decoding="async"></span><span class="mm-tile"><img src="assets/fauna/vizcacha.webp" alt="" loading="lazy" decoding="async"></span></div>
-      <div class="mm-line"><span class="mm-tile mm-tile--wide"><img src="assets/fauna/ballena.webp" alt="" loading="lazy" decoding="async"></span><span class="mm-tile"><img src="assets/fauna/zorro.webp" alt="" loading="lazy" decoding="async"></span><span class="mm-tile"><img src="assets/fauna/vizcacha.webp" alt="" loading="lazy" decoding="async"></span><span class="mm-tile mm-tile--wide"><img src="assets/fauna/vicuna.webp" alt="" loading="lazy" decoding="async"></span><span class="mm-tile"><img src="assets/fauna/chungungo.webp" alt="" loading="lazy" decoding="async"></span><span class="mm-tile mm-tile--wide"><img src="assets/fauna/ballena.webp" alt="" loading="lazy" decoding="async"></span><span class="mm-tile"><img src="assets/fauna/zorro.webp" alt="" loading="lazy" decoding="async"></span><span class="mm-tile"><img src="assets/fauna/vizcacha.webp" alt="" loading="lazy" decoding="async"></span><span class="mm-tile mm-tile--wide"><img src="assets/fauna/vicuna.webp" alt="" loading="lazy" decoding="async"></span><span class="mm-tile"><img src="assets/fauna/chungungo.webp" alt="" loading="lazy" decoding="async"></span></div>
-    </div>
+    <div class="mm-sparks" id="mmSparks"></div>
   </div>
   <div class="mm-inner">
     <div class="mm-top mm-anim" style="--i:0">
@@ -68,27 +65,35 @@
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
       </button>
     </div>
-    <nav class="mm-links" aria-label="Secciones">
-      <a href="#nosotros" class="mm-item mm-anim" style="--i:1"><span class="mm-tiny">Lo que</span><span class="mm-big">somos</span></a>
-      <a href="#coffeeTypes" class="mm-item mm-anim" style="--i:2"><span class="mm-big">cafés</span><span class="mm-tiny">Conoce nuestros</span></a>
-      <a href="#contacto" class="mm-item mm-anim" style="--i:3"><span class="mm-big">Contáctanos</span></a>
-    </nav>
-    <div class="mm-actions mm-anim" style="--i:4">
-      <a href="#tueste" class="btn btn-accent mm-cta">Comprar café</a>
-      <a href="https://wa.me/56972497925" target="_blank" rel="noopener" class="mm-wa"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-wa"/></svg><span>Escríbenos por WhatsApp</span></a>
+    <!-- Contáctanos va siempre al final (apunta al footer de la página). -->
+    <div class="mm-links" role="navigation" aria-label="Secciones">
+      <a href="#nosotros" class="mm-item mm-anim" style="--i:1"><span class="mm-num">01</span><span class="mm-label">Lo que somos</span></a>
+      <a href="#coffeeTypes" class="mm-item mm-anim" style="--i:2"><span class="mm-num">02</span><span class="mm-label">Conoce nuestros cafés</span></a>
+      <a href="#roastStage" class="mm-item mm-anim" style="--i:3"><span class="mm-num">03</span><span class="mm-label">El tueste</span></a>
+      <a href="#especial" class="mm-item mm-anim" style="--i:4"><span class="mm-num">04</span><span class="mm-label">Eventos</span></a>
+      <a href="#contacto" class="mm-item mm-anim" style="--i:5"><span class="mm-num">05</span><span class="mm-label">Contáctanos</span></a>
     </div>
-    <div class="mm-social mm-anim" style="--i:5">
-      <span class="mm-social-label">Síguenos</span>
-      <a href="https://www.instagram.com/cafearido/" target="_blank" rel="noopener" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
-            <rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="1.8"/>
-            <circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.8"/>
-            <circle cx="17.2" cy="6.8" r="1.1" fill="currentColor"/>
-          </svg></a>
-      <a href="https://wa.me/56972497925" target="_blank" rel="noopener" aria-label="WhatsApp"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-wa"/></svg></a>
-      <a href="mailto:david@aridocafe.cl" aria-label="Email"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
-            <rect x="3" y="5" width="18" height="14" rx="2.5" stroke="currentColor" stroke-width="1.8"/>
-            <path d="M4 6.5 12 13 20 6.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg></a>
+    <div class="mm-actions mm-anim" style="--i:6">
+      <a href="#tueste" class="btn btn-accent mm-cta">Comprar café</a>
+    </div>
+    <!-- Mini footer: contacto directo y redes. -->
+    <div class="mm-footer mm-anim" style="--i:7">
+      <div class="mm-contact">
+        <a href="https://wa.me/56972497925" target="_blank" rel="noopener">+56 9 7249 7925</a>
+        <a href="mailto:david@aridocafe.cl">david@aridocafe.cl</a>
+      </div>
+      <div class="mm-social">
+        <a href="https://www.instagram.com/cafearido/" target="_blank" rel="noopener" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+              <rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="1.8"/>
+              <circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.8"/>
+              <circle cx="17.2" cy="6.8" r="1.1" fill="currentColor"/>
+            </svg></a>
+        <a href="https://wa.me/56972497925" target="_blank" rel="noopener" aria-label="WhatsApp"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-wa"/></svg></a>
+        <a href="mailto:david@aridocafe.cl" aria-label="Email"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+              <rect x="3" y="5" width="18" height="14" rx="2.5" stroke="currentColor" stroke-width="1.8"/>
+              <path d="M4 6.5 12 13 20 6.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg></a>
+      </div>
     </div>
   </div>
 </div>
@@ -266,6 +271,38 @@
             <button type="button" class="type-chip" data-tipo="3" aria-pressed="false">Tipo 3</button>
           </div>
         </div>
+        <!-- Debajo de los chips: explicacion de cada tipo y video. Desplegable, cerrado por defecto. -->
+        <details class="type-info">
+          <summary>¿Qué es cada tipo? <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+          <div class="type-info-panel">
+            <p class="type-info-intro">Catalogamos nuestros cafés en función de su complejidad aromática, calidad de procesos y exclusividad del grano. Por lo que segmentamos nuestros granos en 3 tipos.</p>
+            <dl class="type-info-grid">
+              <div>
+                <dt>Tipo 1</dt>
+                <dd><span>Orígenes</span>Brasil, Perú, Bolivia, Honduras, Colombia</dd>
+                <dd><span>Proceso</span>Lavado</dd>
+                <dd><span>Ideal para</span>Espresso, bebidas con leche</dd>
+              </div>
+              <div>
+                <dt>Tipo 2</dt>
+                <dd><span>Orígenes</span>Perú, Colombia, México, Bolivia</dd>
+                <dd><span>Proceso</span>Natural o Lavado con fermentación controlada</dd>
+                <dd><span>Ideal para</span>Espresso y Filtrado</dd>
+              </div>
+              <div>
+                <dt>Tipo 3</dt>
+                <dd class="type-info-note">Cafés excepcionales o con procesos experimentales.</dd>
+                <dd><span>Orígenes</span>Colombia, Perú</dd>
+                <dd><span>Ideal para</span>Filtrados</dd>
+              </div>
+            </dl>
+            <!-- Mientras no exista el enlace del reel, lleva al perfil de Instagram. -->
+            <a class="type-info-video" href="https://www.instagram.com/cafearido/" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
+              Mira el video: ¿qué es un café tipo 1, tipo 2 y tipo 3?
+            </a>
+          </div>
+        </details>
         <p class="type-filter-status" id="coffeeTypesStatus" role="status" hidden><span id="coffeeTypesStatusText"></span></p>
       </div>
     </div>
@@ -341,20 +378,21 @@
         </div>
       </div>
 
-      <!-- Pasos del tueste: roast-carousel.js los muestra como carrusel. Para poner una foto,
-           escribe su ruta en data-foto, por ejemplo data-foto="assets/tueste/tostadora.jpg". -->
+      <!-- Pasos del tueste: roast-carousel.js los muestra como carrusel. La foto de cada paso
+           va en data-foto (ruta) y su descripcion en data-foto-alt; las fotos viven en
+           assets/tueste/ (webp). Sin data-foto se muestra un espacio reservado. -->
       <div class="roast-grid">
-        <div class="roast-step reveal" data-foto="">
+        <div class="roast-step reveal" data-foto="assets/tueste/la-tostadora.webp" data-foto-alt="La tostadora de Árido en el taller de tueste, con su tolva, el tambor de enfriado y el panel de control">
           <span class="roast-num">01</span>
           <h3>La tostadora</h3>
           <p class="desc">Nuestra "Panchita" es una Yoshan SD-3K que baila a ritmo de saya con cada batch. Importada en Chile por nuestros partners de Café Brachi.</p>
         </div>
-        <div class="roast-step reveal" data-foto="">
+        <div class="roast-step reveal" data-foto="assets/tueste/el-perfil.webp" data-foto-alt="Granos de café recién tostados en la bandeja de enfriado de la tostadora, con el brazo agitador al centro">
           <span class="roast-num">02</span>
           <h3>El perfil</h3>
           <p class="desc">Cada grano, una curva distinta: un perfil creado según las características organolépticas del café, su densidad, humedad, tamaño y resultado en taza.</p>
         </div>
-        <div class="roast-step reveal" data-foto="">
+        <div class="roast-step reveal" data-foto="assets/tueste/los-lotes.webp" data-foto-alt="Una mano sostiene un puñado de granos de café recién tostados sobre la bandeja de enfriado">
           <span class="roast-num">03</span>
           <h3>Los lotes</h3>
           <p class="desc">Tostamos todas las semanas para que siempre puedas contar con café fresco y aproveches así todos los beneficios del grano y su máximo sabor.</p>
@@ -414,11 +452,14 @@
   <!-- Barra de compra fija al pie de la ficha: formato + WhatsApp siempre a la vista. -->
   <div class="prod-purchase">
     <span class="purchase-caption">Elige tu formato</span>
-    <!-- Formato: las tres presentaciones reales en las que se vende el café. -->
+    <!-- Formato: las tres presentaciones reales en las que se vende el café, y "Cápsulas",
+         que solo se muestra en los cafés tipo 1 (lo decide roast-experience.js con `hidden`)
+         y cambia la imagen de la ficha a la escena de cápsulas. -->
     <div class="prod-sizes" role="group" aria-label="Formato">
       <button type="button" class="prod-size is-current" data-size="125 g" aria-pressed="true">125 g</button>
       <button type="button" class="prod-size" data-size="250 g" aria-pressed="false">250 g</button>
       <button type="button" class="prod-size" data-size="1.0 kg" aria-pressed="false">1.0 kg</button>
+      <button type="button" class="prod-size prod-size--capsulas" data-size="Cápsulas" aria-pressed="false" hidden>Cápsulas</button>
     </div>
 
     <a class="prod-whatsapp" id="prodWhatsapp" href="https://wa.me/56972497925"
@@ -436,14 +477,14 @@
      EVENTOS — ultima seccion: texto a la izquierda y, a la derecha, dos columnas de
      fotos que se desplazan sin fin (la izquierda sube, la derecha baja) y se desvanecen
      en los bordes. Todo con CSS, sin JS. (El id sigue siendo #especial por historia.)
-     Sin fotos ni copy reales todavia: los textos van entre corchetes y cada .esp-tile es
-     un espacio reservado. Para completarlo:
-       1) Pon las fotos de los eventos en assets/especial/ y cambia cada
-          <div class="esp-tile ..."><span>Foto N</span></div> por
-          <div class="esp-tile ..."><img src="assets/especial/foto-N.jpg" alt="..."></div>
-          (las del segundo grupo de cada columna son copia exacta de las primeras:
-          asi el bucle no tiene salto; esas copias llevan alt="").
-       2) Cambia el titulo y el texto por los de los eventos (fechas, lugar, como participar).
+     Las fotos viven en assets/eventos/ (webp). El titulo y el texto aun no estan: van
+     entre corchetes. Para completarlo, cambia el titulo y el texto por los de los
+     eventos (fechas, lugar, como participar).
+     Para cambiar o agregar fotos: cada <div class="esp-tile esp-rXX"> lleva la proporcion
+     de su foto (esp-r45 = 4:5, esp-r34 = 3:4, esp-r23 = 2:3, esp-r11 = 1:1, esp-r43 = 4:3).
+     El segundo grupo de cada columna es copia exacta del primero (aria-hidden): asi el
+     bucle no tiene salto. Un grupo debe medir mas que la galeria; con menos de ~3 fotos
+     por columna habria que repetirlas.
      ============================================================================ -->
 <section id="especial">
   <canvas class="sand-layer" id="sandEspecial" aria-hidden="true"></canvas>
@@ -457,37 +498,34 @@
         <h2>[TÍTULO DE EVENTOS — PENDIENTE]</h2>
         <p>[DESCRIPCIÓN DE LOS EVENTOS — FECHAS, LUGAR Y CÓMO PARTICIPAR — PENDIENTE]</p>
       </div>
-      <!-- Galeria en bucle: decorativa, el contenido real esta en el texto. -->
-      <div class="esp-gallery reveal" role="img" aria-label="Fotos de los eventos (pendientes)">
+      <!-- Galeria en bucle: decorativa, el contenido real esta en el texto. Cada columna lleva
+           las tres fotos (en distinto orden) y su grupo completo dos veces. -->
+      <div class="esp-gallery reveal" role="img" aria-label="Fotos de los eventos de Árido: catas, café tostado y frascos de granos">
         <div class="esp-col esp-up">
           <div class="esp-track">
           <div class="esp-set">
-            <div class="esp-tile esp-r45"><span>Foto 1</span></div>
-            <div class="esp-tile esp-r11"><span>Foto 2</span></div>
-            <div class="esp-tile esp-r34"><span>Foto 3</span></div>
-            <div class="esp-tile esp-r43"><span>Foto 4</span></div>
+            <div class="esp-tile esp-r45"><img src="assets/eventos/eventos-1.webp" alt="" loading="lazy" decoding="async"></div>
+            <div class="esp-tile esp-r34"><img src="assets/eventos/eventos-3.webp" alt="" loading="lazy" decoding="async"></div>
+            <div class="esp-tile esp-r23"><img src="assets/eventos/eventos-2.webp" alt="" loading="lazy" decoding="async"></div>
           </div>
           <div class="esp-set" aria-hidden="true">
-            <div class="esp-tile esp-r45"><span>Foto 1</span></div>
-            <div class="esp-tile esp-r11"><span>Foto 2</span></div>
-            <div class="esp-tile esp-r34"><span>Foto 3</span></div>
-            <div class="esp-tile esp-r43"><span>Foto 4</span></div>
+            <div class="esp-tile esp-r45"><img src="assets/eventos/eventos-1.webp" alt="" loading="lazy" decoding="async"></div>
+            <div class="esp-tile esp-r34"><img src="assets/eventos/eventos-3.webp" alt="" loading="lazy" decoding="async"></div>
+            <div class="esp-tile esp-r23"><img src="assets/eventos/eventos-2.webp" alt="" loading="lazy" decoding="async"></div>
           </div>
           </div>
         </div>
         <div class="esp-col esp-down">
           <div class="esp-track">
           <div class="esp-set">
-            <div class="esp-tile esp-r11"><span>Foto 5</span></div>
-            <div class="esp-tile esp-r34"><span>Foto 6</span></div>
-            <div class="esp-tile esp-r43"><span>Foto 7</span></div>
-            <div class="esp-tile esp-r45"><span>Foto 8</span></div>
+            <div class="esp-tile esp-r23"><img src="assets/eventos/eventos-2.webp" alt="" loading="lazy" decoding="async"></div>
+            <div class="esp-tile esp-r45"><img src="assets/eventos/eventos-1.webp" alt="" loading="lazy" decoding="async"></div>
+            <div class="esp-tile esp-r34"><img src="assets/eventos/eventos-3.webp" alt="" loading="lazy" decoding="async"></div>
           </div>
           <div class="esp-set" aria-hidden="true">
-            <div class="esp-tile esp-r11"><span>Foto 5</span></div>
-            <div class="esp-tile esp-r34"><span>Foto 6</span></div>
-            <div class="esp-tile esp-r43"><span>Foto 7</span></div>
-            <div class="esp-tile esp-r45"><span>Foto 8</span></div>
+            <div class="esp-tile esp-r23"><img src="assets/eventos/eventos-2.webp" alt="" loading="lazy" decoding="async"></div>
+            <div class="esp-tile esp-r45"><img src="assets/eventos/eventos-1.webp" alt="" loading="lazy" decoding="async"></div>
+            <div class="esp-tile esp-r34"><img src="assets/eventos/eventos-3.webp" alt="" loading="lazy" decoding="async"></div>
           </div>
           </div>
         </div>
@@ -587,8 +625,9 @@
 <script src="desert-life.js?v=202610080100"></script>
 <script src="cosmic-sky.js?v=202610080100"></script>
 <script src="shore.js?v=202610200400"></script>
-<script src="roast-experience.js?v=202610201000"></script>
-<script src="constellations.js?v=202610200500"></script>
+<script src="roast-experience.js?v=202610212100"></script>
+<script src="constellations.js?v=202610211200"></script>
+<script src="menu-destellos.js?v=202610211300"></script>
 <script src="roast-carousel.js?v=202610201300"></script>
 <script src="roast-curve.js?v=202610080900"></script>
 

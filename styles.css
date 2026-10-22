@@ -672,69 +672,123 @@
   }
 
   /* --- grilla de cafés ---
-     Fichas editoriales, no tarjetas: numero, la bolsa sobre un plano de arena y el
-     nombre en serif. El proceso y "ver ficha" aparecen al pasar el cursor. */
+     Tarjetas: foto de la escena del café arriba, nombre / origen / notas, tres datos con
+     icono (tipo, proceso, cultivar) y un boton oscuro "Ver ficha". --cc es el color del
+     café (lo pone roast-experience.js desde `accent`). */
   .coffee-grid{ margin:clamp(40px, 5vw, 64px) 0 0; }
   .coffee-grid-track{
     display:grid;
     grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));
     gap:clamp(16px, 2.2vw, 36px);
+    /* aire para la sombra y el salto al pasar el cursor */
+    padding:6px 2px 14px;
   }
   .coffee-card{
     position:relative;
     display:flex; flex-direction:column; align-items:stretch;
-    padding:0; border:0; background:none;
+    padding:8px;
+    border:1px solid rgba(28,23,18,0.07); border-radius:22px;
+    background:#fff;
+    box-shadow:0 1px 2px rgba(60,38,20,0.06), 0 12px 28px -14px rgba(60,38,20,0.28);
     cursor:pointer; text-align:left;
     font-family:var(--sans); color:var(--ink);
+    transition:transform 0.5s var(--ease), box-shadow 0.5s var(--ease);
   }
-  .coffee-card-num{
-    font-family:var(--serif); font-style:italic;
-    font-size:0.95rem; color:var(--accent);
-    padding-bottom:12px; margin-bottom:16px;
-    border-bottom:1px solid var(--line);
-    transition:border-color 0.5s ease;
+  .coffee-card:hover, .coffee-card:focus-visible, .coffee-card.is-current{
+    transform:translateY(-4px);
+    box-shadow:0 2px 4px rgba(60,38,20,0.06), 0 22px 36px -16px rgba(60,38,20,0.36);
   }
-  .coffee-card-thumb{
+  .coffee-card:focus-visible{ outline:2px solid var(--ink); outline-offset:4px; }
+
+  .coffee-card-photo{
     position:relative; display:block;
-    aspect-ratio:4 / 5;
+    aspect-ratio:4 / 3;
+    border-radius:16px; overflow:hidden;
     background:var(--sand-deep);
-    overflow:hidden;
   }
-  .coffee-card-thumb-img{
-    position:absolute; inset:9% 12% 6%;
-    width:76%; height:85%;
-    object-fit:contain; object-position:bottom center;
-    filter:drop-shadow(0 18px 18px rgba(60,38,20,0.22));
-    transition:transform 0.9s var(--ease);
+  .coffee-card-photo-img{
+    position:absolute; inset:0;
+    background-size:cover; background-repeat:no-repeat;
+    transition:transform 1s var(--ease);
   }
-  .coffee-card:hover .coffee-card-thumb-img,
-  .coffee-card:focus-visible .coffee-card-thumb-img{ transform:translateY(-8px) scale(1.035); }
-  .coffee-card:hover .coffee-card-num{ border-color:var(--ink); }
-  .coffee-card-meta{ display:flex; flex-direction:column; gap:6px; padding-top:18px; }
-  .coffee-card-origin{
-    font-size:0.64rem; font-weight:600; letter-spacing:0.2em; text-transform:uppercase;
-    color:var(--ink-dim);
+  .coffee-card:hover .coffee-card-photo-img,
+  .coffee-card:focus-visible .coffee-card-photo-img{ transform:scale(1.06); }
+  /* Sin escena: la bolsa suelta sobre arena. */
+  .coffee-card-photo-bag{
+    position:absolute; inset:8% 0 4%; margin:auto;
+    width:auto; max-width:60%; height:88%;
+    object-fit:contain;
+    filter:drop-shadow(0 12px 12px rgba(60,38,20,0.22));
+  }
+
+  .coffee-card-body{ flex:1; display:flex; flex-direction:column; padding:14px 8px 6px; }
+  /* Nombre y, a su derecha, las estrellas de favorito (de ejemplo, ver estrellasMarkup en
+     roast-experience.js). Si el nombre es largo y no caben, bajan a la linea siguiente. */
+  .coffee-card-head{
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap;
+    gap:3px 8px;
   }
   .coffee-card-name{
-    font-family:var(--serif); font-weight:400;
-    font-size:clamp(1.6rem, 2.1vw, 2rem); line-height:1.05;
+    font-family:var(--serif); font-weight:500;
+    font-size:clamp(1.4rem, 1.9vw, 1.65rem); line-height:1.1;
+  }
+  .coffee-card-stars{
+    display:inline-flex; gap:1px; flex:none;
+    color:var(--cc, var(--accent));
+  }
+  .coffee-card-stars svg{ width:11px; height:11px; }
+  .coffee-card-origin{
+    margin-top:4px;
+    font-size:0.74rem; line-height:1.35; color:var(--ink-dim);
   }
   .coffee-card-sub{
-    font-family:var(--serif); font-style:italic;
-    font-size:0.98rem; color:var(--ink-dim); line-height:1.45;
-  }
-  .coffee-card-more{
     margin-top:8px;
-    font-size:0.68rem; font-weight:600; letter-spacing:0.14em; text-transform:uppercase;
-    color:var(--accent-deep);
-    opacity:0; transform:translateY(6px);
-    transition:opacity 0.5s ease, transform 0.6s var(--ease);
+    font-family:var(--serif); font-style:italic;
+    font-size:0.94rem; color:var(--ink-dim); line-height:1.4;
   }
-  .coffee-card:hover .coffee-card-more,
-  .coffee-card:focus-visible .coffee-card-more,
-  .coffee-card.is-current .coffee-card-more{ opacity:1; transform:none; }
-  @media (hover: none){ .coffee-card-more{ opacity:1; transform:none; } }
-  .coffee-card:focus-visible{ outline-offset:8px; }
+
+  /* Tres datos: icono, valor y etiqueta, centrados. Van al pie junto con el boton, asi todas
+     las tarjetas de una fila quedan alineadas aunque el texto de arriba cambie de largo. */
+  .coffee-card-stats{
+    display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:4px;
+    margin-top:auto; padding-top:16px;
+  }
+  .coffee-card-stat{
+    display:flex; flex-direction:column; align-items:center; gap:3px;
+    text-align:center;
+  }
+  .coffee-card-stat svg{ width:17px; height:17px; color:var(--cc, var(--accent)); margin-bottom:2px; }
+  /* El valor ocupa siempre el alto de dos lineas (centrado): asi las etiquetas y las filas de
+     datos quedan a la misma altura en todas las tarjetas, valga una linea o dos. */
+  .coffee-card-stat-val{
+    display:flex; align-items:center; justify-content:center;
+    min-height:1.92rem;   /* dos lineas de 0.8rem a 1.2; en rem para que "por definir" (mas chico) ocupe lo mismo */
+    font-size:0.8rem; font-weight:700; line-height:1.2; color:var(--ink);
+    overflow-wrap:anywhere;
+  }
+  .coffee-card-stat-val.is-pending{
+    font-size:0.58rem; font-weight:600; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--accent-deep); opacity:0.75;
+  }
+  .coffee-card-stat-label{ font-size:0.64rem; color:var(--ink-dim); }
+
+  .coffee-card-cta{
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    margin-top:16px; min-height:46px;
+    border-radius:100px;
+    /* mismo naranja y texto que "Comprar café" (.btn-accent) */
+    background:var(--cta); color:#1a0d07;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.35);
+    font-size:0.8rem; font-weight:700; letter-spacing:0.02em;
+    transition:background 0.3s ease, box-shadow 0.4s var(--ease);
+  }
+  .coffee-card-cta svg{ width:17px; height:17px; }
+  .coffee-card:hover .coffee-card-cta,
+  .coffee-card:focus-visible .coffee-card-cta,
+  .coffee-card.is-current .coffee-card-cta{
+    background:var(--cta-hover);
+    box-shadow:0 12px 22px -10px rgba(209,118,71,.7), inset 0 1px 0 rgba(255,255,255,.35);
+  }
 
   /* El control del carrusel solo existe en movil y tablet: ver la media query de 900px. */
   .coffee-grid-nav{ display:none; }
@@ -893,6 +947,49 @@
     transition:background .4s ease, opacity .4s ease;
   }
   .meter-dots .dot.is-on{ background:var(--accent); opacity:1; }
+
+  /* ANIMACIONES DE EJEMPLO, provisionales hasta definir las definitivas. Mientras el dato esta
+     "por definir" los puntos se mueven, y cada medidor de cada cafe con una animacion distinta
+     (el reparto de ejemplo lo sortea roast-experience.js, ver DOT_ANIMS; la definitiva se fija
+     con `meterAnim` en COFFEES). --k es el numero del punto (0-4). Ninguna deja los puntos
+     llenos: no sugieren un valor. Una animacion nueva = una clase .meter--<nombre> mas. */
+  /* ola: una onda suave que recorre los cinco puntos */
+  .meter--ola .dot{ animation:dotOla 1.7s ease-in-out calc(var(--k) * .15s) infinite; }
+  @keyframes dotOla{ 0%, 100%{ transform:translateY(0); } 50%{ transform:translateY(-5px); } }
+  /* rebote: un salto con aplastamiento que va de punto en punto, y una pausa */
+  .meter--rebote .dot{ animation:dotRebote 2.4s ease-out calc(var(--k) * .22s) infinite; }
+  @keyframes dotRebote{
+    0%{ transform:translateY(0) scale(1, 1); }
+    8%{ transform:translateY(0) scale(1.25, .7); }
+    22%{ transform:translateY(-8px) scale(.9, 1.15); }
+    36%{ transform:translateY(0) scale(1.2, .8); }
+    46%, 100%{ transform:translateY(0) scale(1, 1); }
+  }
+  /* pulso: los puntos respiran casi a la vez */
+  .meter--pulso .dot{ animation:dotPulso 2.2s ease-in-out calc(var(--k) * .07s) infinite; }
+  @keyframes dotPulso{ 0%, 100%{ transform:scale(1); opacity:.45; } 50%{ transform:scale(1.45); opacity:1; } }
+  /* barrido: un punto se enciende y la luz pasa de izquierda a derecha */
+  .meter--barrido .dot{ animation:dotBarrido 1.6s ease-in-out calc(var(--k) * .18s) infinite; }
+  @keyframes dotBarrido{
+    0%, 55%, 100%{ background-color:transparent; opacity:.45; transform:scale(1); }
+    20%{ background-color:var(--accent); opacity:1; transform:scale(1.2); }
+  }
+  /* destello: cada punto titila a su propio ritmo, como una estrella */
+  .meter--destello .dot{ animation:dotDestello calc(1.5s + var(--k) * .43s) ease-in-out calc(var(--k) * -.37s) infinite; }
+  @keyframes dotDestello{
+    0%, 70%, 100%{ opacity:.35; transform:scale(1); box-shadow:0 0 0 transparent; }
+    82%{ opacity:1; transform:scale(1.35); box-shadow:0 0 7px var(--accent); }
+  }
+  /* alterno: pares e impares se encienden por turnos */
+  .meter--alterno .dot{ animation:dotAlterno 2s ease-in-out infinite; }
+  .meter--alterno .dot:nth-child(even){ animation-delay:-1s; }
+  @keyframes dotAlterno{
+    0%, 100%{ background-color:transparent; opacity:.45; transform:scale(1); }
+    50%{ background-color:var(--accent); opacity:1; transform:scale(1.18); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .meter .dot{ animation:none !important; }
+  }
   .meter-todo{
     font-size:0.6rem; letter-spacing:0.1em; text-transform:uppercase;
     color:var(--accent-deep); opacity:0.75;
@@ -931,6 +1028,7 @@
     color:var(--ink);
     transition:border-color .25s ease, background .25s ease, color .25s ease;
   }
+  .prod-size[hidden]{ display:none; }   /* "Cápsulas": solo en los cafés tipo 1 */
   .prod-size:hover{ border-color:var(--accent); }
   .prod-size:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
   .prod-size.is-current{
@@ -1048,6 +1146,7 @@
   /* --- Nuestros cafés: los tres tipos, que filtran la grilla de bolsas --- */
   /* scroll-margin: al llegar desde el menu, el nav fijo no tapa el titulo. */
   .coffee-types{ margin-top:clamp(96px, 11vw, 160px); scroll-margin-top:96px; }
+  #roastStage{ scroll-margin-top:96px; }
   .coffee-types-head{
     display:grid; grid-template-columns:minmax(0, 5fr) minmax(0, 6fr);
     gap:clamp(24px, 6vw, 112px); align-items:end;
@@ -1769,6 +1868,11 @@
     transition:opacity .8s ease .35s;
   }
   .scene-in .scene-beans{ opacity:1; }
+  /* Cambio de imagen al elegir (o dejar) el formato "Cápsulas": la escena actual se apaga
+     rapido, sin el retardo de entrada de los granos, y luego entra la otra. */
+  .scene-out .scene-backdrop, .scene-out .scene-bag, .scene-out .scene-beans{
+    opacity:0; transition:opacity .25s ease; transition-delay:0s;
+  }
 
   /* Con escena, la bolsa suelta + granos sueltos sobran: solo una de las dos capas
      de .prod-media se ve a la vez. El texto ya no vive sobre la foto (ver .prod-copy
@@ -1792,10 +1896,12 @@
     }
   }
 
-  @media (max-width: 900px){
+  @media (max-width: 1200px){
     /* --- grilla de cafés: carrusel deslizable ---
+       Cinco tarjetas en fila necesitan ~200px cada una (tres datos con icono): por debajo de
+       1200px de ancho ya no caben y la grilla pasa a carrusel.
        Corre de borde a borde de la pantalla (sale del margen del contenedor) y encaja
-       cada bolsa contra el margen izquierdo; la siguiente asoma para invitar a deslizar. */
+       cada tarjeta contra el margen izquierdo; la siguiente asoma para invitar a deslizar. */
     .coffee-grid{ --cg-pad:clamp(18px, 3.2vw, 34px); }
     .coffee-grid-track{
       display:flex;
@@ -1807,7 +1913,7 @@
       margin-inline:calc(var(--cg-pad) * -1);
       padding-inline:var(--cg-pad);
       scroll-padding-inline:var(--cg-pad);
-      padding-bottom:4px;
+      padding-bottom:18px;   /* aire para la sombra de las tarjetas */
       scrollbar-width:none;
     }
     .coffee-grid-track::-webkit-scrollbar{ display:none; }
@@ -1817,17 +1923,11 @@
     .coffee-grid-track.is-dragging{ cursor:grabbing; scroll-snap-type:none; user-select:none; }
     .coffee-grid-track.is-dragging .coffee-card{ pointer-events:none; }
     .coffee-card{
-      flex:0 0 min(64%, 300px);
+      flex:0 0 min(72%, 290px);
       scroll-snap-align:start;
     }
-    .coffee-card-thumb{ aspect-ratio:1 / 1; }
-    .coffee-card-thumb-img{ inset:8% 14% 5%; width:72%; height:87%; }
-    .coffee-card-num{ margin-bottom:12px; padding-bottom:10px; }
-    .coffee-card-meta{ padding-top:14px; }
-    .coffee-card-name{ font-size:1.6rem; }
+    .coffee-card-name{ font-size:1.5rem; }
     .coffee-card-sub{ font-size:0.92rem; }
-    /* En tactil no hay hover: el "ver ficha" va siempre a la vista. */
-    .coffee-card-more{ opacity:1; transform:none; }
 
     .coffee-grid-nav{
       display:flex; align-items:center; gap:18px;
@@ -1998,10 +2098,11 @@
   .coffee-type-value{ font-size:.85rem; margin-bottom:10px; }
 
   .coffee-grid{ margin-top:28px; }
-  .coffee-card{ border-radius:14px; }
-  .coffee-card-thumb{ background:#ffffff80; border-radius:14px; }
-  .coffee-card-more{ opacity:1; transform:none; }
   .catalog-hint{ display:none; }
+  /* Mientras la grilla es carrusel (ver 1200px mas arriba), la pista de deslizar se ve. */
+  @media (max-width: 1200px){
+    .catalog-hint{ display:block; font-size:.72rem; color:#675b4f; margin-top:14px; }
+  }
 
   /* El tueste, despues del catalogo, separado por un filete. */
   .roast-after{ margin-top:72px; padding-top:56px; border-top:1px solid #d6c7b5; }
@@ -2071,7 +2172,7 @@
     .product-scroll .prod-copy{ padding-top:18px; }
     .prod-purchase{ padding:10px 16px max(14px, env(safe-area-inset-bottom)); }
     .prod-purchase .prod-sizes{ gap:8px; margin-bottom:10px; }
-    .prod-purchase .prod-size{ flex:1; }
+    .prod-purchase .prod-size{ flex:1; padding-inline:8px; }   /* caben 4 formatos con "Cápsulas" */
     .prod-purchase .prod-whatsapp{ font-size:.77rem; padding-inline:12px; }
   }
 
@@ -2308,6 +2409,7 @@
   .esp-r45{ aspect-ratio:4 / 5; }
   .esp-r11{ aspect-ratio:1 / 1; }
   .esp-r34{ aspect-ratio:3 / 4; }
+  .esp-r23{ aspect-ratio:2 / 3; }
   .esp-r43{ aspect-ratio:4 / 3; }
 
   @media (max-width: 900px){
@@ -2566,7 +2668,10 @@
      variantes: sobre el cielo (crema), sobre claro (oscuro) y el naranja de marca; mas
      la de contorno para acciones secundarias.
      ========================================================================== */
-  :root{ --ink-deep:#1d1119; --cream:#FFF4E2; }
+  /* --cta: el naranja de los botones de accion ("Comprar café" y "Ver ficha" de las tarjetas).
+     Es el naranja de marca (#E4611E, ~78% de saturacion) bajado a ~60%: mas terracota, menos
+     chillon. --accent sigue igual para el resto del sitio. */
+  :root{ --ink-deep:#1d1119; --cream:#FFF4E2; --cta:#D17647; --cta-hover:#DC8458; }
 
   .cta-ico{
     --d:34px;
@@ -2590,12 +2695,12 @@
   }
   .btn:has(.cta-ico){ padding:0 8px 0 28px; }
   .btn-accent{
-    background:var(--accent); color:#1a0d07;
+    background:var(--cta); color:#1a0d07;
     box-shadow:inset 0 1px 0 rgba(255,255,255,.35);
   }
   .btn-accent:hover{
-    background:#F0702B; transform:translateY(-2px);
-    box-shadow:0 14px 26px -10px rgba(228,97,30,.7), inset 0 1px 0 rgba(255,255,255,.35);
+    background:var(--cta-hover); transform:translateY(-2px);
+    box-shadow:0 14px 26px -10px rgba(209,118,71,.7), inset 0 1px 0 rgba(255,255,255,.35);
   }
   .nav-cta{ min-height:42px; padding:0 22px; font-size:.7rem; }
   .btn-ghost{ border-color:rgba(29,17,25,.3); color:var(--ink); }
@@ -2692,7 +2797,8 @@
   .type-chip[aria-pressed="true"]::after{ content:"×"; margin-left:8px; font-size:1.05em; line-height:1; opacity:.7; }
   .type-chip:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
 
-  .type-info{ margin-left:auto; }
+  /* Va en su propia linea, debajo de los chips, alineado a la izquierda. */
+  .type-info{ margin:12px 0 0; }
   .type-info > summary{
     display:inline-flex; align-items:center; gap:6px;
     list-style:none; cursor:pointer;
@@ -2744,16 +2850,16 @@
   @media (max-width: 760px){
     .type-filter-label{ display:none; }
     .type-chip{ height:30px; padding:0 12px; font-size:.74rem; }
-    .type-info{ margin-left:0; width:100%; }
+    .type-info{ margin-top:10px; }
     .type-info-panel{ padding:18px 16px 16px; max-height:70vh; overflow:auto; }
     .type-info-grid{ grid-template-columns:1fr; gap:14px; }
   }
 
   /* ==========================================================================
      MENU MOVIL (estilo "Theodore", Codrops)
-     Cielo del hero de fondo, filas infinitas en diagonal con la fauna brillando, enlaces
-     grandes en serif con una palabra chica al costado, y una curva que barre la pantalla
-     al abrir y cerrar (#menuOverlay).
+     Cielo del hero de fondo con destellos al azar de las constelaciones de la fauna,
+     lista numerada de enlaces en serif, mini footer con contacto y redes, y una curva que
+     barre la pantalla al abrir y cerrar (#menuOverlay).
      ========================================================================== */
   .mobile-menu{
     position:fixed; inset:0; z-index:150;
@@ -2794,37 +2900,72 @@
     background:url('assets/desierto/SVG/luna.svg') center / contain no-repeat;
     opacity:.85; filter:drop-shadow(0 0 30px rgba(255,207,138,.35));
   }
-  .mm-tiles{
-    position:absolute; left:50%; top:52%;
-    display:flex; flex-direction:column; gap:3.5vh;
-    transform:translate(-50%, -50%) rotate(-16deg);
-    opacity:.32;
-  }
-  .mm-line{ display:flex; width:max-content; animation:mmRun 30s linear infinite; }
-  .mm-line:nth-child(2){ animation-duration:38s; animation-direction:reverse; }
-  .mm-line:nth-child(3){ animation-duration:46s; }
-  @keyframes mmRun{ from{ transform:translateX(0); } to{ transform:translateX(-50%); } }
-  .mm-tile{
-    flex:none; display:grid; place-items:center;
-    width:20vh; height:20vh; margin:0 2vh;
-    border-radius:50%;
-    border:1px solid rgba(255,236,205,.28);
-    background:radial-gradient(circle at 50% 40%, rgba(255,226,180,.10), transparent 70%);
-  }
-  .mm-tile--wide{ width:44vh; border-radius:999px; }
-  .mm-tile img{
-    max-width:72%; max-height:72%; width:auto; height:auto;
-    filter:drop-shadow(0 0 6px rgba(255,226,180,.6));
-  }
-  /* Velo para que el texto se lea sobre las filas. */
+  /* Velo para que el texto se lea sobre el cielo. Va bajo los destellos (z-index:1). */
   .mm-bg::after{
     content:''; position:absolute; inset:0;
-    background:radial-gradient(120% 70% at 50% 45%, rgba(40,6,60,.55), rgba(40,6,60,.15) 70%, transparent);
+    background:radial-gradient(120% 70% at 50% 45%, rgba(40,6,60,.5), rgba(40,6,60,.12) 70%, transparent);
+  }
+
+  /* Destellos (menu-destellos.js): la constelacion se dibuja, aparece la mascota brillando
+     y todo se apaga. Misma construccion que .const (estrellas + .const-art), sin nombres.
+     --x/--y/--w en px y --dur salen del JS; --aw/--at colocan el arte como en .const. */
+  .mm-sparks{ position:absolute; inset:0; z-index:1; overflow:hidden; }
+  .mm-spark{
+    --aw:1; --at:.46;
+    position:absolute; left:var(--x); top:var(--y); width:var(--w);
+    opacity:0;
+    animation:mmSpark var(--dur, 4.8s) ease-in-out both;
+  }
+  .mm-spark-sky{ position:relative; display:block; }
+  .mm-spark svg{
+    display:block; width:100%; height:auto; overflow:visible;
+    transform:rotate(var(--rot, 0deg));
+    animation:mmSparkSvg var(--dur, 4.8s) ease-in-out both;
+  }
+  .mm-spark line{
+    stroke:rgba(255,222,170,.9); stroke-width:.7; stroke-linecap:round;
+    stroke-dasharray:1; stroke-dashoffset:1;
+    animation:constDraw .7s ease-out calc(var(--i) * .08s + .15s) both;
+  }
+  .mm-spark circle{
+    fill:#FFF8EA;
+    filter:drop-shadow(0 0 2px rgba(255,236,200,.95)) drop-shadow(0 0 6px rgba(255,210,150,.55));
+    transform-box:fill-box; transform-origin:center;
+    animation:mmStar .55s cubic-bezier(.3,1.6,.5,1) calc(var(--sd, 0ms) + .1s) both;
+  }
+  .mm-spark-art{
+    position:absolute; left:50%; top:calc(var(--at) * 100%);
+    width:calc(var(--aw) * 100%); height:auto;
+    transform:translate(-50%, -50%) scale(.82);
+    opacity:0;
+    filter:drop-shadow(0 0 6px rgba(255,226,180,.55)) drop-shadow(0 0 18px rgba(255,190,120,.35));
+    animation:mmSparkArt var(--dur, 4.8s) ease-out both;
+  }
+  /* El destello en si: un resplandor que se abre detras de la mascota al aparecer. */
+  .mm-spark::before{
+    content:''; position:absolute; left:50%; top:calc(var(--at) * 76%);
+    width:95%; padding-top:95%; border-radius:50%;
+    background:radial-gradient(circle, rgba(255,226,180,.5), rgba(255,190,120,.16) 45%, transparent 68%);
+    transform:translate(-50%, -50%) scale(.3); opacity:0;
+    animation:mmFlare var(--dur, 4.8s) ease-out both;
+  }
+  @keyframes mmSpark{ 0%{ opacity:0; } 10%{ opacity:.9; } 76%{ opacity:.9; } 100%{ opacity:0; } }
+  @keyframes mmSparkSvg{ 0%, 30%{ opacity:1; } 48%, 100%{ opacity:.3; } }
+  @keyframes mmStar{ from{ transform:scale(0); opacity:0; } 60%{ transform:scale(1.5); opacity:1; } to{ transform:scale(1); opacity:1; } }
+  @keyframes mmSparkArt{
+    0%, 26%{ opacity:0; transform:translate(-50%, -50%) scale(.82); }
+    44%{ opacity:1; transform:translate(-50%, -50%) scale(1); }
+    100%{ opacity:1; transform:translate(-50%, -50%) scale(1.04); }
+  }
+  @keyframes mmFlare{
+    0%, 26%{ opacity:0; transform:translate(-50%, -50%) scale(.3); }
+    40%{ opacity:1; transform:translate(-50%, -50%) scale(1); }
+    72%, 100%{ opacity:0; transform:translate(-50%, -50%) scale(1.25); }
   }
 
   /* --- contenido --- */
   .mm-inner{
-    position:relative; z-index:1; height:100%;
+    position:relative; z-index:2; height:100%; overflow-y:auto;
     display:flex; flex-direction:column;
     padding:max(18px, env(safe-area-inset-top)) 22px max(22px, env(safe-area-inset-bottom));
   }
@@ -2841,54 +2982,69 @@
   .mm-close svg{ width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; }
   .mm-close:focus-visible{ outline:2px solid #ffcf8a; outline-offset:3px; }
 
+  /* Lista ordenada: numero chico a la izquierda, nombre en serif, un filete entre cada uno.
+     Contáctanos es el ultimo. */
   .mm-links{
-    flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center;
-    gap:2.2vh;
+    flex:1 0 auto; display:flex; flex-direction:column; justify-content:center;
+    padding:16px 0;
   }
-  .mm-item{
-    display:flex; align-items:baseline; gap:10px;
-    color:#FDFBF4; text-decoration:none; line-height:1;
+  .mobile-menu .mm-item{
+    display:flex; align-items:baseline; gap:14px;
+    padding:clamp(11px, 2.1vh, 16px) 2px;
+    border-bottom:1px solid rgba(255,236,205,.16);
+    color:#FDFBF4; text-decoration:none; line-height:1.1;
   }
-  .mm-item:nth-child(odd){ margin-left:-14vw; }
-  .mm-item:nth-child(even){ margin-right:-14vw; }
-  .mm-big{
+  .mm-item:first-child{ border-top:1px solid rgba(255,236,205,.16); }
+  .mm-num{
+    flex:none; width:1.5rem;
+    font-family:var(--sans); font-size:.66rem; font-weight:800;
+    letter-spacing:.14em; color:#ffcf8a;
+  }
+  .mm-label{
     font-family:var(--serif); font-style:italic; font-weight:400;
-    font-size:clamp(2.8rem, 15vw, 4.6rem); letter-spacing:-.02em;
+    font-size:clamp(1.5rem, 7vw, 1.95rem); letter-spacing:-.01em;
     color:#FDFBF4; transition:color .3s ease;
+    /* Halo oscuro: si un destello pasa por detras, el texto se sigue leyendo limpio. */
+    text-shadow:0 0 12px rgba(40,6,60,.9), 0 1px 3px rgba(40,6,60,.6);
   }
-  .mm-tiny{
-    font-family:var(--sans); font-size:.72rem; font-weight:800;
-    letter-spacing:.18em; text-transform:uppercase; color:#ffcf8a;
-  }
-  .mm-item:hover .mm-big, .mm-item:focus-visible .mm-big{ color:#ffcf8a; }
+  .mm-item:hover .mm-label, .mm-item:focus-visible .mm-label{ color:#ffcf8a; }
   .mm-item:focus-visible{ outline:none; }
 
-  .mm-actions{ display:flex; flex-direction:column; gap:10px; }
+  .mm-actions{ margin-top:6px; }
   .mm-cta{ width:100%; }
-  .mm-wa{
-    display:flex; align-items:center; justify-content:center; gap:10px;
-    min-height:50px; border-radius:100px;
-    background:var(--whatsapp); color:#fff; text-decoration:none;
-    font-family:var(--sans); font-size:.72rem; font-weight:800; letter-spacing:.12em; text-transform:uppercase;
+
+  /* Mini footer: contacto a la izquierda, redes a la derecha. */
+  .mm-footer{
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap;
+    gap:12px 16px; margin-top:18px; padding-top:14px;
+    border-top:1px solid rgba(255,236,205,.2);
   }
-  .mm-wa svg{ width:20px; height:20px; fill:currentColor; }
-  .mm-social{
-    display:flex; align-items:center; justify-content:center; gap:12px;
-    margin-top:18px;
+  .mm-contact{ display:flex; flex-direction:column; gap:5px; min-width:0; }
+  /* Ganan a la regla general `.mobile-menu a{ color:inherit }`. */
+  .mobile-menu .mm-contact a{
+    font-family:var(--sans); font-size:.8rem; font-weight:500; letter-spacing:.01em;
+    color:rgba(255,246,235,.85); overflow-wrap:anywhere;
+    transition:color .25s;
   }
-  .mm-social-label{
-    font-size:.64rem; font-weight:800; letter-spacing:.18em; text-transform:uppercase;
-    color:rgba(255,246,235,.7); margin-right:4px;
-  }
-  .mm-social a{
-    width:44px; height:44px; border-radius:50%;
+  .mobile-menu .mm-contact a:hover{ color:#ffcf8a; }
+  .mm-social{ display:flex; align-items:center; gap:8px; }
+  .mobile-menu .mm-social a{
+    width:40px; height:40px; border-radius:50%;
     display:grid; place-items:center;
     border:1px solid rgba(255,236,205,.35); color:#FDFBF4;
     transition:background .25s, color .25s, border-color .25s;
   }
-  .mm-social a:hover{ background:#ffcf8a; border-color:#ffcf8a; color:#2b0f3a; }
-  .mm-social svg{ width:18px; height:18px; }
+  .mobile-menu .mm-social a:hover{ background:#ffcf8a; border-color:#ffcf8a; color:#2b0f3a; }
+  .mm-social svg{ width:17px; height:17px; }
   .mm-social a[aria-label="WhatsApp"] svg{ fill:currentColor; }
+
+  /* Pantallas bajas (iPhone SE, telefono girado): todo un poco mas junto. */
+  @media (max-height: 660px){
+    .mm-label{ font-size:1.45rem; }
+    .mobile-menu .mm-item{ padding-block:9px; }
+    .mm-links{ padding:10px 0; }
+    .mm-footer{ margin-top:12px; padding-top:10px; }
+  }
 
   /* Entrada escalonada una vez que la curva descubre el menu. */
   .mm-anim{ opacity:0; transform:translateY(34px); }
@@ -2898,7 +3054,14 @@
     transition-delay:calc(var(--i) * 70ms + 120ms);
   }
   @media (prefers-reduced-motion: reduce){
-    .mm-line, .mm-stars, .mm-stars::after{ animation:none; }
+    .mm-stars, .mm-stars::after{ animation:none; }
     .mm-anim, .mobile-menu.is-shown .mm-anim{ opacity:1; transform:none; transition:none; }
+    /* Destellos quietos: se ven ya dibujados, con la mascota encendida. */
+    .mm-spark, .mm-spark svg, .mm-spark line, .mm-spark circle, .mm-spark-art, .mm-spark::before{ animation:none; }
+    .mm-spark{ opacity:.9; }
+    .mm-spark line{ stroke-dashoffset:0; }
+    .mm-spark svg{ opacity:.3; }
+    .mm-spark-art{ opacity:1; transform:translate(-50%, -50%); }
+    .mm-spark::before{ opacity:.6; transform:translate(-50%, -50%); }
   }
   @media (min-width: 761px){ .mobile-menu, .menu-overlay{ display:none; } }
