@@ -410,8 +410,9 @@
       }
       // Con bagImage (Peru) la bolsa es una capa aparte del mismo lienzo: dos fondos con el
       // mismo encuadre quedan alineados igual que en la ficha.
+      // La imagen va en data-fondo y se aplica cuando el catálogo se acerca (ver más abajo).
       var fondos = (s.bagImage ? 'url(\'' + esc(s.bagImage) + '\'), ' : '') + 'url(\'' + esc(s.image) + '\')';
-      return '<span class="coffee-card-photo"><span class="coffee-card-photo-img" style="background-image:' + fondos + ';' +
+      return '<span class="coffee-card-photo"><span class="coffee-card-photo-img" data-fondo="' + fondos + '" style="' +
              (s.cardBox ? encuadre(s.cardBox) : 'background-position:60% 50%') + '"></span></span>';
     }
     function statMarkup(icono, etiqueta, valor){
@@ -450,6 +451,23 @@
         else openDetail(i);
       });
     });
+
+    // Rendimiento: las fotos de las tarjetas (escenas de 120–240 KB cada una) se piden
+    // recién cuando el catálogo se acerca a la pantalla, y las cinco a la vez para que el
+    // carrusel no muestre huecos al deslizar. Antes se descargaban todas al abrir la página.
+    var fotos = [].slice.call(gridTrack.querySelectorAll('[data-fondo]'));
+    function cargarFotos(){
+      fotos.forEach(function(el){ el.style.backgroundImage = el.getAttribute('data-fondo'); el.removeAttribute('data-fondo'); });
+      fotos = [];
+    }
+    if('IntersectionObserver' in window){
+      var ioFotos = new IntersectionObserver(function(e){
+        if(e[0].isIntersecting){ cargarFotos(); ioFotos.disconnect(); }
+      }, { rootMargin:'900px 0px' });
+      ioFotos.observe(gridTrack);
+    } else {
+      cargarFotos();
+    }
   }
   buildGrid();
 
@@ -839,7 +857,7 @@
   // pixeles reproduciendo en JS el mismo recorte `cover` que hace el CSS con el fondo.
   var sceneBeans = (function(){
     var canvas = null, ctx = null, raf = null, ro = null;
-    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var dpr = (window.ARIDO && window.ARIDO.dprLienzo) || Math.min(window.devicePixelRatio || 1, 1.5);   // resolución acotada (ver ARIDO en index.html)
     var W = 0, H = 0, geo = null;
     var ultimoW = 0, ultimoH = 0;   // para que medir() sepa si de verdad cambio el tamano
     var granos = [], cubos = [];
@@ -1735,7 +1753,7 @@
     if(!canvas || !canvas.getContext) return { start:function(){}, stop:function(){} };
 
     var ctx = canvas.getContext('2d');
-    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var dpr = (window.ARIDO && window.ARIDO.dprLienzo) || Math.min(window.devicePixelRatio || 1, 1.5);   // resolución acotada (ver ARIDO en index.html)
     var W = 0, H = 0, raf = null, ro = null, tPrev = 0;
     var falling = [], pile = [], buckets = [];
     var PILE_CAP = 0, FALL_MAX = 0, COLS = 14, porCaer = 0;

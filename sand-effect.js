@@ -1,5 +1,5 @@
 (function(){
-  var dpr = Math.min(window.devicePixelRatio || 1, 2);
+  var dpr = (window.ARIDO && window.ARIDO.dprLienzo) || Math.min(window.devicePixelRatio || 1, 1.5);   // resolución acotada (ver ARIDO en index.html)
 
   // How far the sand fades out at the top edge of its canvas, so it melts into the
   // page above instead of ending on a hard horizontal line. There is no bottom fade:

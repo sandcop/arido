@@ -14,7 +14,7 @@
   var ctx = canvas.getContext('2d');
 
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var dpr = Math.min(window.devicePixelRatio || 1, 2);
+  var dpr = (window.ARIDO && window.ARIDO.dprLienzo) || Math.min(window.devicePixelRatio || 1, 1.5);   // resolución acotada (ver ARIDO en index.html)
   var PARALLAX = 0.55;                // fraccion del scroll que recorren las estrellas
   var COLORS = ['#ffffff', '#e0f2fe', '#fdf4ff', '#fbcfe8', '#bae6fd'];
 
@@ -37,10 +37,12 @@
   }
 
   // Misma densidad que el original (una estrella cada 3200 px2), sobre todo el campo.
+  // En equipos modestos, un 40% menos: el cielo se ve igual de poblado en una pantalla chica.
+  var DENSIDAD = (window.ARIDO && window.ARIDO.gamaBaja) ? 5300 : 3200;
   function sembrar(h){
     campoH = h;
     stars = [];
-    var n = Math.floor((W * campoH) / 3200);
+    var n = Math.floor((W * campoH) / DENSIDAD);
     for(var i = 0; i < n; i++){
       var sparkle = Math.random() < 0.08;
       var base = sparkle ? 0.6 + Math.random() * 0.4 : 0.2 + Math.random() * 0.7;
@@ -54,14 +56,19 @@
         sparkle: sparkle
       });
     }
+    // Agrupadas por color, para cambiar el color de relleno solo entre grupos al dibujar.
+    stars.sort(function(a, b){ return a.color < b.color ? -1 : a.color > b.color ? 1 : 0; });
   }
 
   // Posicion del cielo respecto de la ventana: el lienzo se queda pegado arriba de la
-  // pantalla mientras el cielo este a la vista, sin salirse de el por abajo.
+  // pantalla mientras el cielo este a la vista, sin salirse de el por abajo. Solo toca el
+  // estilo si la posicion cambio: reescribirlo igual obliga a recalcular estilos.
+  var transformPuesto = '';
   function seguirScroll(){
     var top = stage.getBoundingClientRect().top;
     offset = Math.max(0, Math.min(-top, stageH - VH));
-    canvas.style.transform = 'translate3d(0,' + offset.toFixed(1) + 'px,0)';
+    var tr = 'translate3d(0,' + offset.toFixed(1) + 'px,0)';
+    if(tr !== transformPuesto){ transformPuesto = tr; canvas.style.transform = tr; }
   }
 
   // Las estrellas se apagan en el ultimo tramo, donde el cielo se aclara hacia el horizonte.
@@ -70,9 +77,10 @@
     return k <= 0.58 ? 1 : k >= 0.86 ? 0 : 1 - (k - 0.58) / 0.28;
   }
 
+  var colorPuesto = null;
   function dibujarEstrella(s, x, y, alpha){
     ctx.globalAlpha = alpha;
-    ctx.fillStyle = s.color;
+    if(s.color !== colorPuesto){ colorPuesto = s.color; ctx.fillStyle = s.color; }
     if(s.sparkle){
       var r = s.size * 2.2;
       ctx.beginPath();
@@ -96,8 +104,8 @@
     }
   }
 
-  function quizasFugaz(){
-    if(Math.random() < 0.012 && shooting.length < 2){
+  function quizasFugaz(k){
+    if(Math.random() < 0.012 * (k || 1) && shooting.length < 2){
       var y = Math.random() * VH * 0.5;
       // Solo en cielo oscuro: nunca sobre el resplandor del horizonte.
       if(brilloAltura(offset + y) < 0.6) return;
@@ -111,14 +119,18 @@
     }
   }
 
-  function dibujar(animar){
+  // `k`: cuántos cuadros de 60 fps representa este dibujo (2 si se dibuja a 30 fps), para
+  // que el titileo y las fugaces vayan a la misma velocidad dibuje a 60 o a 30.
+  function dibujar(animar, k){
+    k = k || 1;
     if(animar){
-      tick++;
-      mx += (tmx - mx) * 0.05;
-      my += (tmy - my) * 0.05;
+      tick += k;
+      mx += (tmx - mx) * 0.05 * k;
+      my += (tmy - my) * 0.05 * k;
     }
     ctx.globalAlpha = 1;
     ctx.clearRect(0, 0, W, VH);
+    colorPuesto = null;
     var desde = offset * PARALLAX;     // tramo del campo que cae en pantalla
     for(var i = 0; i < stars.length; i++){
       var s = stars[i];
@@ -131,13 +143,13 @@
       dibujarEstrella(s, s.x + mx * s.size * 0.8, y + my * s.size * 0.8, a);
     }
     if(!animar) return;
-    quizasFugaz();
+    quizasFugaz(k);
     ctx.lineWidth = 1.4;
     for(var j = shooting.length - 1; j >= 0; j--){
       var f = shooting[j];
-      f.x += Math.cos(f.angle) * f.speed;
-      f.y += Math.sin(f.angle) * f.speed;
-      f.life -= 0.015;
+      f.x += Math.cos(f.angle) * f.speed * k;
+      f.y += Math.sin(f.angle) * f.speed * k;
+      f.life -= 0.015 * k;
       if(f.life <= 0 || f.x > W + 100 || f.y > VH + 100){ shooting.splice(j, 1); continue; }
       ctx.globalAlpha = 1;
       ctx.strokeStyle = 'rgba(255,255,255,' + (f.life * 0.8).toFixed(3) + ')';
@@ -148,9 +160,22 @@
     }
   }
 
-  function cuadro(){
-    seguirScroll();
-    dibujar(true);
+  // Ritmo de dibujo. El titileo es lento, así que en reposo basta con 30 cuadros por
+  // segundo (la mitad de trabajo). Mientras hay scroll se dibuja en cada cuadro, para que
+  // las estrellas acompañen al dedo sin saltos. El turno de 30 fps sale del reloj del
+  // fotograma (igual en desert-life.js), así cielo y cactus dibujan en los mismos
+  // fotogramas y los de en medio quedan libres.
+  var ultimoDibujo = 0, ultimoTurno = -1, huboScroll = true;
+  window.addEventListener('scroll', function(){ huboScroll = true; }, { passive:true });
+  function cuadro(t){
+    var turno = Math.floor(t / 33.34);
+    if(huboScroll || turno !== ultimoTurno){
+      ultimoTurno = turno;
+      if(huboScroll) seguirScroll();     // sin scroll la posicion no cambia (el tamaño lo cubre alCambiarTamano)
+      dibujar(true, ultimoDibujo ? Math.min(3, (t - ultimoDibujo) / 16.67) : 1);
+      ultimoDibujo = t;
+      huboScroll = false;
+    }
     raf = (visible && !document.hidden) ? requestAnimationFrame(cuadro) : null;
   }
   function arrancar(){ if(!reduced && !raf && visible && !document.hidden) raf = requestAnimationFrame(cuadro); }

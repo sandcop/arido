@@ -12,13 +12,16 @@
   if(!canvas || !canvas.getContext) return;
 
   var ctx = canvas.getContext('2d');
-  var dpr = Math.min(window.devicePixelRatio || 1, 2);
+  var dpr = (window.ARIDO && window.ARIDO.dprLienzo) || Math.min(window.devicePixelRatio || 1, 1.5);   // resolución acotada (ver ARIDO en index.html)
   var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   var section = canvas.parentElement;
   var W = 0, H = 0;
   var band = 0;              // the beach proper; the canvas extends above it for surges
-  var COLS = 170;            // sampling resolution of the water edge and the wet sand
+  var gamaBaja = !!(window.ARIDO && window.ARIDO.gamaBaja);
+  var COLS = gamaBaja ? 110 : 170;   // sampling resolution of the water edge and the wet sand
+  var MAX_ESPUMA = gamaBaja ? 350 : 900;
+  var pasoK = 1;             // cuadros de 60 fps que representa este dibujo (se dibuja a 30 fps)
   var colW = 0;
   var seaBase = 0;           // the sea never drains away entirely; swash rises off this
   var wetY = null;           // highest point each column has been wetted to
@@ -263,7 +266,7 @@
     // stopping entirely — the standing sea keeps working at the sand between waves
     if(wave){
       var rushing = (now - wave.t0) < (wave.up + wave.hold);
-      var rate = rushing ? 22 : (adv > 0.06 ? 7 : 3);
+      var rate = Math.round((rushing ? 22 : (adv > 0.06 ? 7 : 3)) * pasoK * (gamaBaja ? 0.5 : 1));
       for(var k = 0; k < rate; k++){
         var ci = (Math.random() * COLS) | 0;
         spawnFoam(ci * colW, edgeYAt(ci, wave, adv, now), now, rushing ? 1 : 0.5);
@@ -274,21 +277,30 @@
       var p = foam[i];
       var lt = (now - p.born) / p.life;
       if(lt >= 1){ foam.splice(i, 1); continue; }
-      p.x += p.vx; p.y += p.vy;
+      p.x += p.vx * pasoK; p.y += p.vy * pasoK;
       ctx.fillStyle = 'rgba(255,253,248,' + (p.a * (1 - lt) * (1 - lt)).toFixed(3) + ')';
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.r * (1 - 0.45 * lt), 0, Math.PI * 2);
       ctx.fill();
     }
-    if(foam.length > 900) foam.splice(0, foam.length - 900);
+    if(foam.length > MAX_ESPUMA) foam.splice(0, foam.length - MAX_ESPUMA);
   }
 
   // ---- loop ---------------------------------------------------------------
-  var rafId = null;
-  function frame(){
-    var now = performance.now();
-    if(!wave || spent(wave, now)) wave = newWave(now);
-    draw(now);
+  // A 30 cuadros por segundo: el agua se mueve lento y su tiempo ya va por reloj
+  // (performance.now), así que se ve igual con la mitad de trabajo. Mismo turno que el
+  // cielo y los cactus (cosmic-sky.js, desert-life.js): todos dibujan en los mismos fotogramas.
+  var rafId = null, ultimo = 0, ultimoTurno = -1;
+  function frame(t){
+    var turno = Math.floor(t / 33.34);
+    if(turno !== ultimoTurno){
+      ultimoTurno = turno;
+      pasoK = ultimo ? Math.min(3, (t - ultimo) / 16.67) : 1;
+      ultimo = t;
+      var now = performance.now();
+      if(!wave || spent(wave, now)) wave = newWave(now);
+      draw(now);
+    }
     rafId = requestAnimationFrame(frame);
   }
 

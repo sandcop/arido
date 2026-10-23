@@ -1,6 +1,17 @@
 (function(){
   document.getElementById('year').textContent = new Date().getFullYear();
 
+  // Rendimiento: las animaciones CSS infinitas de cada zona grande (estrellas que titilan,
+  // la luna, el lema que corre, la galería de eventos…) se congelan mientras esa zona no
+  // está en pantalla (.en-pausa en styles.css) y siguen donde quedaron al volver. Con un
+  // margen de 150 px, para que ya estén en marcha cuando asoman.
+  if('IntersectionObserver' in window){
+    var ioPausa = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){ e.target.classList.toggle('en-pausa', !e.isIntersecting); });
+    }, { rootMargin:'150px 0px' });
+    document.querySelectorAll('.hero, #nosotros, #desert, #tueste, #especial').forEach(function(z){ ioPausa.observe(z); });
+  }
+
   // Menu movil. Al abrir, una curva (#menuOverlay, un path SVG) sube desde abajo y cubre la
   // pantalla; detras aparece el menu y la curva sigue de largo hacia arriba descubriendolo.
   // Al cerrar, lo mismo de arriba hacia abajo. Sin animaciones si el dispositivo lo pide.

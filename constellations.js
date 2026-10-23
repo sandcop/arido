@@ -59,13 +59,24 @@
       svg.appendChild(ln);
     });
     f.s.forEach(function(st){
+      var r = [0, 1.1, 1.5, 2.1][st[2]];
+      // Brillo de la estrella: dos círculos fijos y tenues detrás (antes, un filter:
+      // drop-shadow por estrella, que había que redibujar en cada fotograma del titileo).
+      [['halo', 2.9], ['halo-in', 1.75]].forEach(function(h){
+        var g = document.createElementNS(NS, 'circle');
+        g.setAttribute('class', h[0]);
+        g.setAttribute('cx', st[0]); g.setAttribute('cy', st[1]);
+        g.setAttribute('r', (r * h[1]).toFixed(2));
+        svg.appendChild(g);
+      });
       var c = document.createElementNS(NS, 'circle');
       c.setAttribute('cx', st[0]); c.setAttribute('cy', st[1]);
-      c.setAttribute('r', [0, 1.1, 1.5, 2.1][st[2]]);
-      c.style.setProperty('--tw', rand(2.4, 5).toFixed(2) + 's');
-      c.style.setProperty('--td', (-rand(0, 5)).toFixed(2) + 's');
+      c.setAttribute('r', r);
       svg.appendChild(c);
     });
+    // Ritmo propio del titileo de esta constelación (ver .const svg en styles.css)
+    svg.style.setProperty('--tw-c', rand(3.8, 6.5).toFixed(2) + 's');
+    svg.style.setProperty('--td-c', (-rand(0, 6)).toFixed(2) + 's');
     return svg;
   }
 
@@ -122,13 +133,16 @@
   aboutGrid.parentNode.insertBefore(franja, aboutGrid.nextSibling);
 
   // Las del hero, en angosto, van en una fila bajo el boton: ahi queda cielo libre entre
-  // el hero y "Nuestro origen".
-  var franjaHero = document.createElement('div');
-  franjaHero.className = 'const-band const-band--hero';
-  franjaHero.innerHTML = '<div class="const-band-grid"></div>';
-  var grillaHero = franjaHero.firstChild;
-  var heroInner = hero.querySelector('.hero-inner') || hero;
-  heroInner.appendChild(franjaHero);
+  // el hero y "Nuestro origen". Su franja ya viene en el HTML (espacio reservado desde el
+  // primer pintado); si faltara, se crea.
+  var franjaHero = hero.querySelector('.const-band--hero');
+  if(!franjaHero){
+    franjaHero = document.createElement('div');
+    franjaHero.className = 'const-band const-band--hero';
+    franjaHero.innerHTML = '<div class="const-band-grid"></div>';
+    (hero.querySelector('.hero-inner') || hero).appendChild(franjaHero);
+  }
+  var grillaHero = franjaHero.querySelector('.const-band-grid');
 
   var ancho = window.matchMedia('(min-width: 1180px)');
   function ubicar(){

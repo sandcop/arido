@@ -1,3 +1,16 @@
+  /* Fuentes de respaldo con las MÉTRICAS de Newsreader y Manrope (rendimiento / CLS).
+     Mientras llegan las fuentes de Google se dibuja con Georgia/Arial (o Noto Serif/Roboto
+     en Android) ajustadas al ancho y alto de línea de las reales: cuando la fuente real
+     reemplaza a la de respaldo, el texto no cambia de tamaño ni empuja nada. Valores
+     medidos sobre texto real de la web. Si local() no encuentra la fuente en el equipo,
+     esa regla se ignora y se prueba la siguiente de la lista. */
+  @font-face{ font-family:'Newsreader Respaldo'; src:local('Georgia'); size-adjust:100.66%; ascent-override:73.02%; descent-override:26.33%; line-gap-override:0%; }
+  @font-face{ font-family:'Newsreader Respaldo'; font-style:italic; src:local('Georgia Italic'), local('Georgia-Italic'); size-adjust:100.66%; ascent-override:73.02%; descent-override:26.33%; line-gap-override:0%; }
+  @font-face{ font-family:'Newsreader Respaldo Android'; src:local('Noto Serif'), local('NotoSerif'); size-adjust:93.08%; ascent-override:78.97%; descent-override:28.47%; line-gap-override:0%; }
+  @font-face{ font-family:'Newsreader Respaldo Android'; font-style:italic; src:local('Noto Serif Italic'), local('NotoSerif-Italic'); size-adjust:93.08%; ascent-override:78.97%; descent-override:28.47%; line-gap-override:0%; }
+  @font-face{ font-family:'Manrope Respaldo'; src:local('Arial'), local('ArialMT'); size-adjust:101.89%; ascent-override:104.62%; descent-override:29.44%; line-gap-override:0%; }
+  @font-face{ font-family:'Manrope Respaldo Android'; src:local('Roboto'), local('Roboto-Regular'); size-adjust:102.17%; ascent-override:104.33%; descent-override:29.36%; line-gap-override:0%; }
+
   :root{
     --bg: #FFFFFF;
     --bg-alt: #EDEDEC;
@@ -13,8 +26,8 @@
     --blue-deep: #2E6E88;
     --blue-light: #B9E1F0;
     --line: rgba(0,0,0,0.14);
-    --serif: 'Newsreader', Georgia, 'Times New Roman', serif;
-    --sans: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --serif: 'Newsreader', 'Newsreader Respaldo', 'Newsreader Respaldo Android', Georgia, 'Times New Roman', serif;
+    --sans: 'Manrope', 'Manrope Respaldo', 'Manrope Respaldo Android', system-ui, -apple-system, 'Segoe UI', sans-serif;
   }
 
   *{ margin:0; padding:0; box-sizing:border-box; }
@@ -420,19 +433,22 @@
      base para que se doblen y se aplasten contra el suelo, no desde el centro. */
   .toon{ position:relative; display:block; transform-origin:50% 100%; will-change:transform; }
 
-  /* Entrada del hero: cada pieza sube y se enfoca por turnos al cargar. */
+  /* Entrada del hero: cada pieza sube y aparece por turnos al cargar.
+     Rendimiento: solo opacidad y transform (la GPU las anima sin repintar). Antes llevaba
+     además un desenfoque (filter: blur) que obligaba a repintar el texto en cada
+     fotograma, justo en el momento de la carga, y retrasaba el primer texto visible. */
   .hero-l1, .hero-l2{ display:inline-block; }
   .hero-kicker, .hero-l1, .hero-l2, .hero-sub, .cta-wrap{
-    animation:heroIn 1.1s cubic-bezier(.2,.8,.2,1) backwards;
+    animation:heroIn 1s cubic-bezier(.2,.8,.2,1) backwards;
   }
-  .hero-kicker{ animation-delay:.15s; }
-  .hero-l1    { animation-delay:.35s; }
-  .hero-l2    { animation-delay:.6s; }
-  .hero-sub   { animation-delay:.9s; }
-  .cta-wrap   { animation-delay:1.1s; }
+  .hero-kicker{ animation-delay:.05s; }
+  .hero-l1    { animation-delay:.2s; }
+  .hero-l2    { animation-delay:.38s; }
+  .hero-sub   { animation-delay:.6s; }
+  .cta-wrap   { animation-delay:.8s; }
   @keyframes heroIn{
-    from{ opacity:0; transform:translateY(28px); filter:blur(8px); }
-    to  { opacity:1; transform:none; filter:blur(0); }
+    from{ opacity:0; transform:translateY(28px); }
+    to  { opacity:1; transform:none; }
   }
   /* El CTA termina con un latido corto, para que el ojo aterrice en el. */
   .hero-cta{ animation:ctaPulse 2.8s ease-in-out 2.6s 2; }
@@ -1442,11 +1458,24 @@
   }
   .const circle{
     fill:#FFF8EA;
-    filter:drop-shadow(0 0 2px rgba(255,236,200,0.95)) drop-shadow(0 0 6px rgba(255,210,150,0.55));
     transform-box:fill-box; transform-origin:center;
-    animation:constTw var(--tw, 3.6s) ease-in-out var(--td, 0s) infinite;
     transition:transform .35s cubic-bezier(.3,1.6,.5,1);
   }
+  /* Titileo. Rendimiento: respira la constelación entera (opacidad del <svg>, que la GPU
+     anima sola) en vez de cada estrella por separado: la opacidad de un círculo SVG no se
+     puede acelerar, y con decenas de estrellas obligaba a redibujar en cada fotograma.
+     Cada constelación lleva su propio ritmo (--tw-c / --td-c, ver constellations.js). */
+  .const svg{ animation:constRespira var(--tw-c, 5s) ease-in-out var(--td-c, 0s) infinite; }
+  .const.is-open svg, .const:focus-visible svg{ animation:none; }
+  @keyframes constRespira{
+    0%, 100% { opacity:1; }
+    50%      { opacity:0.7; }
+  }
+  /* Rendimiento: el brillo de cada estrella son dos círculos fijos detrás (constellations.js),
+     no un filter: drop-shadow. Con decenas de estrellas titilando, el filtro obligaba a
+     redibujar todas las constelaciones en cada fotograma. */
+  .const circle.halo{ animation:none; fill:rgba(255,226,180,0.16); }
+  .const circle.halo-in{ animation:none; fill:rgba(255,236,200,0.34); }
   @keyframes constTw{
     0%, 100% { opacity:1; }
     50%      { opacity:0.55; }
@@ -1459,7 +1488,8 @@
     animation:constDraw .6s ease-out calc(var(--i) * 0.06s) both;
   }
   .const.is-open circle, .const:focus-visible circle{ transform:scale(1.45); }
-  .const.is-shimmer circle{ animation:constTw .9s ease-in-out 2; }
+  /* Destello ocasional: también sobre el <svg> entero (opacidad, la anima la GPU). */
+  .const.is-shimmer:not(.is-open) svg{ animation:constTw .9s ease-in-out 2; }
   @keyframes constDraw{ from{ stroke-dashoffset:1; } to{ stroke-dashoffset:0; } }
   @media (hover: hover){
     .const:hover line{
@@ -1467,6 +1497,7 @@
       animation:constDraw .6s ease-out calc(var(--i) * 0.06s) both;
     }
     .const:hover circle{ transform:scale(1.45); }
+    .const:hover svg{ animation:none; }
   }
 
   /* Arte real: crece desde las estrellas y queda brillando; las estrellas se apagan
@@ -1535,6 +1566,9 @@
      y un leve giro en --rot (ver constellations.js). */
   .const-band .const-band-grid{ display:block; position:relative; height:500px; }
   .const-band--hero .const-band-grid{ height:230px; }
+  /* En ancho, las del hero van a los costados (const--abs): la franja no ocupa lugar, ni
+     siquiera antes de que corra constellations.js. */
+  @media (min-width: 1180px){ .const-band--hero{ display:none; } }
   .const-band .const-band-grid .const{
     position:absolute; left:var(--l, auto); right:var(--r, auto); top:var(--t, 0);
     width:min(140px, 40%);
@@ -1547,15 +1581,26 @@
   @media (hover: hover){ .const-band .const:hover .const-tip{ transform:none; } .const-band .const:hover .const-val{ opacity:1; transform:none; } }
 
   @media (prefers-reduced-motion: reduce){
-    .const circle, .const line{ animation:none !important; }
+    .const circle, .const line, .const svg{ animation:none !important; }
   }
 
   /* ---------- VIDA DEL DESIERTO (desert-life.js) ---------- */
-  /* La luna respira: un halo que crece y se apaga muy despacio. */
-  .d-sun{ animation:moonGlow 7s ease-in-out infinite; }
+  /* La luna respira: un halo que crece y se apaga muy despacio.
+     Rendimiento: el halo es una capa propia (::before, un degradado radial) que solo cambia
+     de opacidad y escala, cosa que la GPU hace sin repintar. Antes se animaba un
+     filter: drop-shadow sobre la luna, que había que redibujar en cada fotograma.
+     La luna pasa a ::after para quedar por encima de su halo. */
+  .d-sun{ background-image:none; }
+  .d-sun::before, .d-sun::after{ content:''; position:absolute; pointer-events:none; }
+  .d-sun::before{
+    inset:-38%; border-radius:50%;
+    background:radial-gradient(circle, rgba(255,210,150,0.62) 0%, rgba(255,200,140,0.28) 34%, rgba(255,200,140,0) 66%);
+    animation:moonGlow 7s ease-in-out infinite;
+  }
+  .d-sun::after{ inset:0; background:url('assets/desierto/SVG/luna.svg') center / contain no-repeat; }
   @keyframes moonGlow{
-    0%, 100% { filter:drop-shadow(0 0 18px rgba(255,214,160,0.35)); }
-    50%      { filter:drop-shadow(0 0 46px rgba(255,200,140,0.75)); }
+    0%, 100% { opacity:0.5; transform:scale(0.86); }
+    50%      { opacity:1;   transform:scale(1.08); }
   }
 
   /* Primer plano ilustrado. Se pega al suelo: el JS le copia el desplazamiento de las
@@ -2929,10 +2974,12 @@
   }
   .mm-spark circle{
     fill:#FFF8EA;
-    filter:drop-shadow(0 0 2px rgba(255,236,200,.95)) drop-shadow(0 0 6px rgba(255,210,150,.55));
     transform-box:fill-box; transform-origin:center;
     animation:mmStar .55s cubic-bezier(.3,1.6,.5,1) calc(var(--sd, 0ms) + .1s) both;
   }
+  /* El brillo de cada estrella son los círculos .halo/.halo-in que crea constellations.js. */
+  .mm-spark circle.halo{ fill:rgba(255,226,180,.18); }
+  .mm-spark circle.halo-in{ fill:rgba(255,236,200,.38); }
   .mm-spark-art{
     position:absolute; left:50%; top:calc(var(--at) * 100%);
     width:calc(var(--aw) * 100%); height:auto;
@@ -3065,3 +3112,28 @@
     .mm-spark::before{ opacity:.6; transform:translate(-50%, -50%); }
   }
   @media (min-width: 761px){ .mobile-menu, .menu-overlay{ display:none; } }
+
+  /* ==========================================================================
+     RENDIMIENTO
+     1) Nada se anima donde no se ve. main.js marca con .en-pausa cada zona grande
+        (portada, "Nuestro origen", el desierto, el tueste, eventos, pie) mientras esta fuera
+        de pantalla, y sus animaciones CSS infinitas se congelan. Al volver, siguen donde
+        quedaron. El menu movil cerrado tampoco anima (sigue en la pagina, oculto).
+     2) Equipos modestos (.gama-baja, ver el script del <head>: 4 nucleos o menos, 4 GB o
+        menos de memoria, o "ahorro de datos"): sin desenfoques de fondo, que se recalculan
+        en cada fotograma de scroll, y sin titileo de estrellas ni otros adornos continuos.
+        El aspecto general es el mismo.
+        La ficha del café cerrada tampoco (queda oculta pero presente, para su transición).
+     ========================================================================== */
+  .en-pausa, .en-pausa *, .en-pausa *::before, .en-pausa *::after,
+  .mobile-menu:not(.open), .mobile-menu:not(.open) *, .mobile-menu:not(.open) *::before, .mobile-menu:not(.open) *::after,
+  .product-stage:not(.is-open), .product-stage:not(.is-open) *, .product-stage:not(.is-open) *::before, .product-stage:not(.is-open) *::after{
+    animation-play-state:paused !important;
+  }
+
+  .gama-baja *, .gama-baja *::before, .gama-baja *::after{
+    -webkit-backdrop-filter:none !important; backdrop-filter:none !important;
+  }
+  .gama-baja nav.nav-scrolled .nav-pill{ background:rgba(255,255,255,0.97); }
+  .gama-baja .const-tip{ background:rgba(44,10,58,0.92); }
+  .gama-baja .const svg, .gama-baja .ori-star, .gama-baja .mm-stars, .gama-baja .mm-stars::after{ animation:none; }

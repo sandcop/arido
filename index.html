@@ -17,14 +17,29 @@
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<!-- Perfil del equipo, antes del primer pintado. En telefonos modestos (4 nucleos o menos,
+     4 GB o menos de memoria) o con "ahorro de datos", la web baja la resolucion de sus
+     lienzos animados y apaga adornos caros. El CSS lo lee en <html class="gama-baja">;
+     los scripts, en window.ARIDO. -->
+<script>
+(function(){
+  var n = navigator, c = n.connection || {};
+  var baja = (n.hardwareConcurrency || 8) <= 4 || (n.deviceMemory || 8) <= 4 || !!c.saveData;
+  window.ARIDO = { gamaBaja: baja, dprLienzo: Math.min(window.devicePixelRatio || 1, baja ? 1 : 1.5) };
+  if(baja) document.documentElement.classList.add('gama-baja');
+})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<!-- Una serif editorial (Newsreader) y una sans contemporanea (Manrope): nada mas. -->
-<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Una serif editorial (Newsreader) y una sans contemporanea (Manrope): nada mas.
+     Se cargan SIN bloquear el primer pintado: la pagina aparece al tiro con las fuentes
+     de respaldo (ajustadas a sus mismas medidas en styles.css) y las cambia al llegar. -->
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..600&family=Manrope:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..600&family=Manrope:wght@400;500;600;700;800&display=swap"></noscript>
 
 <!-- ?v= fuerza a recargar css y js al publicar: sin el, el navegador
      reutiliza la copia en cache y se sigue viendo la version anterior. -->
-<link rel="stylesheet" href="styles.css?v=202610212100">
+<link rel="stylesheet" href="styles.css?v=202610231500">
 </head>
 <body>
 <a class="skip-link" href="#main">Saltar al contenido</a>
@@ -171,6 +186,9 @@
         <span class="cta-toon cta-toon-r" aria-hidden="true"><span class="toon" data-hop="1"><img src="assets/peru/cactus-flor.webp" alt="" decoding="async"></span></span>
         <a href="#tueste" class="hero-cta" aria-label="Descubre nuestros cafés"><span class="cta-border" aria-hidden="true"></span><span class="cta-roll" aria-hidden="true"><span class="cta-roll-a">Descubre</span><span class="cta-roll-b">Nuestros cafés</span></span></a>
       </span>
+      <!-- Lugar de las constelaciones del hero en pantallas angostas (las pone constellations.js).
+           Va en el HTML para que su espacio exista desde el primer pintado y el hero no salte. -->
+      <div class="const-band const-band--hero"><div class="const-band-grid"></div></div>
     </div>
   </header>
 
@@ -618,18 +636,40 @@
   </div>
 </footer>
 
-<script src="main.js?v=202610201500"></script>
+<script src="main.js?v=202610231200" defer></script>
 
-<script src="sand-effect.js?v=202609152140"></script>
-<script src="desert-scene.js?v=202610200600"></script>
-<script src="desert-life.js?v=202610080100"></script>
-<script src="cosmic-sky.js?v=202610080100"></script>
-<script src="shore.js?v=202610200400"></script>
-<script src="roast-experience.js?v=202610212100"></script>
-<script src="constellations.js?v=202610211200"></script>
-<script src="menu-destellos.js?v=202610211300"></script>
-<script src="roast-carousel.js?v=202610201300"></script>
-<script src="roast-curve.js?v=202610080900"></script>
+<script src="desert-scene.js?v=202610200600" defer></script>
+<script src="desert-life.js?v=202610231500" defer></script>
+<script src="cosmic-sky.js?v=202610231500" defer></script>
+<script src="constellations.js?v=202610231500" defer></script>
+<script>
+/* Rendimiento: lo de secciones lejanas (catálogo y ficha de cafés, tueste, playa, destellos
+   del menú) se carga cuando el navegador queda libre tras la carga, sin competir con el
+   primer pintado. async=false mantiene el orden de la lista. */
+(function(){
+  var tarde = [
+    'roast-experience.js?v=202610231200',
+    'menu-destellos.js?v=202610211300',
+    'roast-carousel.js?v=202610201300',
+    'roast-curve.js?v=202610080900',
+    'sand-effect.js?v=202610231200',
+    'shore.js?v=202610231500'
+  ];
+  function cargar(){
+    tarde.forEach(function(src){
+      var s = document.createElement('script');
+      s.src = src; s.async = false;
+      document.body.appendChild(s);
+    });
+  }
+  function cuandoLibre(){
+    if('requestIdleCallback' in window) requestIdleCallback(cargar, { timeout:1200 });
+    else setTimeout(cargar, 200);
+  }
+  if(document.readyState === 'complete') cuandoLibre();
+  else window.addEventListener('load', cuandoLibre);
+})();
+</script>
 
 </body>
 </html>

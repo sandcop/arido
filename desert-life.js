@@ -10,7 +10,7 @@
   if(!desert || !stage) return;
 
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var dpr = Math.min(window.devicePixelRatio || 1, 2);
+  var dpr = (window.ARIDO && window.ARIDO.dprLienzo) || Math.min(window.devicePixelRatio || 1, 1.5);   // resolución acotada (ver ARIDO en index.html)
   function rand(a, b){ return a + Math.random() * (b - a); }
   function clamp(v, a, b){ return v < a ? a : v > b ? b : v; }
 
@@ -136,9 +136,18 @@
   }, { passive:true });
 
   // ---------------------------------------------- motor: un solo bucle para todo
-  var raf = null, tPrev = 0, reloj = 0;
+  // En reposo trabaja a 30 fps, en los mismos fotogramas que el cielo (turno sacado del
+  // reloj del fotograma, igual en cosmic-sky.js). Con scroll reciente, en todos.
+  var raf = null, tPrev = 0, reloj = 0, ultimoTurno = -1, scrollHasta = 0;
   var tareas = [];                    // funciones (dt, t) que corren mientras su grupo este activo
+  window.addEventListener('scroll', function(){ scrollHasta = ahora() + 0.2; }, { passive:true });
   function motor(ts){
+    var turno = Math.floor(ts / 33.34);
+    if(turno === ultimoTurno && ahora() > scrollHasta){
+      raf = !document.hidden ? requestAnimationFrame(motor) : null;
+      return;
+    }
+    ultimoTurno = turno;
     var dt = tPrev ? Math.min((ts - tPrev) / 1000, 0.05) : 0.016;
     tPrev = ts;
     reloj += dt;
