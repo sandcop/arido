@@ -1,15 +1,15 @@
-  /* Fuentes de respaldo con las MÉTRICAS de Newsreader y Manrope (rendimiento / CLS).
-     Mientras llegan las fuentes de Google se dibuja con Georgia/Arial (o Noto Serif/Roboto
-     en Android) ajustadas al ancho y alto de línea de las reales: cuando la fuente real
-     reemplaza a la de respaldo, el texto no cambia de tamaño ni empuja nada. Valores
-     medidos sobre texto real de la web. Si local() no encuentra la fuente en el equipo,
-     esa regla se ignora y se prueba la siguiente de la lista. */
+  /* Respaldo de Newsreader con sus MÉTRICAS (rendimiento): mientras llega la fuente de
+     Google, los títulos se dibujan con Georgia (o Noto Serif en Android) ajustada al ancho y
+     alto de línea de la real. Así, al llegar, el título del hero no cambia de tamaño y el
+     navegador no lo vuelve a contar como "lo más grande pintado" (LCP): sin esto, el LCP
+     pasaba a depender de la descarga de la fuente (~7 s en red lenta vs ~3 s).
+     Manrope NO lleva respaldo así a propósito: con Arial ajustada encarecía el primer
+     diseño de la página (~210 ms con CPU 4x) y el salto que evitaba era mínimo (CLS 0.004).
+     Si local() no encuentra la fuente en el equipo, esa regla se ignora y sigue la lista. */
   @font-face{ font-family:'Newsreader Respaldo'; src:local('Georgia'); size-adjust:100.66%; ascent-override:73.02%; descent-override:26.33%; line-gap-override:0%; }
   @font-face{ font-family:'Newsreader Respaldo'; font-style:italic; src:local('Georgia Italic'), local('Georgia-Italic'); size-adjust:100.66%; ascent-override:73.02%; descent-override:26.33%; line-gap-override:0%; }
   @font-face{ font-family:'Newsreader Respaldo Android'; src:local('Noto Serif'), local('NotoSerif'); size-adjust:93.08%; ascent-override:78.97%; descent-override:28.47%; line-gap-override:0%; }
   @font-face{ font-family:'Newsreader Respaldo Android'; font-style:italic; src:local('Noto Serif Italic'), local('NotoSerif-Italic'); size-adjust:93.08%; ascent-override:78.97%; descent-override:28.47%; line-gap-override:0%; }
-  @font-face{ font-family:'Manrope Respaldo'; src:local('Arial'), local('ArialMT'); size-adjust:101.89%; ascent-override:104.62%; descent-override:29.44%; line-gap-override:0%; }
-  @font-face{ font-family:'Manrope Respaldo Android'; src:local('Roboto'), local('Roboto-Regular'); size-adjust:102.17%; ascent-override:104.33%; descent-override:29.36%; line-gap-override:0%; }
 
   :root{
     --bg: #FFFFFF;
@@ -27,7 +27,7 @@
     --blue-light: #B9E1F0;
     --line: rgba(0,0,0,0.14);
     --serif: 'Newsreader', 'Newsreader Respaldo', 'Newsreader Respaldo Android', Georgia, 'Times New Roman', serif;
-    --sans: 'Manrope', 'Manrope Respaldo', 'Manrope Respaldo Android', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --sans: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
   }
 
   *{ margin:0; padding:0; box-sizing:border-box; }
@@ -446,8 +446,11 @@
   .hero-l2    { animation-delay:.38s; }
   .hero-sub   { animation-delay:.6s; }
   .cta-wrap   { animation-delay:.8s; }
+  /* Parte de 0.01 y no de 0 (a la vista es lo mismo): Chrome no cuenta como pintado lo que
+     tiene opacidad 0, y como la GPU anima la opacidad, el título recién "existía" para el
+     LCP al terminar la animación (~1.4 s después del primer pintado). Así cuenta desde el inicio. */
   @keyframes heroIn{
-    from{ opacity:0; transform:translateY(28px); }
+    from{ opacity:0.01; transform:translateY(28px); }
     to  { opacity:1; transform:none; }
   }
   /* El CTA termina con un latido corto, para que el ojo aterrice en el. */
